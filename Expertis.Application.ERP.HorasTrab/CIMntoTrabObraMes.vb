@@ -113,6 +113,74 @@ Public Class CIMntoTrabObraMes
 
 #Region "Informes"
 
+    Private Function generarCuadranteObrasDel20Al21(ByVal mes As Integer, ByVal anio As Integer, ByVal informe As String)
+        Dim rp As New Report(informe)
+        Dim dtObrasMes As New DataTable
+        Dim strSelect1 As String = "select distinct nobra,descobra from vSistLabListadoTrabajadoresObraMes where anio=" & anio & " and mes=" & mes
+
+        'Para obtener del 21 al 20
+        Dim desde As Date
+        Dim hasta As Date
+
+        Dim mesanterior As String = ""
+        Dim mesactual As String = ""
+        Select Case mes
+            Case "01"
+                'Meses
+                mesanterior = 12
+                mesactual = mes
+                'Fechas
+                desde = CDate("21/12/" & CStr(anio - 1))
+                hasta = CDate("20/" & mes & "/" & CStr(anio))
+            Case Else
+                'Meses
+                Dim mesNum As Integer = CInt(mes)
+
+                mesanterior = CStr(mesNum - 1)
+                mesactual = CStr(mesNum)
+                'Fechas
+                desde = CDate("21/" & CStr(mesNum - 1) & "/" & CStr(anio))
+                hasta = CDate("20/" & CStr(mesNum) & "/" & CStr(anio))
+        End Select
+
+        Dim DE As New BE.DataEngine
+        'Listado de obras que tienen horas
+        dtObrasMes = DE.RetrieveData(strSelect1, , , , False)
+        Dim a As Integer = 0
+        Dim strSelect2 As String = ""
+
+        Try
+
+            For Each drObrasMes As DataRow In dtObrasMes.Rows
+                If a > 0 Then
+                    strSelect2 &= " union "
+                End If
+                Dim obra1 As String = drObrasMes(0)
+                Dim dobra As String = drObrasMes(1)
+
+                strSelect2 &= "select b.fecha,b.Numdiasemana,b.diasemana,isnull(a.nobra,'" & obra1 & "') as NumObra,isnull(a.descobra,'" & dobra & "') as DObra,a.*"
+                strSelect2 &= " from (select * from vSistLabListadoTrabajadoresObraMes where anio=" & anio & " and nobra='" & obra1 & "' AND FechaInicio>= '" & desde & "' AND FechaInicio<= '" & hasta & "') as a "
+                strSelect2 &= " full outer join (select * from tiempo where Fecha>= '" & desde & "' AND Fecha<= '" & hasta & "') as b on a.fechainicio=b.fecha"
+                a = a + 1
+
+            Next
+            Dim dt As New DataTable
+            dt = DE.RetrieveData(strSelect2, , , "fecha,numobra", False)
+            rp.DataSource = dt
+            rp.Formulas("desde").Text = Format(desde, "dd/MM/yyyy")
+            rp.Formulas("hasta").Text = Format(hasta, "dd/MM/yyyy")
+            ExpertisApp.OpenReport(rp)
+            
+
+        Catch ex As SqlClient.SqlException
+
+
+            MsgBox(ex.Message)
+
+        End Try
+
+    End Function
+
     Private Function generarCuadranteObras(ByVal mes As Integer, ByVal anio As Integer, ByVal informe As String)
         Dim rp As New Report(informe)
         Dim dtObrasMes As New DataTable
@@ -184,6 +252,17 @@ Public Class CIMntoTrabObraMes
             End If
             generarCuadranteObras(mes, anio, informe)
             e.Cancel = True
+            'David Velasco 15/05/22
+            'Este informe saca las horas del 20 del mes anterio al 21 del mes actual
+        ElseIf e.Alias = "PASIS2021" Then
+            Dim frm As New frmDatosInforme
+            Dim informe As String = e.Alias
+            frm.ShowDialog()
+            mes = frm.mes
+            anio = frm.anio
+            generarCuadranteObrasDel20Al21(mes, anio, informe)
+            e.Cancel = True
+            'Fin David Velasco 15/05/2022
         ElseIf e.Alias = "JORINDI" Or e.Alias = "REGHOR" Or e.Alias = "REGHORT" Then
             Dim informe As String = e.Alias
             Dim frm As New frmDatosInforme
