@@ -36,3 +36,16 @@ C:\Users\lgonzalez\Desktop\EXPERTIS\DESARROLLO EXPERTIS\FR2Sergio\Application\Ex
 C:\Users\lgonzalez\Desktop\EXPERTIS\DESARROLLO EXPERTIS\FR2Sergio\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.dll
 C:\Users\lgonzalez\Desktop\EXPERTIS\DESARROLLO EXPERTIS\FR2Sergio\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.xml
 C:\Users\lgonzalez\Desktop\EXPERTIS\DESARROLLO EXPERTIS\FR2Sergio\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.pdb
+C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\ResolveAssemblyReference.cache
+C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.CIMntoBusqHorasAPP.resources
+C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.CIMntoTrabObraMes.resources
+C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmDatosInforme.resources
+C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmFechas.resources
+C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmHorasAPP.resources
+C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.MntoTipoTurno.resources
+C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.Resources.resources
+C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.vbproj.GenerateResource.Cache
+C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.dll.licenses
+C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.dll
+C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.xml
+C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.pdb

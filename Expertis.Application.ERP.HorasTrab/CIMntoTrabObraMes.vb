@@ -578,8 +578,10 @@ Public Class CIMntoTrabObraMes
                     Dim drObraTrab As DataRow = DtObraTrab.Rows(0)
 
                     strSelect2 &= "SELECT (SELECT id FROM tbDatosEmpresa) AS IDEmpresa, b.fecha, month(b.fecha) AS mes, year(b.fecha) AS anio, b.Numdiasemana, b.diasemana, '" & drTrabMes(0) & _
-                    "' AS IDOperario,CONVERT (Date,'" & drTrabMes("FechaAlta") & "') as FechaAlta, CONVERT (Date,'" & drTrabMes("Fecha_Baja") & "') as Fecha_Baja, isNull(a.TipoDia, 0) AS TipoDia FROM ((SELECT * FROM tbCalendarioCentro WHERE  idcentro ='" & drTrabMes(1) & "'  AND month(fecha) = " & mes & " AND year(fecha) = " & anio & ") " & _
-                    " AS A FULL OUTER JOIN (SELECT * FROM tiempo WHERE month(fecha) = " & mes & " AND year(fecha) = " & anio & ") AS B ON a.fecha = b.fecha)"
+                    "' AS IDOperario,CONVERT (Date,'" & drTrabMes("FechaAlta") & "') as FechaAlta, CONVERT (Date,'" & drTrabMes("Fecha_Baja") & "') as Fecha_Baja, isNull(a.TipoDia, 0) AS TipoDia, isNull(c.TipoDia, 0) AS TipoDiaV FROM ((SELECT * FROM tbCalendarioCentro WHERE  idcentro ='" & drTrabMes(1) & "'  AND month(fecha) = " & mes & " AND year(fecha) = " & anio & ") " & _
+                    " AS A FULL OUTER JOIN (SELECT * FROM tiempo WHERE month(fecha) = " & mes & " AND year(fecha) = " & anio & ") AS B ON a.fecha = b.fecha) " & _
+                    "full outer join (select * from tbCalendarioOperario where IdOperario='" & drTrabMes(0) & "' AND month(fecha) = " & mes & " AND year(fecha) = " & anio & ") as C on b.Fecha = c.fecha"
+
 
                     'If drObraTrab(0) = "STOBRA" Then
                     '    strSelect2 &= "select c.*, vOperarioHorario.IdHorario, (select  Nhorario from tbHorariosOficina where idhorario=vOperarioHorario.IdHorario) as NHorario,"
