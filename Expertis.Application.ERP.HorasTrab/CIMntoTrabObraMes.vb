@@ -116,7 +116,7 @@ Public Class CIMntoTrabObraMes
     Private Function generarCuadranteObrasDel20Al21(ByVal mes As Integer, ByVal anio As Integer, ByVal informe As String)
         Dim rp As New Report(informe)
         Dim dtObrasMes As New DataTable
-        Dim strSelect1 As String = "select distinct nobra,descobra from vSistLabListadoTrabajadoresObraMes where anio=" & anio & " and mes=" & mes
+        Dim strSelect1 As String = "select distinct nobra,descobra from vSistLabListadoTrabajadoresObraMes where anio=" & anio & " and (mes=" & mes & "OR mes=" & mes - 1 & ")"
 
         'Para obtener del 21 al 20
         Dim desde As Date
