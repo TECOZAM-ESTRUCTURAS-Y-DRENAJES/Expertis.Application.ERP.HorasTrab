@@ -528,6 +528,7 @@ Public Class CIMntoTrabObraMes
 
         Dim mesTiempo As String
         Dim mesT As String
+        'mes=mes+1
         If (mes.ToString).Length = 1 Then
             mesTiempo = "0" & mes.ToString
             mesT = anio & "-" & mesTiempo
@@ -536,7 +537,9 @@ Public Class CIMntoTrabObraMes
             mesT = anio & "-" & mesTiempo
         End If
         Dim FechaLiquidacion As Date = "01/01/2000"
-        If (mes.ToString).Length = 1 Then
+        'David Velasco 03/10/22
+        'Segunda condicion mes<=8 porque daba error para mes de oct(10)//nov(11)
+        If (mes.ToString).Length = 1 And mes <= 8 Then
             FechaLiquidacion = "01/0" & mesTiempo + 1 & "/" & anio
         Else
             If mesTiempo = "12" Then
@@ -631,7 +634,9 @@ Public Class CIMntoTrabObraMes
                 'rp.Formulas("nobra").Text = Otrab
                 rp.Formulas("anio").Text = anio
                 rp.Formulas("mes").Text = mesTiempo
-                If (mes.ToString).Length = 1 Then
+                'David Velasco 03/10/22
+                'Segunda condicion mes<=8 porque daba error para mes de oct(10)//nov(11)
+                If (mes.ToString).Length = 1 And mes <= 8 Then
                     rp.Formulas("Fecha Liquidacion").Text = "01/0" & mesTiempo + 1 & "/" & anio
                 Else
                     If mesTiempo = "12" Then
