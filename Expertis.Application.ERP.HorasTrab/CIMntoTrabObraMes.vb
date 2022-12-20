@@ -108,7 +108,88 @@ Public Class CIMntoTrabObraMes
         ' Agregue cualquier inicialización después de la llamada a InitializeComponent().
         cargarComboAnio()
         cargarComboMes()
+        'LoadToolbarActions()
 
+    End Sub
+
+    Private Sub LoadToolbarActions()
+        Try
+            With Me.FormActions
+                .Add("Calcular dias por obra Entre fechas.", AddressOf calcular)
+                '.Add("Leer un Fichero", AddressOf LeerFichero)
+            End With
+        Catch ex As Exception
+            'ExpertisApp.GenerateMessage(ex.Message)
+        End Try
+    End Sub
+
+    Public Sub calcular()
+        Dim fechadesde As Date
+        Dim fechahasta As Date
+        fechadesde = Nz(clbFecha.Value.ToString, "01/01/2000")
+        fechahasta = Nz(clbFecha1.Value.ToString, "31/12/2050")
+
+        creardt(fechadesde, fechahasta)
+    End Sub
+    Public Sub creardt(ByVal fechadesde As Date, ByVal fechahasta As Date)
+        'Creacion Estructura Tabla
+        Dim dt As DataTable
+        dt = estructuraTabla()
+        'Relleno tabla
+        rellenoTabla(dt, fechadesde, fechahasta)
+
+    End Sub
+    Public Function estructuraTabla() As DataTable
+        Dim dt As New DataTable
+        Dim dc As New DataColumn("CodigoObra")
+        dt.Columns.Add(dc)
+        dc = New DataColumn("Dias")
+        dt.Columns.Add(dc)
+        Return dt
+    End Function
+    Public Sub rellenoTabla(ByVal dt As DataTable, ByVal fechadesde As Date, ByVal fechahasta As Date)
+        'Creo todas las variables
+        Dim dtError As New DataTable
+        dtError = estructuraTabla()
+        Try
+            calculaObras(dt, fechadesde, fechahasta)
+
+        Catch ex As Exception
+            Grid.DataSource = dtError
+            MsgBox("No existe ningún registro con estas características")
+        End Try
+    End Sub
+
+    Public Sub calculaObras(ByVal dt As DataTable, ByVal fechadesde As Date, ByVal fechahasta As Date)
+
+        Dim dtObras As New DataTable
+        Dim dtHoras As New DataTable
+
+        Dim sql As String = "select distinct(NObra) from vSistLabListadoTrabajadoresObraMes where FechaInicio>='" & fechadesde & "' And FechaInicio<='" & fechahasta & "'"
+        Dim s As New Solmicro.Expertis.Business.ClasesTecozam.ControlArticuloNSerie
+        dtObras = s.EjecutarSqlSelect(sql)
+        Dim sql2 As String = ""
+
+        Dim CodigoObra As String = ""
+        Dim Dias As String = ""
+        For Each dr As DataRow In dtObras.Rows
+
+            CodigoObra = dr("NObra")
+
+            sql2 = "select count(distinct(FechaInicio)) as Dias from vSistLabListadoTrabajadoresObraMes  where FechaInicio>='" & fechadesde & "' And FechaInicio<='" & fechahasta & "' and NObra='" & CodigoObra & "'"
+            dtHoras = s.EjecutarSqlSelect(sql2)
+            Dias = dtHoras.Rows(0)("Dias").ToString
+
+            Dim drFinal As DataRow
+            drFinal = dt.NewRow
+            drFinal("NObra") = CodigoObra
+            drFinal("Horas") = Dias
+            dt.Rows.Add(drFinal)
+
+        Next
+
+        Grid.DataSource = dt
+        dt = Nothing
     End Sub
 
 #Region "Informes"

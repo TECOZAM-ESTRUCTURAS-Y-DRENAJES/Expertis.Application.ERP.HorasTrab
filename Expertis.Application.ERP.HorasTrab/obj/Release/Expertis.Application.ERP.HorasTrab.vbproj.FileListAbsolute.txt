@@ -57,3 +57,4 @@ C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Ex
 C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Release\Expertis.Application.ERP.HorasTrab.dll
 C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Release\Expertis.Application.ERP.HorasTrab.xml
 C:\FUENTES EXPERTIS 5 R2\ApplicationSergio\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Release\Expertis.Application.ERP.HorasTrab.pdb
+C:\Users\lgonzalez\Desktop\EXPERTIS\DESARROLLO EXPERTIS\FR2Sergio\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Release\Expertis.Application.ERP.HorasTrab.frmObraDias.resources

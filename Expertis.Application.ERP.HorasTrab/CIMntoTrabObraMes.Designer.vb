@@ -31,6 +31,10 @@ Partial Class CIMntoTrabObraMes
         Me.lblmes = New Solmicro.Expertis.Engine.UI.Label
         Me.cmbanio = New Solmicro.Expertis.Engine.UI.ComboBox
         Me.lblanio = New Solmicro.Expertis.Engine.UI.Label
+        Me.clbFecha1 = New Solmicro.Expertis.Engine.UI.CalendarBox
+        Me.lblFecha1 = New Solmicro.Expertis.Engine.UI.Label
+        Me.clbFecha = New Solmicro.Expertis.Engine.UI.CalendarBox
+        Me.lblFecha = New Solmicro.Expertis.Engine.UI.Label
         Me.FilterPanel.SuspendLayout()
         Me.CIMntoGridPanel.suspendlayout()
         CType(Me.Grid, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -45,6 +49,10 @@ Partial Class CIMntoTrabObraMes
         '
         'FilterPanel
         '
+        Me.FilterPanel.Controls.Add(Me.clbFecha1)
+        Me.FilterPanel.Controls.Add(Me.lblFecha1)
+        Me.FilterPanel.Controls.Add(Me.clbFecha)
+        Me.FilterPanel.Controls.Add(Me.lblFecha)
         Me.FilterPanel.Controls.Add(Me.cmbanio)
         Me.FilterPanel.Controls.Add(Me.lblanio)
         Me.FilterPanel.Controls.Add(Me.cmbmes)
@@ -165,6 +173,42 @@ Partial Class CIMntoTrabObraMes
         Me.lblanio.TabIndex = 7
         Me.lblanio.Text = "Año"
         '
+        'clbFecha1
+        '
+        Me.clbFecha1.DisabledBackColor = System.Drawing.Color.White
+        Me.clbFecha1.Location = New System.Drawing.Point(815, 63)
+        Me.clbFecha1.Name = "clbFecha1"
+        Me.clbFecha1.Size = New System.Drawing.Size(121, 21)
+        Me.clbFecha1.TabIndex = 32
+        Me.clbFecha1.Visible = False
+        '
+        'lblFecha1
+        '
+        Me.lblFecha1.Location = New System.Drawing.Point(738, 71)
+        Me.lblFecha1.Name = "lblFecha1"
+        Me.lblFecha1.Size = New System.Drawing.Size(62, 13)
+        Me.lblFecha1.TabIndex = 33
+        Me.lblFecha1.Text = "Fecha <="
+        Me.lblFecha1.Visible = False
+        '
+        'clbFecha
+        '
+        Me.clbFecha.DisabledBackColor = System.Drawing.Color.White
+        Me.clbFecha.Location = New System.Drawing.Point(815, 30)
+        Me.clbFecha.Name = "clbFecha"
+        Me.clbFecha.Size = New System.Drawing.Size(121, 21)
+        Me.clbFecha.TabIndex = 30
+        Me.clbFecha.Visible = False
+        '
+        'lblFecha
+        '
+        Me.lblFecha.Location = New System.Drawing.Point(738, 38)
+        Me.lblFecha.Name = "lblFecha"
+        Me.lblFecha.Size = New System.Drawing.Size(62, 13)
+        Me.lblFecha.TabIndex = 31
+        Me.lblFecha.Text = "Fecha >="
+        Me.lblFecha.Visible = False
+        '
         'CIMntoTrabObraMes
         '
         Me.ClientSize = New System.Drawing.Size(962, 497)
@@ -192,5 +236,9 @@ Partial Class CIMntoTrabObraMes
     Friend WithEvents lblanio As Solmicro.Expertis.Engine.UI.Label
     Friend WithEvents cmbmes As Solmicro.Expertis.Engine.UI.ComboBox
     Friend WithEvents lblmes As Solmicro.Expertis.Engine.UI.Label
+    Friend WithEvents clbFecha1 As Solmicro.Expertis.Engine.UI.CalendarBox
+    Friend WithEvents lblFecha1 As Solmicro.Expertis.Engine.UI.Label
+    Friend WithEvents clbFecha As Solmicro.Expertis.Engine.UI.CalendarBox
+    Friend WithEvents lblFecha As Solmicro.Expertis.Engine.UI.Label
 
 End Class
