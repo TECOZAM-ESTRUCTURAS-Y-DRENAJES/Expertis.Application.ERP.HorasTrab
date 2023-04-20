@@ -365,7 +365,7 @@ Public Class frmHorasAPP
     Private Sub frmHorasAPP_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
         Dim DE As New BE.DataEngine
         Dim fhoras As New Filter
-        fhoras.Add("Fecha", FilterOperator.GreaterThanOrEqual, CDate("21/" & Month(DateAdd(DateInterval.Month, -2, Now))))
+        fhoras.Add("Fecha", FilterOperator.GreaterThanOrEqual, CDate("21/" & Month(DateAdd(DateInterval.Month, -1, Now))))
         fhoras.Add("Fecha", FilterOperator.LessThanOrEqual, Now)
         Grid.DataSource = DE.Filter(Me.ViewName, fhoras)
 
