@@ -109,11 +109,20 @@ Public Class frmHorasAPP
                         clsHor.ActualizarInsercionParte(dr("IdParte"))
                         'AdminData.Execute(isql)
                     Else
+                        Dim IDCategoriaProfesionalSCCP As Integer
+                        Dim IDOficio As String
+
+                        IDCategoriaProfesionalSCCP = DevuelveIDCategoriaProfesionalSCCP(idOperario)
+                        IDOficio = DevuelveIDOficio(idOperario)
 
                         'Compruebo si hay horas de trabajo
                         If (Len(dr("idhora")) > 0 And dr("Nhoras") > 0) Then
                             sTipoHora = "HORAS"
                             salida = clsHor.Insertar(dr("IdParte"), idOperario, idobra, dr("Fecha"), codTrabajo, sTipoHora, dr("Nhoras"), descParte, dr("IdObra"), ExpertisApp.UserName, Nobra, Nz(dr("IDTipoTurno"), 4))
+
+                            'David Velasco 22/05/23
+                            'Cuando se habilite la opcion de insertar horas con categoria se descomenta esto.
+                            salida = clsHor.InsertarConCategoriaProfesional(dr("IdParte"), idOperario, idobra, dr("Fecha"), codTrabajo, sTipoHora, dr("Nhoras"), descParte, dr("IdObra"), ExpertisApp.UserName, Nobra, Nz(dr("IDTipoTurno"), 4), IDCategoriaProfesionalSCCP, IDOficio)
                             If salida = False Then
                                 Exit For
                             End If
@@ -121,6 +130,10 @@ Public Class frmHorasAPP
                         Else
                             sTipoHora = dr("IdHora")
                             salida = clsHor.Insertar(dr("IdParte"), idOperario, idobra, dr("Fecha"), codTrabajo, sTipoHora, dr("Nhoras"), descParte, dr("IdObra"), ExpertisApp.UserName, Nobra, Nz(dr("IDTipoTurno"), 4))
+
+                            'David Velasco 22/05/23
+                            'Cuando se habilite la opcion de insertar horas con categoria se descomenta esto.
+                            salida = clsHor.InsertarConCategoriaProfesional(dr("IdParte"), idOperario, idobra, dr("Fecha"), codTrabajo, sTipoHora, dr("Nhoras"), descParte, dr("IdObra"), ExpertisApp.UserName, Nobra, Nz(dr("IDTipoTurno"), 4), IDCategoriaProfesionalSCCP, IDOficio)
                             If salida = False Then
                                 Exit For
                             End If
@@ -371,4 +384,28 @@ Public Class frmHorasAPP
 
     End Sub
 
+    Public Function DevuelveIDCategoriaProfesionalSCCP(ByVal IDOperario As String) As Integer
+        Dim dt As New DataTable
+        Dim f As New Filter
+
+        f.Add("IDOperario", FilterOperator.Equal, IDOperario)
+        dt = New BE.DataEngine().Filter("vOperarioCategoriaProf", f)
+        If dt.Rows.Count > 0 Then
+            Return dt(0)("Abreviatura")
+        Else
+            Return 0
+        End If
+    End Function
+    Public Function DevuelveIDOficio(ByVal IDOperario As String) As String
+        Dim dt As New DataTable
+        Dim f As New Filter
+
+        f.Add("IDOperario", FilterOperator.Equal, IDOperario)
+        dt = New BE.DataEngine().Filter("tbMaestroOperario", f)
+        If dt.Rows.Count > 0 Then
+            Return dt(0)("IDOficio")
+        Else
+            Return ""
+        End If
+    End Function
 End Class

@@ -137,7 +137,7 @@ Partial Class CIMntoTrabObraMes
         cmbmes_DesignTimeLayout.LayoutString = resources.GetString("cmbmes_DesignTimeLayout.LayoutString")
         Me.cmbmes.DesignTimeLayout = cmbmes_DesignTimeLayout
         Me.cmbmes.DisabledBackColor = System.Drawing.Color.White
-        Me.cmbmes.Location = New System.Drawing.Point(347, 28)
+        Me.cmbmes.Location = New System.Drawing.Point(393, 28)
         Me.cmbmes.Name = "cmbmes"
         Me.cmbmes.SelectedIndex = -1
         Me.cmbmes.SelectedItem = Nothing
@@ -158,7 +158,7 @@ Partial Class CIMntoTrabObraMes
         cmbanio_DesignTimeLayout.LayoutString = resources.GetString("cmbanio_DesignTimeLayout.LayoutString")
         Me.cmbanio.DesignTimeLayout = cmbanio_DesignTimeLayout
         Me.cmbanio.DisabledBackColor = System.Drawing.Color.White
-        Me.cmbanio.Location = New System.Drawing.Point(347, 63)
+        Me.cmbanio.Location = New System.Drawing.Point(393, 63)
         Me.cmbanio.Name = "cmbanio"
         Me.cmbanio.SelectedIndex = -1
         Me.cmbanio.SelectedItem = Nothing
@@ -172,42 +172,39 @@ Partial Class CIMntoTrabObraMes
         Me.lblanio.Size = New System.Drawing.Size(29, 13)
         Me.lblanio.TabIndex = 7
         Me.lblanio.Text = "Año"
+        Me.lblanio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'clbFecha1
         '
         Me.clbFecha1.DisabledBackColor = System.Drawing.Color.White
-        Me.clbFecha1.Location = New System.Drawing.Point(815, 63)
+        Me.clbFecha1.Location = New System.Drawing.Point(777, 58)
         Me.clbFecha1.Name = "clbFecha1"
         Me.clbFecha1.Size = New System.Drawing.Size(121, 21)
         Me.clbFecha1.TabIndex = 32
-        Me.clbFecha1.Visible = False
         '
         'lblFecha1
         '
-        Me.lblFecha1.Location = New System.Drawing.Point(738, 71)
+        Me.lblFecha1.Location = New System.Drawing.Point(700, 66)
         Me.lblFecha1.Name = "lblFecha1"
         Me.lblFecha1.Size = New System.Drawing.Size(62, 13)
         Me.lblFecha1.TabIndex = 33
         Me.lblFecha1.Text = "Fecha <="
-        Me.lblFecha1.Visible = False
         '
         'clbFecha
         '
         Me.clbFecha.DisabledBackColor = System.Drawing.Color.White
-        Me.clbFecha.Location = New System.Drawing.Point(815, 30)
+        Me.clbFecha.Location = New System.Drawing.Point(777, 25)
         Me.clbFecha.Name = "clbFecha"
         Me.clbFecha.Size = New System.Drawing.Size(121, 21)
         Me.clbFecha.TabIndex = 30
-        Me.clbFecha.Visible = False
         '
         'lblFecha
         '
-        Me.lblFecha.Location = New System.Drawing.Point(738, 38)
+        Me.lblFecha.Location = New System.Drawing.Point(700, 33)
         Me.lblFecha.Name = "lblFecha"
         Me.lblFecha.Size = New System.Drawing.Size(62, 13)
         Me.lblFecha.TabIndex = 31
         Me.lblFecha.Text = "Fecha >="
-        Me.lblFecha.Visible = False
         '
         'CIMntoTrabObraMes
         '

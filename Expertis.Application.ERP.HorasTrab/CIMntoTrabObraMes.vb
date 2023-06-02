@@ -11,6 +11,8 @@ Public Class CIMntoTrabObraMes
         e.Filter.Add("IDOperario", FilterOperator.Equal, advIDOperario.Text)
         e.Filter.Add("Mes", FilterOperator.Equal, cmbmes.Value)
         e.Filter.Add("Anio", FilterOperator.Equal, cmbanio.Value)
+        e.Filter.Add("FechaInicio", FilterOperator.GreaterThanOrEqual, clbFecha.Value, FilterType.DateTime)
+        e.Filter.Add("FechaInicio", FilterOperator.LessThanOrEqual, clbFecha1.Value, FilterType.DateTime)
     End Sub
 
     Public Sub cargarComboMes()

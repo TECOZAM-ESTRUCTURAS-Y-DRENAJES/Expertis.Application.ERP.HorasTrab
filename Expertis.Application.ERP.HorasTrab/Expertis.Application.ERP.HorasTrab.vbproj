@@ -37,6 +37,10 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EPPlus, Version=6.2.3.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Downloads\EPPLUS\EPPlus.dll</HintPath>
+    </Reference>
     <Reference Include="Expertis.Business.ClasesTecozam, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>C:\ExpertisNet50R2test\Bin\Expertis.Business.ClasesTecozam.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
@@ -110,6 +114,10 @@
     <Reference Include="Janus.Windows.Schedule.v3, Version=3.5.109.0, Culture=neutral, PublicKeyToken=21d5517571b185bf, processorArchitecture=MSIL" />
     <Reference Include="Janus.Windows.TimeLine.v3, Version=3.5.109.0, Culture=neutral, PublicKeyToken=21d5517571b185bf, processorArchitecture=MSIL" />
     <Reference Include="Janus.Windows.UI.v3, Version=3.5.109.0, Culture=neutral, PublicKeyToken=21d5517571b185bf, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Design" />
@@ -194,6 +202,30 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Vistas_PowerBI\CargaHorasJPSTAFF.Designer.vb">
+      <DependentUpon>CargaHorasJPSTAFF.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Vistas_PowerBI\CargaHorasJPSTAFF.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Vistas_PowerBI\CIMntoTrabObraMesUnionBasesDatos.Designer.vb">
+      <DependentUpon>CIMntoTrabObraMesUnionBasesDatos.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Vistas_PowerBI\CIMntoTrabObraMesUnionBasesDatos.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Vistas_PowerBI\frmBorraHoras.Designer.vb">
+      <DependentUpon>frmBorraHoras.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Vistas_PowerBI\frmBorraHoras.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Vistas_PowerBI\frmCreaHorasOperarioObraFecha.Designer.vb">
+      <DependentUpon>frmCreaHorasOperarioObraFecha.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Vistas_PowerBI\frmCreaHorasOperarioObraFecha.vb">
+      <SubType>Form</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CIMntoBusqHorasAPP.resx">
@@ -231,6 +263,22 @@
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Vistas_PowerBI\CargaHorasJPSTAFF.resx">
+      <DependentUpon>CargaHorasJPSTAFF.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Vistas_PowerBI\CIMntoTrabObraMesUnionBasesDatos.resx">
+      <DependentUpon>CIMntoTrabObraMesUnionBasesDatos.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Vistas_PowerBI\frmBorraHoras.resx">
+      <DependentUpon>frmBorraHoras.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Vistas_PowerBI\frmCreaHorasOperarioObraFecha.resx">
+      <DependentUpon>frmCreaHorasOperarioObraFecha.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />
@@ -243,6 +291,9 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
