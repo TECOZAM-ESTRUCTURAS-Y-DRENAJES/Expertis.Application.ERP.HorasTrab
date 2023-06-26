@@ -40,14 +40,18 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame4 = New Solmicro.Expertis.Engine.UI.Frame
         Me.bNota = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame5 = New Solmicro.Expertis.Engine.UI.Frame
-        Me.Button1 = New Solmicro.Expertis.Engine.UI.Button
         Me.bCreaHoras = New Solmicro.Expertis.Engine.UI.Button
+        Me.Button1 = New Solmicro.Expertis.Engine.UI.Button
         Me.CD = New System.Windows.Forms.OpenFileDialog
+        Me.Frame6 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bA3 = New Solmicro.Expertis.Engine.UI.Button
+        Me.bIDGET = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame1.SuspendLayout()
         Me.Frame2.SuspendLayout()
         Me.Frame3.SuspendLayout()
         Me.Frame4.SuspendLayout()
         Me.Frame5.SuspendLayout()
+        Me.Frame6.SuspendLayout()
         Me.SuspendLayout()
         '
         'bBorrarExcel
@@ -126,7 +130,7 @@ Partial Class CargaHorasJPSTAFF
         '
         Me.bHorasOficina.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.bHorasOficina.Icon = CType(resources.GetObject("bHorasOficina.Icon"), System.Drawing.Icon)
-        Me.bHorasOficina.Location = New System.Drawing.Point(34, 43)
+        Me.bHorasOficina.Location = New System.Drawing.Point(31, 44)
         Me.bHorasOficina.Name = "bHorasOficina"
         Me.bHorasOficina.Size = New System.Drawing.Size(137, 38)
         Me.bHorasOficina.TabIndex = 18
@@ -166,7 +170,7 @@ Partial Class CargaHorasJPSTAFF
         'Frame2
         '
         Me.Frame2.Controls.Add(Me.bHorasOficina)
-        Me.Frame2.Location = New System.Drawing.Point(388, 220)
+        Me.Frame2.Location = New System.Drawing.Point(357, 220)
         Me.Frame2.Name = "Frame2"
         Me.Frame2.Size = New System.Drawing.Size(218, 119)
         Me.Frame2.TabIndex = 22
@@ -176,7 +180,7 @@ Partial Class CargaHorasJPSTAFF
         'Frame3
         '
         Me.Frame3.Controls.Add(Me.bAñadirHorasPersona)
-        Me.Frame3.Location = New System.Drawing.Point(641, 220)
+        Me.Frame3.Location = New System.Drawing.Point(581, 221)
         Me.Frame3.Name = "Frame3"
         Me.Frame3.Size = New System.Drawing.Size(189, 118)
         Me.Frame3.TabIndex = 23
@@ -189,7 +193,7 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame4.Controls.Add(Me.bBorrarOperarioObraFecha)
         Me.Frame4.Location = New System.Drawing.Point(66, 356)
         Me.Frame4.Name = "Frame4"
-        Me.Frame4.Size = New System.Drawing.Size(443, 131)
+        Me.Frame4.Size = New System.Drawing.Size(417, 131)
         Me.Frame4.TabIndex = 24
         Me.Frame4.TabStop = False
         Me.Frame4.Text = "Borrar Horas"
@@ -208,40 +212,71 @@ Partial Class CargaHorasJPSTAFF
         '
         Me.Frame5.Controls.Add(Me.bCreaHoras)
         Me.Frame5.Controls.Add(Me.Button1)
-        Me.Frame5.Location = New System.Drawing.Point(515, 356)
+        Me.Frame5.Location = New System.Drawing.Point(489, 357)
         Me.Frame5.Name = "Frame5"
-        Me.Frame5.Size = New System.Drawing.Size(314, 130)
+        Me.Frame5.Size = New System.Drawing.Size(281, 130)
         Me.Frame5.TabIndex = 26
         Me.Frame5.TabStop = False
         Me.Frame5.Text = "Carga Horas Otras Bases de Datos"
-        '
-        'Button1
-        '
-        Me.Button1.Icon = CType(resources.GetObject("Button1.Icon"), System.Drawing.Icon)
-        Me.Button1.Location = New System.Drawing.Point(17, 20)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(275, 38)
-        Me.Button1.TabIndex = 6
-        Me.Button1.Text = "Buscar"
         '
         'bCreaHoras
         '
         Me.bCreaHoras.Icon = CType(resources.GetObject("bCreaHoras.Icon"), System.Drawing.Icon)
         Me.bCreaHoras.Location = New System.Drawing.Point(17, 64)
         Me.bCreaHoras.Name = "bCreaHoras"
-        Me.bCreaHoras.Size = New System.Drawing.Size(275, 38)
+        Me.bCreaHoras.Size = New System.Drawing.Size(241, 38)
         Me.bCreaHoras.TabIndex = 8
         Me.bCreaHoras.Text = "CREAR HORAS OTRA BASE DE DATOS"
+        '
+        'Button1
+        '
+        Me.Button1.Icon = CType(resources.GetObject("Button1.Icon"), System.Drawing.Icon)
+        Me.Button1.Location = New System.Drawing.Point(17, 20)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(241, 38)
+        Me.Button1.TabIndex = 6
+        Me.Button1.Text = "Buscar"
         '
         'CD
         '
         Me.CD.FileName = "CD"
         '
+        'Frame6
+        '
+        Me.Frame6.Controls.Add(Me.bA3)
+        Me.Frame6.Location = New System.Drawing.Point(793, 221)
+        Me.Frame6.Name = "Frame6"
+        Me.Frame6.Size = New System.Drawing.Size(189, 118)
+        Me.Frame6.TabIndex = 27
+        Me.Frame6.TabStop = False
+        Me.Frame6.Text = "Unifica A3"
+        '
+        'bA3
+        '
+        Me.bA3.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bA3.Icon = CType(resources.GetObject("bA3.Icon"), System.Drawing.Icon)
+        Me.bA3.Location = New System.Drawing.Point(22, 43)
+        Me.bA3.Name = "bA3"
+        Me.bA3.Size = New System.Drawing.Size(144, 38)
+        Me.bA3.TabIndex = 19
+        Me.bA3.Text = "Selecciona Ficheros A3"
+        '
+        'bIDGET
+        '
+        Me.bIDGET.Location = New System.Drawing.Point(66, 507)
+        Me.bIDGET.Name = "bIDGET"
+        Me.bIDGET.Size = New System.Drawing.Size(189, 23)
+        Me.bIDGET.TabIndex = 28
+        Me.bIDGET.Text = "Actualiza IDGET"
+        Me.bIDGET.Visible = False
+        '
         'CargaHorasJPSTAFF
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(895, 554)
+        Me.ClientSize = New System.Drawing.Size(1073, 542)
+        Me.Controls.Add(Me.bIDGET)
+        Me.Controls.Add(Me.Frame6)
         Me.Controls.Add(Me.Frame5)
         Me.Controls.Add(Me.bNota)
         Me.Controls.Add(Me.Frame4)
@@ -261,6 +296,7 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame3.ResumeLayout(False)
         Me.Frame4.ResumeLayout(False)
         Me.Frame5.ResumeLayout(False)
+        Me.Frame6.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -285,4 +321,7 @@ Partial Class CargaHorasJPSTAFF
     Friend WithEvents bCreaHoras As Solmicro.Expertis.Engine.UI.Button
     Friend WithEvents Button1 As Solmicro.Expertis.Engine.UI.Button
     Friend WithEvents CD As System.Windows.Forms.OpenFileDialog
+    Friend WithEvents Frame6 As Solmicro.Expertis.Engine.UI.Frame
+    Friend WithEvents bA3 As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents bIDGET As Solmicro.Expertis.Engine.UI.Button
 End Class

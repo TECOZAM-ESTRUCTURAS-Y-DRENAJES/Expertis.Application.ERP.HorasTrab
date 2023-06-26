@@ -7,6 +7,13 @@ Imports System.Math
 Imports System.Data.SqlClient
 Imports Solmicro.Expertis.Engine.DAL
 Imports Solmicro.Expertis.Business
+Imports iTextSharp.text.pdf
+Imports iTextSharp.text.pdf.parser
+Imports System.Text
+Imports System.Text.RegularExpressions
+Imports System.IO
+Imports OfficeOpenXml
+
 
 
 Public Class CargaHorasJPSTAFF
@@ -675,10 +682,11 @@ Public Class CargaHorasJPSTAFF
         Return dtCalendario
     End Function
 
-    Public Function ObtieneDiasVacacionesYFestivos(ByVal basededatosteco As String, ByVal basededatosoriginal As String, ByVal IDOperario As String, ByVal Fecha1 As String, ByVal Fecha2 As String) As DataTable
+    Public Function ObtieneDiasVacacionesYFestivos(ByVal basededatosteco As String, ByVal basededatosoriginal As String, ByVal IDOperario As String, ByVal Fecha1 As String, ByVal Fecha2 As String, ByVal dtDias As DataTable) As DataTable
         Dim dtVacaciones As New DataTable
         Dim dtFestivos As New DataTable
         Dim dtTrabajados As New DataTable
+        Dim dtDiasCambioDeObra As New DataTable
 
         Dim filtro As New Filter
         'DIA DE VACACIONES = 2
@@ -703,17 +711,36 @@ Public Class CargaHorasJPSTAFF
         filtro.Add("FechaInicio", FilterOperator.LessThanOrEqual, Fecha2)
         filtro.Add("IDOperario", FilterOperator.Equal, IDOperario)
         dtTrabajados = New BE.DataEngine().Filter(basededatosoriginal & "..tbObraModControl", filtro, "FechaInicio As Fecha")
-        ' Crear un nuevo DataTable llamado dtCalendario
-        Dim dtCalendario As New DataTable()
+        filtro.Clear()
 
-        ' Agregar las columnas Fecha y TipoDia al DataTable
+        'PARA AQUELLAS PERSONAS QUE FORMAN PARTE DE LAS QUE HAN ESTADO HASTA ALGUN DIA EN OFICINA
+        'Y LUEGO SE HAN CAMBIADO A OBRA Y POR TANTO NO HAY QUE CARGARLE DIAS A PARTIR DE LA FECHA
+        'QUE ESTA EN TBHISTORICOPERSONAL
+        filtro.Add("Fecha", FilterOperator.GreaterThanOrEqual, Fecha1)
+        filtro.Add("Fecha", FilterOperator.LessThanOrEqual, Fecha2)
+        filtro.Add("IDOperario", FilterOperator.Equal, IDOperario)
+        dtDiasCambioDeObra = New BE.DataEngine().Filter(basededatosoriginal & "..tbHistoricoPersonal", filtro, "Fecha")
+
+        Dim diaLimite As DateTime
+        diaLimite = dtDiasCambioDeObra.Rows(0)("Fecha").ToString
+
+
+        For Each dr As DataRow In dtDias.Rows
+            If dr("Fecha") >= diaLimite Then
+                dtDiasCambioDeObra.ImportRow(dr)
+            End If
+        Next
+
+        ' Crear un nuevo DataTable llamado dtCalendario
+        Dim dtCalendario As New DataTable
+        ' Agregar las columnas Fecha
         dtCalendario.Columns.Add("Fecha", GetType(Date))
         'dtCalendario.Columns.Add("TipoDia", GetType(Integer))
-
-        ' Unir los DataTables dtVacaciones y dtFestivos en el DataTable dtCalendario
+        ' Unir los DataTables dtVacaciones y dtFestivos, trabajador y con cambio de obra en el DataTable dtCalendario
         dtCalendario.Merge(dtVacaciones)
         dtCalendario.Merge(dtFestivos)
         dtCalendario.Merge(dtTrabajados)
+        dtCalendario.Merge(dtDiasCambioDeObra)
 
         Return dtCalendario
     End Function
@@ -802,13 +829,13 @@ Public Class CargaHorasJPSTAFF
         Fecha2 = diaMes & "/" & mes & "/" & año & ""
 
         '-----------TECOZAM--------------
-        'setHorasOficinaTecozam(mes, año, Fecha1, Fecha2)
+        setHorasOficinaTecozam(mes, año, Fecha1, Fecha2)
         '-----------FERRALLAS------------
         setHorasOficinaFerrallas(mes, año, Fecha1, Fecha2)
         '-----------SECOZAM--------------
-        'setHorasOficinaSecozam(mes, año, Fecha1, Fecha2)
+        setHorasOficinaSecozam(mes, año, Fecha1, Fecha2)
         '-----------DCZ(No hay nadie)------------------
-        'setHorasOficinaDCZ(mes, año, Fecha1, Fecha2)
+        setHorasOficinaDCZ(mes, año, Fecha1, Fecha2)
         '-----------UK--------------
 
         '-----------ESLOVAQUIA------------
@@ -819,12 +846,17 @@ Public Class CargaHorasJPSTAFF
     End Sub
     Public Function getListadoPersonasOfiFerrallas(ByVal Fecha1 As String, ByVal Fecha2 As String) As DataTable
         Dim dt As New DataTable
-        '----------FORMA BUENA'-------------
         Dim sql As String
         '------COMO YO LO DE DEJARIA---------
-        sql = "select * from xFerrallas50R2..tbMaestroOperarioSat " & _
+        sql = "select IDOperario, Obra_Predeterminada from xFerrallas50R2..tbMaestroOperarioSat " & _
         "where (Obra_Predeterminada='12677838' Or Obra_Predeterminada='12677615' Or Obra_Predeterminada='12678141') and " & _
-        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<='" & Fecha2 & "'))"
+        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<='" & Fecha2 & "'))" & _
+        " Union " & _
+        "select IDOperario, Proyecto AS Obra_Predeterminada " & _
+        "from xFerrallas50R2..tbHistoricoPersonal " & _
+        "where (Proyecto = '12677838' OR Proyecto = '12677615' OR Proyecto = '12678141') and " & _
+        "((Fecha >= '" & Fecha1 & "' AND Fecha <= '" & Fecha2 & "'))"
+
         dt = aux.EjecutarSqlSelect(sql)
         Return dt
     End Function
@@ -833,9 +865,14 @@ Public Class CargaHorasJPSTAFF
         Dim dt As New DataTable
         '----------FORMA BUENA'-------------
         Dim sql As String
-        sql = "select * from xDrenajesPortugal50R2..tbMaestroOperarioSat " & _
+        sql = "select IDOperario, Obra_Predeterminada from xDrenajesPortugal50R2..tbMaestroOperarioSat " & _
         "where Obra_Predeterminada='11860026' and " & _
-        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<='" & Fecha2 & "'))"
+        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<='" & Fecha2 & "'))" & _
+        " Union " & _
+        "select IDOperario, Proyecto AS Obra_Predeterminada " & _
+        "from xDrenajesPortugal50R2..tbHistoricoPersonal " & _
+        "where (Proyecto = '11860026') and " & _
+        "((Fecha >= '" & Fecha1 & "' AND Fecha <= '" & Fecha2 & "'))"
 
         dt = aux.EjecutarSqlSelect(sql)
         Return dt
@@ -845,9 +882,17 @@ Public Class CargaHorasJPSTAFF
         Dim dt As New DataTable
         Dim sql As String
         '------COMO YO LO DE DEJARIA---------
-        sql = "select * from xTecozam50R2..tbMaestroOperarioSat " & _
+        sql = "select IDOperario, Obra_Predeterminada from xTecozam50R2..tbMaestroOperarioSat " & _
         "where (Obra_Predeterminada='16895681' Or Obra_Predeterminada='11984995') and " & _
-        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<='" & Fecha2 & "'))"
+        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<='" & Fecha2 & "'))" & _
+        " Union " & _
+        "select IDOperario, Proyecto AS Obra_Predeterminada " & _
+        "from xTecozam50R2..tbHistoricoPersonal " & _
+        "where (Proyecto = '16895681' OR Proyecto = '11984995') and " & _
+        "((Fecha >= '" & Fecha1 & "' AND Fecha <= '" & Fecha2 & "'))"
+
+
+        'sql = "select IDOperario, Obra_Predeterminada from xTecozam50R2..tbMaestroOperarioSat where idoperario='T3450'"
         dt = aux.EjecutarSqlSelect(sql)
         Return dt
     End Function
@@ -856,13 +901,28 @@ Public Class CargaHorasJPSTAFF
         Dim dt As New DataTable
         Dim sql As String
         '------COMO YO LO DE DEJARIA---------
-        sql = "select * from xSecozam50R2..tbMaestroOperarioSat " & _
+        sql = "select IDOperario, Proyecto from xSecozam50R2..tbMaestroOperarioSat " & _
         "where (Obra_Predeterminada='11854299' Or Obra_Predeterminada='11854231') and " & _
-        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<='" & Fecha2 & "'))"
+        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<='" & Fecha2 & "'))" & _
+        " Union " & _
+        "select IDOperario, Proyecto AS Obra_Predeterminada " & _
+        "from xSecozam50R2..tbHistoricoPersonal " & _
+        "where (Proyecto = '11854299' OR Proyecto = '1198118542314995') and " & _
+        "((Fecha >= '" & Fecha1 & "' AND Fecha <= '" & Fecha2 & "'))"
+
         dt = aux.EjecutarSqlSelect(sql)
         Return dt
     End Function
 
+    Public Function DevuelveUltimoCambioObra(ByVal IDOperario As String, ByVal bbdd As String) As String
+        Dim f As New Filter
+        Dim dt As New DataTable
+        f.Add("IDOperario", FilterOperator.Equal, IDOperario)
+
+        dt = New BE.DataEngine().Filter(bbdd & "..tbHistoricoPersonal", f, , "Fecha desc")
+
+        Return dt.Rows(0)("Proyecto")
+    End Function
     Public Sub setHorasOficinaTecozam(ByVal mes As String, ByVal año As String, ByVal Fecha1 As String, ByVal Fecha2 As String)
         '1. Obtengo la tabla de personas que estén en oficina
         Dim dtPersonasOfi As New DataTable
@@ -895,9 +955,14 @@ Public Class CargaHorasJPSTAFF
             'IDObra = "15330631"
             'IDObra destino = OFICINA
             IDObra = fila("Obra_Predeterminada")
+            'Si es distinto que oficina y almacen
+            If IDObra <> "11984995" Or IDObra <> "16895681" Then
+                IDObra = DevuelveUltimoCambioObra(IDOperario, "xTecozam50R2")
+            End If
+
             IDTrabajo = ObtieneIDTrabajo("xTecozam50R2", IDObra, "PT1")
 
-            dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos("xTecozam50R2", "xTecozam50R2", IDOperario, Fecha1, Fecha2)
+            dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos("xTecozam50R2", "xTecozam50R2", IDOperario, Fecha1, Fecha2, dtCalendario)
             dtDiasInsertar = ObtieneFechasInsertar("xTecozam50R2", IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
             Windows.Forms.Application.DoEvents()
@@ -970,10 +1035,14 @@ Public Class CargaHorasJPSTAFF
             IDCategoriaProfesionalSCCP = DevuelveIDCategoriaProfesionalSCCP("xFerrallas50R2", IDOperario)
             'IDObra = "12677615"
             IDObra = fila("Obra_Predeterminada")
+            'Si es distinto que  ferrallas, oficina y secozam
+            If IDObra <> "12677838" Or IDObra <> "12677615" Or IDObra <> "12678141" Then
+                IDObra = DevuelveUltimoCambioObra(IDOperario, "xFerrallas50R2")
+            End If
 
             IDTrabajo = ObtieneIDTrabajo("xFerrallas50R2", IDObra, "PT1")
             'Este es xTecozam50R2 porque coje el calendario de España
-            dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos("xTecozam50R2", "xFerrallas50R2", IDOperario, Fecha1, Fecha2)
+            dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos("xTecozam50R2", "xFerrallas50R2", IDOperario, Fecha1, Fecha2, dtCalendario)
             dtDiasInsertar = ObtieneFechasInsertar("xFerrallas50R2", IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
             Windows.Forms.Application.DoEvents()
@@ -1046,10 +1115,14 @@ Public Class CargaHorasJPSTAFF
             IDCategoriaProfesionalSCCP = DevuelveIDCategoriaProfesionalSCCP("xSecozam50R2", IDOperario)
             'IDObra = "11854231"
             IDObra = fila("Obra_Predeterminada")
+            'Si es distinto que oficina y secozam
+            If IDObra <> "11854299" Or IDObra <> "11854231" Then
+                IDObra = DevuelveUltimoCambioObra(IDOperario, "xSecozam50R2")
+            End If
 
             IDTrabajo = ObtieneIDTrabajo("xSecozam50R2", IDObra, "PT1")
             'Este es xTecozam50R2 porque coje el calendario de España
-            dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos("xTecozam50R2", "xSecozam50R2", IDOperario, Fecha1, Fecha2)
+            dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos("xTecozam50R2", "xSecozam50R2", IDOperario, Fecha1, Fecha2, dtCalendario)
             dtDiasInsertar = ObtieneFechasInsertar("xSecozam50R2", IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
             Windows.Forms.Application.DoEvents()
@@ -1122,9 +1195,13 @@ Public Class CargaHorasJPSTAFF
             IDCategoriaProfesionalSCCP = DevuelveIDCategoriaProfesionalSCCP("xDrenajesPortugal50R2", IDOperario)
             IDObra = "11860026"
 
+            If IDObra <> "11860026" Then
+                IDObra = DevuelveUltimoCambioObra(IDOperario, "xDrenajesPortugal50R2")
+            End If
+
             IDTrabajo = ObtieneIDTrabajo("xDrenajesPortugal50R2", IDObra, "PT1")
             'Este es xTecozam50R2 porque coje el calendario de España
-            dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos("xTecozam50R2", "xDrenajesPortugal50R2", IDOperario, Fecha1, Fecha2)
+            dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos("xTecozam50R2", "xDrenajesPortugal50R2", IDOperario, Fecha1, Fecha2, dtCalendario)
             dtDiasInsertar = ObtieneFechasInsertar("xDrenajesPortugal50R2", IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
             Windows.Forms.Application.DoEvents()
@@ -1187,8 +1264,8 @@ Public Class CargaHorasJPSTAFF
         MsgBox("JP Y STAFF: TECOZAM-DCK-UK " & vbCrLf _
                & "OFICINA: TECOZAM-FERRALLAS-SECOZAM ", MsgBoxStyle.OkOnly, "Ayuda")
 
-        Dim IDObra As String
-        IDObra = DevuelveIDObra("xTecozamUnitedKingdom4", "Tuk08")
+        'Dim IDObra As String
+        'IDObra = DevuelveIDObra("xTecozamUnitedKingdom4", "Tuk08")
     End Sub
 
     Private Sub bAñadirHorasPersona_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bAñadirHorasPersona.Click
@@ -1384,9 +1461,9 @@ Public Class CargaHorasJPSTAFF
                     'MessageBox.Show("hora: " & cuenta)
 
                     If Length(drHora(0)) > 0 Then
-                        idOperario = drHora(0)
+                        IDOperario = drHora(0)
                         Windows.Forms.Application.DoEvents()
-                        LProgreso.Text = "Importando : " & idOperario & " - " & fecha
+                        LProgreso.Text = "Importando : " & IDOperario & " - " & fecha
                         Windows.Forms.Application.DoEvents()
 
                         If Length(drHora(columna)) > 0 Then
@@ -1395,12 +1472,12 @@ Public Class CargaHorasJPSTAFF
                                 hora = drHora(columna)
                                 tipoHora = "HORAS"
 
-                                InsertarPorBaseDeDatos(idOperario, numero, fecha, trabajo, tipoHora, hora, sNombreUnicoGlobal, numero, idtrab, bbdd)
+                                InsertarPorBaseDeDatos(IDOperario, numero, fecha, trabajo, tipoHora, hora, sNombreUnicoGlobal, numero, idtrab, bbdd)
 
                             Else
                                 hora = 0
                                 tipoHora = drHora(columna)
-                                InsertarPorBaseDeDatos(idOperario, numero, fecha, trabajo, tipoHora, hora, sNombreUnicoGlobal, numero, idtrab, bbdd)
+                                InsertarPorBaseDeDatos(IDOperario, numero, fecha, trabajo, tipoHora, hora, sNombreUnicoGlobal, numero, idtrab, bbdd)
                             End If
                             'cuenta = cuenta + 1
                         Else
@@ -1628,4 +1705,650 @@ Public Class CargaHorasJPSTAFF
 
         Return dtObra.Rows(0)("IDObra")
     End Function
+
+    Private Sub bA3_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bA3.Click
+
+        Dim dtFinal As New DataTable
+        FormaTablaFinal(dtFinal)
+        Dim dtAuxiliar As New DataTable
+        Do
+            ' Aquí va el código que deseas ejecutar repetidamente
+            dtAuxiliar = CargaExcelA3()
+            If dtAuxiliar Is Nothing Then
+                ExpertisApp.GenerateMessage("Proceso cancelado correctamente.")
+                Exit Sub
+            End If
+            For Each row As DataRow In dtAuxiliar.Rows
+                dtFinal.ImportRow(row)
+            Next
+            ' Preguntar al usuario si desea continuar
+            Dim respuesta As DialogResult = MessageBox.Show("¿Deseas cargar algún Excel más?", "Continuar", MessageBoxButtons.YesNo)
+            ' Salir del bucle si el usuario responde "No"
+            If respuesta = DialogResult.No Then
+                Exit Do
+            End If
+        Loop
+        'VALORES IMPORTANTES
+        Dim mes As String
+        Dim Anio As String
+        Dim ultimoCaracter As String = lblRuta.Text.Substring(lblRuta.Text.Length - 1)
+
+        If ultimoCaracter = "x" Then
+            mes = lblRuta.Text.Substring(lblRuta.Text.Length - 9, 2)
+            Anio = lblRuta.Text.Substring(lblRuta.Text.Length - 7, 2)
+        Else
+            mes = lblRuta.Text.Substring(lblRuta.Text.Length - 8, 2)
+            Anio = lblRuta.Text.Substring(lblRuta.Text.Length - 6, 2)
+        End If
+
+        Anio = "20" & Anio
+        'GENERA EXCEL
+        GeneraExcel(mes, Anio, dtFinal)
+        MsgBox("El excel se ha guardado correctamente.")
+    End Sub
+    Public Function CargaExcelA3() As DataTable
+        Dim CD As New OpenFileDialog()
+        CD.Title = "Seleccionar archivos"
+        CD.Filter = "Archivos Excel(*.xls;*.xlsx)|*.xls;*xlsx|Todos los archivos(*.*)|*.*"
+        CD.ShowDialog()
+
+        If CD.FileName <> "" Then
+            lblRuta.Text = CD.FileName
+        End If
+
+        'La hoja siempre es 1
+        Dim hoja As String = "1"
+        Dim dt As New DataTable
+        Dim ruta As String = lblRuta.Text
+        Dim empresa As String = DevuelveValorEntreParentesis(ruta)
+        Dim rango As String = ""
+        Select Case empresa
+            Case "T. ES.", "FERR.", "SEC."
+                rango = "B10:Z10000"
+            Case "D. P."
+                rango = "A2:F500"
+            Case "T. UK."
+                rango = "A2:F500"
+            Case Else
+                MsgBox("El nombre identificado entre parentesis no se reconoce pero funciona. Coje las 3 primeras columnas.")
+                rango = "A2:C10000"
+        End Select
+
+        dt = ObtenerDatosExcel(ruta, hoja, rango)
+
+        Dim mes As String
+        Dim anio As String
+
+        'CHECK DE QUE EL FICHERO ACABA EN XLSX O XLS
+        Dim ultimoCaracter As String = ruta.Substring(ruta.Length - 1)
+
+        If ultimoCaracter = "x" Then
+            mes = ruta.Substring(ruta.Length - 9, 2)
+            anio = ruta.Substring(ruta.Length - 7, 2)
+        Else
+            mes = ruta.Substring(ruta.Length - 8, 2)
+            anio = ruta.Substring(ruta.Length - 6, 2)
+        End If
+        anio = "20" & anio
+
+        'FORMO LA TABLA FINAL
+        dt = FormarTablaPorEmpresa(dt, mes, anio, empresa)
+        Return dt
+    End Function
+
+    Public Sub FormaTablaFinal(ByRef dtFinal As DataTable)
+
+        dtFinal.Columns.Add("IDGET")
+        dtFinal.Columns.Add("IDOperario")
+        dtFinal.Columns.Add("DescOperario")
+        dtFinal.Columns.Add("CosteEmpresa", System.Type.GetType("System.Double"))
+        dtFinal.Columns.Add("Mes")
+        dtFinal.Columns.Add("Anio")
+        dtFinal.Columns.Add("Empresa")
+    End Sub
+
+    Public Function FormarTablaPorEmpresa(ByVal dt As DataTable, ByVal mes As String, ByVal anio As String, ByVal empresa As String) As DataTable
+
+        Dim newDataTable As DataTable = New DataTable
+        newDataTable.Columns.Add("IDGET")
+        newDataTable.Columns.Add("IDOperario")
+        newDataTable.Columns.Add("DescOperario")
+        newDataTable.Columns.Add("CosteEmpresa", System.Type.GetType("System.Double"))
+        newDataTable.Columns.Add("Mes")
+        newDataTable.Columns.Add("Anio")
+        newDataTable.Columns.Add("Empresa")
+
+        Dim bbdd As String = ""
+        If empresa = "T. ES." Then
+            bbdd = "xTecozam50R2"
+            newDataTable = FormaTablaEspaña(dt, newDataTable, bbdd, mes, anio, empresa)
+        ElseIf empresa = "FERR." Then
+            bbdd = "xFerrallas50R2"
+            newDataTable = FormaTablaEspaña(dt, newDataTable, bbdd, mes, anio, empresa)
+        ElseIf empresa = "SEC." Then
+            bbdd = "xSecozam50R2"
+            newDataTable = FormaTablaEspaña(dt, newDataTable, bbdd, mes, anio, empresa)
+        ElseIf empresa = "D. P." Then
+            bbdd = "xDrenajesPortugal50R2"
+            newDataTable = FormaTablaDCZ(dt, newDataTable, bbdd, mes, anio, empresa)
+        ElseIf empresa = "T. UK." Then
+            bbdd = "xTecozamUnitedKingdom4"
+            newDataTable = FormaTablaUK(dt, newDataTable, bbdd, mes, anio, empresa)
+        Else
+            newDataTable = FormaTablaTipo(dt, newDataTable, mes, anio)
+        End If
+
+        Return newDataTable
+    End Function
+
+    Public Function FormaTablaTipo(ByVal dt As DataTable, ByVal newDataTable As DataTable, ByVal mes As String, ByVal anio As String)
+        Dim IDOperario As String
+        Dim Diccionario As String
+        Dim descOperario As String
+        Dim bbdd As String
+        For Each row As DataRow In dt.Rows
+            If Len(row("F1").ToString) = 0 Then
+                'Return newDataTable
+                Exit For ' Salir del bucle si la celda está vacía
+            End If
+            Dim newRow As DataRow = newDataTable.NewRow()
+
+            If row("F3").ToString = "T. ES." Then
+                bbdd = "xTecozam50R2"
+                IDOperario = DevuelveIDOperario(bbdd, row("F1"))
+                descOperario = DevuelveDescOperario(bbdd, IDOperario)
+                newRow("IDOperario") = IDOperario
+                newRow("DescOperario") = descOperario
+                newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
+                
+            ElseIf row("F3").ToString = "FERR." Then
+                bbdd = "xFerrallas50R2"
+                IDOperario = DevuelveIDOperario(bbdd, row("F1"))
+                descOperario = DevuelveDescOperario(bbdd, IDOperario)
+                newRow("IDOperario") = IDOperario
+                newRow("DescOperario") = descOperario
+                newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
+
+            ElseIf row("F3").ToString = "SEC." Then
+                bbdd = "xSecozam50R2"
+                IDOperario = DevuelveIDOperario(bbdd, row("F1"))
+                descOperario = DevuelveDescOperario(bbdd, IDOperario)
+                newRow("IDOperario") = IDOperario
+                newRow("DescOperario") = descOperario
+                newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
+
+            ElseIf row("F3").ToString = "T. UK." Then
+                bbdd = "xTecozamUnitedKingdom4"
+                Diccionario = row("F1")
+                IDOperario = DevuelveIDOperarioDiccionario(bbdd, Diccionario)
+                descOperario = DevuelveDescOperario(bbdd, IDOperario)
+                newRow("IDOperario") = IDOperario
+                newRow("DescOperario") = descOperario
+                newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
+
+            ElseIf row("F3").ToString = "D. P." Then
+                bbdd = "xDrenajesPortugal50R2"
+                Diccionario = row("F1")
+                IDOperario = DevuelveIDOperarioDiccionario(bbdd, Diccionario)
+                descOperario = DevuelveDescOperario(bbdd, IDOperario)
+                newRow("IDOperario") = IDOperario
+                newRow("DescOperario") = descOperario
+                newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
+            End If
+
+            newRow("CosteEmpresa") = row("F2")
+            newRow("Mes") = mes
+            newRow("Anio") = anio
+            newRow("Empresa") = row("F3")
+            newDataTable.Rows.Add(newRow)
+        Next
+
+        'CHECK DE QUE EL EXCEL RESULTANTE TIENE EL MISMO COSTE EMPRESA TOTAL
+        Dim CosteE1 As Double = 0
+        Dim CosteEFinal As Double = 0
+
+        For Each dr As DataRow In dt.Rows
+            If Len(dr("F1").ToString) = 0 Then
+                'Return newDataTable
+                Exit For ' Salir del bucle si la celda está vacía
+            End If
+            CosteE1 = CosteE1 + dr("F2")
+        Next
+
+        For Each dr As DataRow In newDataTable.Rows
+            CosteEFinal = CosteEFinal + dr("CosteEmpresa")
+        Next
+
+        Dim result As DialogResult = MessageBox.Show("El coste del excel introducido es " & CosteE1 & "€. El del excel resultante es " & CosteEFinal & "€.", "¿Desea Continuar?", MessageBoxButtons.YesNo)
+        If result = DialogResult.No Then
+            Return Nothing
+            Exit Function
+        End If
+        Return newDataTable
+    End Function
+    Public Function FormaTablaDCZ(ByVal dt As DataTable, ByVal newDataTable As DataTable, ByVal bbdd As String, ByVal mes As String, ByVal anio As String, ByVal empresa As String)
+
+        Dim IDOperario As String = ""
+        Dim diccionario As String = ""
+        Dim descOperario As String = ""
+        Dim partes() As String
+        ' Copiar los datos de las columnas seleccionadas al nuevo DataTable
+        For Each row As DataRow In dt.Rows
+            'Verificar si la celda está vacía
+            If Len(row("F1").ToString) = 0 Or row("F1").ToString = "TOTAL" Then
+                'Return newDataTable
+                Exit For ' Salir del bucle si la celda está vacía
+            End If
+
+            Dim newRow As DataRow = newDataTable.NewRow()
+            partes = row("F1").Split("-"c)
+
+            diccionario = partes(0).Trim()
+            descOperario = partes(1).Trim()
+
+            IDOperario = DevuelveIDOperarioDiccionario(bbdd, diccionario)
+            newRow("IDOperario") = IDOperario
+            newRow("DescOperario") = descOperario
+            newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
+            newRow("CosteEmpresa") = row("F3") + row("F4")
+            newRow("Mes") = mes
+            newRow("Anio") = anio
+            newRow("Empresa") = empresa
+
+            newDataTable.Rows.Add(newRow)
+        Next
+
+        Dim dtOrdenada As New DataTable
+        newDataTable.DefaultView.Sort = "IDOperario asc"
+        dtOrdenada = newDataTable.DefaultView.ToTable
+
+        'CHECK DE QUE EL EXCEL RESULTANTE TIENE EL MISMO COSTE EMPRESA TOTAL
+        Dim CosteE1 As Double = 0
+        Dim CosteEFinal As Double = 0
+
+        For Each dr As DataRow In dt.Rows
+            If Len(dr("F1").ToString) = 0 Or dr("F1").ToString = "TOTAL" Then
+                'Return newDataTable
+                Exit For ' Salir del bucle si la celda está vacía
+            End If
+            CosteE1 = CosteE1 + dr("F3") + dr("F4")
+        Next
+
+        For Each dr As DataRow In dtOrdenada.Rows
+            CosteEFinal = CosteEFinal + dr("CosteEmpresa")
+        Next
+
+        Dim result As DialogResult = MessageBox.Show("El coste del excel introducido es " & CosteE1 & "€. El del excel resultante es " & CosteEFinal & "€.", "¿Desea Continuar?", MessageBoxButtons.YesNo)
+        If result = DialogResult.No Then
+            Return Nothing
+            Exit Function
+        End If
+        Return dtOrdenada
+    End Function
+
+
+    Public Function FormaTablaUK(ByVal dt As DataTable, ByVal newDataTable As DataTable, ByVal bbdd As String, ByVal mes As String, ByVal anio As String, ByVal empresa As String)
+
+        Dim IDOperario As String = ""
+        Dim diccionario As String = ""
+        Dim totaleuros As Double = 0
+        Dim totallibras As Double = 0
+
+        'TABLA DE CAMBIO DE MONEDA LIBRAS
+        Dim ruta As String
+        ruta = "\\stor01\dg\SCCP_Prueba\03. COSTES\TIPO DE CAMBIO MONEDA.xlsx"
+        Dim hoja As String = "TIPO DE CAMBIO"
+        Dim rango As String = "A1:K10000"
+        Dim dtCambioMoneda As New DataTable
+        dtCambioMoneda = ObtenerDatosExcel(ruta, hoja, rango)
+
+
+        ' Copiar los datos de las columnas seleccionadas al nuevo DataTable
+        For Each row As DataRow In dt.Rows
+            'Verificar si la celda está vacía
+            If Len(row("F1").ToString) = 0 Then
+                'Return newDataTable
+                Exit For ' Salir del bucle si la celda está vacía
+            End If
+
+            Dim newRow As DataRow = newDataTable.NewRow()
+
+            IDOperario = DevuelveIDOperarioDiccionario(bbdd, row("F1"))
+            newRow("IDOperario") = IDOperario
+            newRow("DescOperario") = row("F2")
+            newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
+            totallibras = row("F3") + row("F4") + row("F5") + row("F6")
+            totaleuros = CambioLibraAEuro(dtCambioMoneda, totallibras, mes, anio)
+            newRow("CosteEmpresa") = totaleuros
+            newRow("Mes") = mes
+            newRow("Anio") = anio
+            newRow("Empresa") = empresa
+
+            newDataTable.Rows.Add(newRow)
+        Next
+
+        Dim dtOrdenada As New DataTable
+        newDataTable.DefaultView.Sort = "IDOperario asc"
+        dtOrdenada = newDataTable.DefaultView.ToTable
+
+        'CHECK DE QUE EL EXCEL RESULTANTE TIENE EL MISMO COSTE EMPRESA TOTAL
+        Dim CosteE1 As Double = 0
+        Dim CosteEFinal As Double = 0
+
+        For Each dr As DataRow In dt.Rows
+            If Len(dr("F1").ToString) = 0 Then
+                'Return newDataTable
+                Exit For ' Salir del bucle si la celda está vacía
+            End If
+            CosteE1 = CosteE1 + dr("F3") + dr("F4") + dr("F5") + dr("F6")
+        Next
+
+        For Each dr As DataRow In dtOrdenada.Rows
+            CosteEFinal = CosteEFinal + dr("CosteEmpresa")
+        Next
+
+        Dim result As DialogResult = MessageBox.Show("El coste del excel introducido es " & CosteE1 & " libras =" & CambioLibraAEuro(dtCambioMoneda, CosteE1, mes, anio) & " €. El del excel resultante es " & CosteEFinal & "€.", "¿Desea Continuar?", MessageBoxButtons.YesNo)
+        If result = DialogResult.No Then
+            Return Nothing
+            Exit Function
+        End If
+        Return dtOrdenada
+    End Function
+
+    Public Function CambioLibraAEuro(ByVal dtCambioMoneda As DataTable, ByVal totallibras As Double, ByVal mes As String, ByVal anio As String) As Double
+
+        Dim fecha As String
+        Dim cambioMoneda As Double
+
+        For Each dr As DataRow In dtCambioMoneda.Rows
+            Try
+                fecha = dr("F1")
+                If Month(fecha) = mes And Year(fecha) = anio Then
+                    cambioMoneda = dr("F4")
+                End If
+            Catch ex As Exception
+            End Try
+        Next
+
+        Return (totallibras * cambioMoneda)
+    End Function
+
+
+    Public Function CambioCoronaAEuro(ByVal dtCambioMoneda As DataTable, ByVal totalcoronas As Double, ByVal mes As String, ByVal anio As String) As Double
+
+        Dim fecha As String
+        Dim cambioMoneda As Double
+
+        For Each dr As DataRow In dtCambioMoneda.Rows
+            Try
+                fecha = dr("F1")
+                If Month(fecha) = mes And Year(fecha) = anio Then
+                    cambioMoneda = dr("F8")
+                End If
+            Catch ex As Exception
+            End Try
+        Next
+
+        Return (totalcoronas * cambioMoneda)
+    End Function
+
+    Public Function FormaTablaEspaña(ByVal dt As DataTable, ByVal newDataTable As DataTable, ByVal bbdd As String, ByVal mes As String, ByVal anio As String, ByVal empresa As String)
+
+        Dim IDOperario As String = ""
+        ' Copiar los datos de las columnas seleccionadas al nuevo DataTable
+        For Each row As DataRow In dt.Rows
+            'Verificar si la celda está vacía
+            If Len(row("F1").ToString) = 0 Then
+                'Return newDataTable
+                Exit For ' Salir del bucle si la celda está vacía
+            End If
+
+            Dim newRow As DataRow = newDataTable.NewRow()
+            IDOperario = DevuelveIDOperario(bbdd, row("F3"))
+            newRow("IDOperario") = IDOperario
+            newRow("DescOperario") = row("F2")
+            newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
+            newRow("CosteEmpresa") = row("F8")
+            newRow("Mes") = mes
+            newRow("Anio") = anio
+            newRow("Empresa") = empresa
+
+            newDataTable.Rows.Add(newRow)
+        Next
+
+        Dim dtOrdenada As New DataTable
+        newDataTable.DefaultView.Sort = "IDOperario asc"
+        dtOrdenada = newDataTable.DefaultView.ToTable
+        'AQUI RECORRO PARA UNIFICAR SI HUBIERA FINIQUITO
+        dtOrdenada = CheckFiniquito(dtOrdenada)
+
+        'CHECK DE QUE EL EXCEL RESULTANTE TIENE EL MISMO COSTE EMPRESA TOTAL
+        Dim CosteE1 As Double = 0
+        Dim CosteEFinal As Double = 0
+
+        For Each dr As DataRow In dt.Rows
+            If Len(dr("F1").ToString) = 0 Then
+                'Return newDataTable
+                Exit For ' Salir del bucle si la celda está vacía
+            End If
+            CosteE1 = CosteE1 + dr("F8")
+        Next
+
+        For Each dr As DataRow In dtOrdenada.Rows
+            CosteEFinal = CosteEFinal + dr("CosteEmpresa")
+        Next
+
+        Dim result As DialogResult = MessageBox.Show("El coste del excel introducido es " & CosteE1 & "€. El del excel resultante es " & CosteEFinal & "€.", "¿Desea Continuar?", MessageBoxButtons.YesNo)
+        If result = DialogResult.No Then
+            Return Nothing
+            Exit Function
+        End If
+        Return dtOrdenada
+    End Function
+
+    Public Function DevuelveIDOperario(ByVal bbdd As String, ByVal DNI As String) As String
+        Dim f As New Filter
+        f.Add("DNI", FilterOperator.Equal, DNI)
+        Dim dt As DataTable
+        dt = New BE.DataEngine().Filter(bbdd & "..frmMntoOperario", f)
+
+        If dt.Rows.Count = 0 Then
+            MsgBox("No existe este DNI " & DNI & " en " & bbdd)
+            Exit Function
+        End If
+        Return dt.Rows(0)("IDOperario")
+    End Function
+
+    Public Function DevuelveDescOperario(ByVal bbdd As String, ByVal IDOperario As String) As String
+        Dim f As New Filter
+        f.Add("IDOperario", FilterOperator.Equal, IDOperario)
+        Dim dt As DataTable
+        dt = New BE.DataEngine().Filter(bbdd & "..frmMntoOperario", f)
+
+        If dt.Rows.Count = 0 Then
+            MsgBox("No existe este IDOperario " & IDOperario & " en " & bbdd)
+            Exit Function
+        End If
+        Return dt.Rows(0)("DescOperario")
+    End Function
+
+    Public Function DevuelveIDOperarioDiccionario(ByVal bbdd As String, ByVal Diccionario As String) As String
+        Dim f As New Filter
+        f.Add("Diccionario", FilterOperator.Equal, Diccionario)
+        Dim dt As DataTable
+        dt = New BE.DataEngine().Filter(bbdd & "..frmMntoOperario", f)
+
+        If dt.Rows.Count = 0 Then
+            MsgBox("No existe este Diccionario " & Diccionario & " en " & bbdd)
+            Exit Function
+        End If
+        Return dt.Rows(0)("IDOperario")
+    End Function
+
+
+    Public Function DevuelveIDGET(ByVal bbdd As String, ByVal IDOperario As String) As String
+        Dim f As New Filter
+        f.Add("IDOperario", FilterOperator.Equal, IDOperario)
+        Dim dt As DataTable
+        dt = New BE.DataEngine().Filter(bbdd & "..frmMntoOperario", f)
+
+        If Len(dt.Rows(0)("IDGET").ToString) = 0 Then
+            MsgBox("No existe este IDGET para el IDOperario" & IDOperario & " en " & bbdd)
+            Return ""
+            Exit Function
+        End If
+
+        Return dt.Rows(0)("IDGET")
+    End Function
+    Public Function CheckFiniquito(ByVal dtOrdenada As DataTable) As DataTable
+        'Recorro dtOrdenada si coinciden dos IDOperario sumo el costeempresa en una fila
+        Dim dtFinal As DataTable = dtOrdenada.Clone()
+        dtFinal.Clear()
+
+        Dim contador As Integer = 0
+        Dim acumulaFiniquito As Double = 0
+
+        For Each fila As DataRow In dtOrdenada.Rows
+            Try
+                If dtOrdenada.Rows(contador)("IDOperario").ToString <> dtOrdenada.Rows(contador + 1)("IDOperario").ToString Then
+                    dtOrdenada.Rows(contador)("CosteEmpresa") = dtOrdenada.Rows(contador)("CosteEmpresa") + acumulaFiniquito
+                    dtFinal.ImportRow(fila)
+                    acumulaFiniquito = 0
+                Else
+                    If dtOrdenada.Rows(contador)("IDOperario").ToString = dtOrdenada.Rows(contador + 1)("IDOperario").ToString Then
+                        acumulaFiniquito = dtOrdenada(contador)("CosteEmpresa")
+                    End If
+                End If
+            Catch ex As Exception
+                dtOrdenada.Rows(contador)("CosteEmpresa") = dtOrdenada.Rows(contador)("CosteEmpresa") + acumulaFiniquito
+                dtFinal.ImportRow(fila)
+            End Try
+            contador += 1
+        Next
+
+        Return dtFinal
+    End Function
+
+    Public Function DevuelveValorEntreParentesis(ByVal ruta As String)
+        Dim input As String = ruta
+
+        Dim startIndex As Integer = input.IndexOf("("c)
+        Dim endIndex As Integer = input.IndexOf(")"c)
+
+        If startIndex <> -1 AndAlso endIndex <> -1 AndAlso endIndex > startIndex + 1 Then
+            ' Obtener el texto entre paréntesis
+            Dim result As String = input.Substring(startIndex + 1, endIndex - startIndex - 1)
+            Return result
+        Else
+            MsgBox("No se encontró ningún texto entre paréntesis.")
+        End If
+    End Function
+
+    Public Sub GeneraExcel(ByVal mes As String, ByVal anio As String, ByVal dtFinal As DataTable)
+
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial
+
+        Dim ruta As New FileInfo("N:\10. AUXILIARES\00. EXPERTIS\02. A3\" & mes & " A3 " & mes & anio.Substring(anio.Length - 2) & ".xlsx")
+        Dim rutaCadena As String = ""
+        rutaCadena = ruta.FullName
+
+        'Verificar si el archivo existe.
+        If File.Exists(rutaCadena) Then
+            'Si el archivo existe, eliminarlo.
+            File.Delete(rutaCadena)
+        End If
+
+        Using package As New ExcelPackage(ruta)
+            ' Crear una hoja de cálculo y obtener una referencia a ella.
+            Dim worksheet = package.Workbook.Worksheets.Add(mes & " A3 " & anio)
+
+            ' Copiar los datos de la DataTable a la hoja de cálculo.
+            worksheet.Cells("A1").LoadFromDataTable(dtFinal, True)
+
+            Dim columnaE As ExcelRange = worksheet.Cells("D2:E" & worksheet.Dimension.End.Row)
+            columnaE.Style.Numberformat.Format = "#,##0.00€"
+
+            ' Aplicar formato negrita a la fila 1
+            Dim fila1 As ExcelRange = worksheet.Cells(1, 1, 1, worksheet.Dimension.End.Column)
+            fila1.Style.Font.Bold = True
+
+            ' Guardar el archivo de Excel.
+            package.Save()
+        End Using
+
+    End Sub
+
+    Private Sub bIDGET_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bIDGET.Click
+        Dim vPersonas As New DataTable
+        Dim f As New Filter
+        Dim bbdd As String
+        vPersonas = New BE.DataEngine().Filter("xTecozam50R2..vPersonasTFSD", f, , "FechaAlta asc")
+
+        For Each dr As DataRow In vPersonas.Rows
+            Dim valor As String = dr("IDOperario").ToString()
+            If valor(0) = "T"c Or (Char.IsDigit(valor(0))) Then
+                bbdd = "xTecozamUnitedKingdom4"
+            End If
+            ActualizaOperario(bbdd, valor)
+        Next
+    End Sub
+    Public Sub ActualizaOperario(ByVal bbdd As String, ByVal valor As String)
+        Dim sql As String
+        Dim IDGET As String
+        IDGET = GetIDGET()
+        sql = "UPDATE " & bbdd & "..tbMaestroOperario set IDGET= '" & IDGET & "' where IDOperario= '" & valor & "'"
+
+        aux.EjecutarSql(sql)
+
+        setIDGET()
+    End Sub
+
+    Public Function GetIDGET() As String
+        Dim f As New Filter
+        f.Add("IDContador", FilterOperator.Equal, "IDGET")
+        Dim dt As New DataTable
+        dt = New BE.DataEngine().Filter("xTecozam50R2..tbMaestroContador", f)
+
+        Dim texto As String
+        texto = dt.Rows(0)("Texto")
+
+        Dim numerico As String
+        numerico = dt.Rows(0)("Contador")
+
+        If Len(numerico) = 1 Then
+            texto = texto & "0000" & numerico
+        ElseIf Len(numerico) = 2 Then
+            texto = texto & "000" & numerico
+        ElseIf Len(numerico) = 3 Then
+            texto = texto & "00" & numerico
+        ElseIf Len(numerico) = 4 Then
+            texto = texto & "0" & numerico
+        Else
+            texto = texto
+        End If
+
+        Return texto
+
+    End Function
+
+    Public Sub setIDGET()
+        Dim f As New Filter
+        f.Add("IDContador", FilterOperator.Equal, "IDGET")
+        Dim dt As New DataTable
+        dt = New BE.DataEngine().Filter("xTecozam50R2..tbMaestroContador", f)
+
+        Dim texto As String
+        texto = dt.Rows(0)("Texto")
+
+        Dim numerico As Integer
+        numerico = dt.Rows(0)("Contador")
+
+        numerico = numerico + 1
+
+        Dim sql As String
+        sql = "UPDATE xTecozam50R2..tbMaestroContador set Contador= " & numerico & " Where IDContador='IDGET'"
+
+        aux.EjecutarSql(sql)
+
+    End Sub
 End Class
