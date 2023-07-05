@@ -118,7 +118,7 @@ Public Class frmHorasAPP
                         'Compruebo si hay horas de trabajo
                         If (Len(dr("idhora")) > 0 And dr("Nhoras") > 0) Then
                             sTipoHora = "HORAS"
-                            salida = clsHor.Insertar(dr("IdParte"), idOperario, idobra, dr("Fecha"), codTrabajo, sTipoHora, dr("Nhoras"), descParte, dr("IdObra"), ExpertisApp.UserName, Nobra, Nz(dr("IDTipoTurno"), 4))
+                            'salida = clsHor.Insertar(dr("IdParte"), idOperario, idobra, dr("Fecha"), codTrabajo, sTipoHora, dr("Nhoras"), descParte, dr("IdObra"), ExpertisApp.UserName, Nobra, Nz(dr("IDTipoTurno"), 4))
 
                             'David Velasco 22/05/23
                             'Cuando se habilite la opcion de insertar horas con categoria se descomenta esto.
@@ -129,7 +129,7 @@ Public Class frmHorasAPP
                             
                         Else
                             sTipoHora = dr("IdHora")
-                            salida = clsHor.Insertar(dr("IdParte"), idOperario, idobra, dr("Fecha"), codTrabajo, sTipoHora, dr("Nhoras"), descParte, dr("IdObra"), ExpertisApp.UserName, Nobra, Nz(dr("IDTipoTurno"), 4))
+                            'salida = clsHor.Insertar(dr("IdParte"), idOperario, idobra, dr("Fecha"), codTrabajo, sTipoHora, dr("Nhoras"), descParte, dr("IdObra"), ExpertisApp.UserName, Nobra, Nz(dr("IDTipoTurno"), 4))
 
                             'David Velasco 22/05/23
                             'Cuando se habilite la opcion de insertar horas con categoria se descomenta esto.
