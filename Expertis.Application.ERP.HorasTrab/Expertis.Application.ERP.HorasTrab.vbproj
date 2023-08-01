@@ -172,6 +172,12 @@
     <Compile Include="frmFechas.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmFiltroOficio.Designer.vb">
+      <DependentUpon>frmFiltroOficio.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmFiltroOficio.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmHorasAPP.Designer.vb">
       <DependentUpon>frmHorasAPP.vb</DependentUpon>
     </Compile>
@@ -245,6 +251,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmFechas.resx">
       <DependentUpon>frmFechas.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmFiltroOficio.resx">
+      <DependentUpon>frmFiltroOficio.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="frmHorasAPP.resx">

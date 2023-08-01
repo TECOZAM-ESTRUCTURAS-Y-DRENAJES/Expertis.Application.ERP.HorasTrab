@@ -54,3 +54,22 @@ C:\Users\lgonzalez\Desktop\EXPERTIS\DESARROLLO EXPERTIS\FR2Sergio\Application\Ex
 C:\Users\lgonzalez\Desktop\EXPERTIS\DESARROLLO EXPERTIS\FR2Sergio\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.CIMntoTrabObraMesUnionBasesDatos.resources
 C:\Users\lgonzalez\Desktop\EXPERTIS\DESARROLLO EXPERTIS\FR2Sergio\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmCreaHorasOperarioObraFecha.resources
 C:\Users\lgonzalez\Desktop\EXPERTIS\DESARROLLO EXPERTIS\FR2Sergio\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmBorraHoras.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.CIMntoBusqHorasAPP.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.CIMntoTrabObraMes.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmDatosInforme.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmFechas.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmFiltroOficio.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmHorasAPP.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmObraDias.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.MntoTipoTurno.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.Resources.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.CargaHorasJPSTAFF.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.CIMntoTrabObraMesUnionBasesDatos.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmBorraHoras.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmCreaHorasOperarioObraFecha.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.vbproj.GenerateResource.Cache
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.dll.licenses
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.dll
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.xml
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.pdb

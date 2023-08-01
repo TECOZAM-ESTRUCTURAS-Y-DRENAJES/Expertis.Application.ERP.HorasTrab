@@ -374,6 +374,22 @@ Public Class CIMntoTrabObraMes
             End If
             generarCuadranteIndividualOF(mes, anio, informe)
             e.Cancel = True
+            'David Velasco Herrero 11/7/23
+            'INFORME OPERARIO CATEGORIA PROFESIONAL
+        ElseIf e.Alias = "INFOO" Then
+            Dim codigo As String
+            Dim informe As String = e.Alias
+            Dim frm As New frmFiltroOficio
+            frm.ShowDialog()
+            codigo = frm.codigo
+
+            Dim dt As New DataTable
+            Dim filtro As New Filter
+            filtro.Add("CategoriaProfesional", FilterOperator.Equal, codigo)
+            dt = New BE.DataEngine().Filter("vOperarioOficio", filtro)
+            Dim rp As New Report(informe)
+            rp.DataSource = dt
+            ExpertisApp.OpenReport(rp)
 
         End If
     End Sub
@@ -458,7 +474,7 @@ Public Class CIMntoTrabObraMes
 
     '    End Try
 
-
+    
     'End Function
     Private Function generarCuadranteIndividual(ByVal mes As Integer, ByVal anio As Integer, ByVal informe As String)
         Dim rp As New Report(informe)
