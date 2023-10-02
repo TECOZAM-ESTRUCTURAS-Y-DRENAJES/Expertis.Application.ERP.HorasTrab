@@ -73,3 +73,4 @@ C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.H
 C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.dll
 C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.xml
 C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.pdb
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmInformeFecha.resources

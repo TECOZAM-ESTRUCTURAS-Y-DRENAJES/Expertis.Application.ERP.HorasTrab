@@ -46,12 +46,16 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame6 = New Solmicro.Expertis.Engine.UI.Frame
         Me.bA3 = New Solmicro.Expertis.Engine.UI.Button
         Me.bIDGET = New Solmicro.Expertis.Engine.UI.Button
+        Me.Frame7 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bExportarHoras = New Solmicro.Expertis.Engine.UI.Button
+        Me.bDobleCotizacion = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame1.SuspendLayout()
         Me.Frame2.SuspendLayout()
         Me.Frame3.SuspendLayout()
         Me.Frame4.SuspendLayout()
         Me.Frame5.SuspendLayout()
         Me.Frame6.SuspendLayout()
+        Me.Frame7.SuspendLayout()
         Me.SuspendLayout()
         '
         'bBorrarExcel
@@ -180,7 +184,7 @@ Partial Class CargaHorasJPSTAFF
         'Frame3
         '
         Me.Frame3.Controls.Add(Me.bAñadirHorasPersona)
-        Me.Frame3.Location = New System.Drawing.Point(581, 221)
+        Me.Frame3.Location = New System.Drawing.Point(823, 221)
         Me.Frame3.Name = "Frame3"
         Me.Frame3.Size = New System.Drawing.Size(189, 118)
         Me.Frame3.TabIndex = 23
@@ -212,7 +216,7 @@ Partial Class CargaHorasJPSTAFF
         '
         Me.Frame5.Controls.Add(Me.bCreaHoras)
         Me.Frame5.Controls.Add(Me.Button1)
-        Me.Frame5.Location = New System.Drawing.Point(489, 357)
+        Me.Frame5.Location = New System.Drawing.Point(508, 356)
         Me.Frame5.Name = "Frame5"
         Me.Frame5.Size = New System.Drawing.Size(281, 130)
         Me.Frame5.TabIndex = 26
@@ -244,7 +248,7 @@ Partial Class CargaHorasJPSTAFF
         'Frame6
         '
         Me.Frame6.Controls.Add(Me.bA3)
-        Me.Frame6.Location = New System.Drawing.Point(793, 221)
+        Me.Frame6.Location = New System.Drawing.Point(600, 221)
         Me.Frame6.Name = "Frame6"
         Me.Frame6.Size = New System.Drawing.Size(189, 118)
         Me.Frame6.TabIndex = 27
@@ -270,11 +274,42 @@ Partial Class CargaHorasJPSTAFF
         Me.bIDGET.Text = "Actualiza IDGET"
         Me.bIDGET.Visible = False
         '
+        'Frame7
+        '
+        Me.Frame7.Controls.Add(Me.bExportarHoras)
+        Me.Frame7.Location = New System.Drawing.Point(823, 356)
+        Me.Frame7.Name = "Frame7"
+        Me.Frame7.Size = New System.Drawing.Size(189, 130)
+        Me.Frame7.TabIndex = 29
+        Me.Frame7.TabStop = False
+        Me.Frame7.Text = "EXPORTACION"
+        '
+        'bExportarHoras
+        '
+        Me.bExportarHoras.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bExportarHoras.Icon = CType(resources.GetObject("bExportarHoras.Icon"), System.Drawing.Icon)
+        Me.bExportarHoras.Location = New System.Drawing.Point(22, 43)
+        Me.bExportarHoras.Name = "bExportarHoras"
+        Me.bExportarHoras.Size = New System.Drawing.Size(144, 38)
+        Me.bExportarHoras.TabIndex = 19
+        Me.bExportarHoras.Text = "Exportar todas las horas"
+        '
+        'bDobleCotizacion
+        '
+        Me.bDobleCotizacion.Icon = CType(resources.GetObject("bDobleCotizacion.Icon"), System.Drawing.Icon)
+        Me.bDobleCotizacion.Location = New System.Drawing.Point(845, 87)
+        Me.bDobleCotizacion.Name = "bDobleCotizacion"
+        Me.bDobleCotizacion.Size = New System.Drawing.Size(144, 33)
+        Me.bDobleCotizacion.TabIndex = 30
+        Me.bDobleCotizacion.Text = "Listado personas con doble cotizacion"
+        '
         'CargaHorasJPSTAFF
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(1073, 542)
+        Me.Controls.Add(Me.bDobleCotizacion)
+        Me.Controls.Add(Me.Frame7)
         Me.Controls.Add(Me.bIDGET)
         Me.Controls.Add(Me.Frame6)
         Me.Controls.Add(Me.Frame5)
@@ -297,6 +332,7 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame4.ResumeLayout(False)
         Me.Frame5.ResumeLayout(False)
         Me.Frame6.ResumeLayout(False)
+        Me.Frame7.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -324,4 +360,7 @@ Partial Class CargaHorasJPSTAFF
     Friend WithEvents Frame6 As Solmicro.Expertis.Engine.UI.Frame
     Friend WithEvents bA3 As Solmicro.Expertis.Engine.UI.Button
     Friend WithEvents bIDGET As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents Frame7 As Solmicro.Expertis.Engine.UI.Frame
+    Friend WithEvents bExportarHoras As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents bDobleCotizacion As Solmicro.Expertis.Engine.UI.Button
 End Class

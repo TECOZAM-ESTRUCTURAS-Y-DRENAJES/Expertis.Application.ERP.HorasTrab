@@ -565,7 +565,7 @@ Public Class CargaHorasJPSTAFF
         f.Add("IDOperario", FilterOperator.Equal, IDOperario)
         dt = New BE.DataEngine().Filter(basededatos & "..tbMaestroOperario", f)
         If dt.Rows.Count > 0 Then
-            Return dt(0)("IDOficio")
+            Return Nz(dt(0)("IDOficio"), "")
         Else
             Return ""
         End If
@@ -1262,7 +1262,8 @@ Public Class CargaHorasJPSTAFF
 
     Private Sub bNota_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bNota.Click
         MsgBox("JP Y STAFF: TECOZAM-DCK-UK " & vbCrLf _
-               & "OFICINA: TECOZAM-FERRALLAS-SECOZAM ", MsgBoxStyle.OkOnly, "Ayuda")
+               & "OFICINA: TECOZAM-FERRALLAS-SECOZAM " & vbCrLf _
+               & "DOBLE COTIZ: TECO-FERR-SECO-DCZ-UK-NO", MsgBoxStyle.OkOnly, "Ayuda")
 
         'Dim IDObra As String
         'IDObra = DevuelveIDObra("xTecozamUnitedKingdom4", "Tuk08")
@@ -1280,7 +1281,7 @@ Public Class CargaHorasJPSTAFF
     End Sub
 
     Private Sub Button1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button1.Click
-        CD.Filter = "Excel (*.xls)|*.xls"
+        CD.Filter = "Archivos Excel(*.xls;*.xlsx)|*.xls;*xlsx|Todos los archivos(*.*)|*.*"
 
         'CD.ShowOpen()
         CD.ShowDialog()
@@ -1596,8 +1597,8 @@ Public Class CargaHorasJPSTAFF
             'Si tiene datos es que es festivo
             If rsCalendarioCentro.Rows.Count <> 0 Then
                 iVeces = 1
-                N_Horas = N_Horas
-                Coste_Hora = rsOperario.Rows(0)("c_h_e")
+                N_Horas = Nz(N_Horas, 0)
+                Coste_Hora = Nz(rsOperario.Rows(0)("c_h_e"), 0)
                 Tipo_Hora = "HE"
             Else
                 'Si no es festivo
@@ -1605,13 +1606,13 @@ Public Class CargaHorasJPSTAFF
                     'Todas son horas normales
                     iVeces = 1
                     N_Horas = N_Horas
-                    Coste_Hora = rsOperario.Rows(0)("c_h_n")
+                    Coste_Hora = Nz(rsOperario.Rows(0)("c_h_n"), 0)
                     Tipo_Hora = "HO"
                 Else
                     'Hay horas normales y horas extras, primero pongo las horas normales
                     iVeces = 2
-                    Coste_Hora = rsOperario.Rows(0)("c_h_n")
-                    N_Horas = rsOperario.Rows(0)("Jornada_Laboral")
+                    Coste_Hora = Nz(rsOperario.Rows(0)("c_h_n"))
+                    N_Horas = Nz(rsOperario.Rows(0)("Jornada_Laboral"), 0)
                     Tipo_Hora = "HO"
                 End If
             End If
@@ -1636,10 +1637,11 @@ Public Class CargaHorasJPSTAFF
                 Dim IDCategoriaProfesionalSCCP As String = ""
                 Dim IDOficio As String = ""
 
-                IDCategoriaProfesionalSCCP = DevuelveIDCategoriaProfesionalSCCP(Operario)
-                IDOficio = DevuelveIDOficio(Operario)
+                IDCategoriaProfesionalSCCP = DevuelveIDCategoriaProfesionalSCCP(bbdd, Operario)
+                IDOficio = DevuelveIDOficio(bbdd, Operario)
 
-                txtSQL = "Insert into " & bbdd & " ..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
+                If IDCategoriaProfesionalSCCP = 2 Or IDCategoriaProfesionalSCCP = 3 Then
+                    txtSQL = "Insert into " & bbdd & " ..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
                          "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
                          "ImpRealModA, HorasFactMod, ImpFactModA, DescParte, Facturable, FechaCreacionAudi, FechaModificacionAudi, Usuarioaudi, IdTipoTurno, IDCategoriaProfesionalSCCP, IDOficio) " & _
                          "Values(" & IdAutonumerico & ", " & IdTrabajo & ", " & IdObra & ", '" & _
@@ -1650,13 +1652,25 @@ Public Class CargaHorasJPSTAFF
                          ", " & Replace(N_Horas, ",", ".") & ", " & Replace(Round(CDbl(Coste_Hora) * CDbl(N_Horas), 2), ",", ".") & _
                          ", '" & sNombreUnico & "', " & HorasFacturables & ", '" & dia & "', '" & dia & "', '" & ExpertisApp.UserName & "', 4," & Nz(IDCategoriaProfesionalSCCP, "") & ",'" & Nz(IDOficio, "") & "')"
 
+                Else
+                    txtSQL = "Insert into " & bbdd & "..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
+                        "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
+                         "ImpRealModA, HorasFactMod, ImpFactModA, DescParte, Facturable, FechaCreacionAudi, FechaModificacionAudi, Usuarioaudi, IdTipoTurno, HorasAdministrativas, IDCategoriaProfesionalSCCP, IDOficio) " & _
+                         "Values(" & IdAutonumerico & ", " & IdTrabajo & ", " & IdObra & ", '" & _
+                         CodTrabajo & "', '" & DescTrabajo & "', '" & IdTipoTrabajo & "', '" & _
+                         IdSubTipoTrabajo & "', '" & Operario & "', 'PREDET', '" & _
+                         Tipo_Hora & "', '" & Fecha & "', 0 , " & Replace(Coste_Hora, ",", ".") & ", " & Replace(Round(CDbl(Coste_Hora) * CDbl(N_Horas), 2), ",", ".") & _
+                         ", 0 , " & Replace(Round(CDbl(Coste_Hora) * CDbl(N_Horas), 2), ",", ".") & _
+                         ", '" & sNombreUnico & "', " & HorasFacturables & ", '" & dia & "', '" & dia & "', '" & ExpertisApp.UserName & "', 4," & Replace(N_Horas, ",", ".") & "," & IDCategoriaProfesionalSCCP & ",'" & IDOficio & "')"
+                End If
+                
                 'Inserto
                 'Conexion.Execute(txtSQL)
                 auto.Ejecutar(txtSQL)
 
                 'Cambio valores, pongo las horas extras
-                Coste_Hora = rsOperario.Rows(0)("c_h_x")
-                N_Horas = CDbl(HorasOrigen) - CDbl(rsOperario.Rows(0)("Jornada_Laboral"))
+                Coste_Hora = Nz(rsOperario.Rows(0)("c_h_x"), 0)
+                N_Horas = Nz(CDbl(HorasOrigen) - CDbl(rsOperario.Rows(0)("Jornada_Laboral")), 0)
                 Tipo_Hora = "HX"
             Next
             'Libero memoria
@@ -1680,6 +1694,7 @@ Public Class CargaHorasJPSTAFF
             Return 0
         End If
     End Function
+   
 
     Public Function DevuelveIDOficio(ByVal IDOperario As String) As String
         Dim dt As New DataTable
@@ -1744,7 +1759,7 @@ Public Class CargaHorasJPSTAFF
         Anio = "20" & Anio
         'GENERA EXCEL
         GeneraExcel(mes, Anio, dtFinal)
-        MsgBox("El excel se ha guardado correctamente.")
+        MsgBox("Fichero generado correctamente en N:\10. AUXILIARES\00. EXPERTIS\02. A3.")
     End Sub
     Public Function CargaExcelA3() As DataTable
         Dim CD As New OpenFileDialog()
@@ -2047,14 +2062,30 @@ Public Class CargaHorasJPSTAFF
             CosteEFinal = CosteEFinal + dr("CosteEmpresa")
         Next
 
-        Dim result As DialogResult = MessageBox.Show("El coste del excel introducido es " & CosteE1 & " libras =" & CambioLibraAEuro(dtCambioMoneda, CosteE1, mes, anio) & " €. El del excel resultante es " & CosteEFinal & "€.", "¿Desea Continuar?", MessageBoxButtons.YesNo)
+        Dim result As DialogResult = MessageBox.Show("El coste del excel introducido es " & CosteE1 & _
+        " libras =" & CambioLibraAEuro(dtCambioMoneda, CosteE1, mes, anio) & " €. El del excel resultante es " & CosteEFinal & _
+        "€." & vbCrLf & "El cambio usado es: " & DevuelveCambioMoneda(dtCambioMoneda, mes, anio), "¿Desea Continuar?", MessageBoxButtons.YesNo)
         If result = DialogResult.No Then
             Return Nothing
             Exit Function
         End If
         Return dtOrdenada
     End Function
+    Public Function DevuelveCambioMoneda(ByVal dtCambioMoneda As DataTable, ByVal mes As String, ByVal anio As String) As Double
+        Dim fecha As String
+        Dim cambioMoneda As Double
 
+        For Each dr As DataRow In dtCambioMoneda.Rows
+            Try
+                fecha = dr("F1")
+                If Month(fecha) = mes And Year(fecha) = anio Then
+                    cambioMoneda = dr("F4")
+                    Return cambioMoneda
+                End If
+            Catch ex As Exception
+            End Try
+        Next
+    End Function
     Public Function CambioLibraAEuro(ByVal dtCambioMoneda As DataTable, ByVal totallibras As Double, ByVal mes As String, ByVal anio As String) As Double
 
         Dim fecha As String
@@ -2248,7 +2279,30 @@ Public Class CargaHorasJPSTAFF
 
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial
 
+        Dim dtFinalOrdenado As New DataTable()
+        dtFinalOrdenado.Columns.Add("Empresa", GetType(String))
+        dtFinalOrdenado.Columns.Add("IDGET", GetType(String))
+        dtFinalOrdenado.Columns.Add("IDOperario", GetType(String))
+        dtFinalOrdenado.Columns.Add("DescOperario", GetType(String))
+        dtFinalOrdenado.Columns.Add("Mes", GetType(String))
+        dtFinalOrdenado.Columns.Add("Anio", GetType(String))
+        dtFinalOrdenado.Columns.Add("CosteEmpresa", GetType(Decimal))
+
+        ' Copiar los datos del DataTable original al DataTable ordenado
+        For Each dr As DataRow In dtFinal.Rows
+            Dim newRow As DataRow = dtFinalOrdenado.NewRow()
+            newRow("Empresa") = dr("Empresa")
+            newRow("IDGET") = dr("IDGET")
+            newRow("IDOperario") = dr("IDOperario")
+            newRow("DescOperario") = dr("DescOperario")
+            newRow("Mes") = dr("Mes")
+            newRow("Anio") = dr("Anio")
+            newRow("CosteEmpresa") = dr("CosteEmpresa")
+            dtFinalOrdenado.Rows.Add(newRow)
+        Next
+
         Dim ruta As New FileInfo("N:\10. AUXILIARES\00. EXPERTIS\02. A3\" & mes & " A3 " & mes & anio.Substring(anio.Length - 2) & ".xlsx")
+        'Dim ruta As New FileInfo("N:\01. A3\" & mes & " A3 " & mes & anio.Substring(anio.Length - 2) & ".xlsx")
         Dim rutaCadena As String = ""
         rutaCadena = ruta.FullName
 
@@ -2263,9 +2317,9 @@ Public Class CargaHorasJPSTAFF
             Dim worksheet = package.Workbook.Worksheets.Add(mes & " A3 " & anio)
 
             ' Copiar los datos de la DataTable a la hoja de cálculo.
-            worksheet.Cells("A1").LoadFromDataTable(dtFinal, True)
+            worksheet.Cells("A1").LoadFromDataTable(dtFinalOrdenado, True)
 
-            Dim columnaE As ExcelRange = worksheet.Cells("D2:E" & worksheet.Dimension.End.Row)
+            Dim columnaE As ExcelRange = worksheet.Cells("G2:G" & worksheet.Dimension.End.Row)
             columnaE.Style.Numberformat.Format = "#,##0.00€"
 
             ' Aplicar formato negrita a la fila 1
@@ -2351,4 +2405,104 @@ Public Class CargaHorasJPSTAFF
         aux.EjecutarSql(sql)
 
     End Sub
+
+    Private Sub bExportarHoras_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bExportarHoras.Click
+        Dim frm As New frmInformeFecha
+        frm.ShowDialog()
+        Dim Fecha1 As String : Dim Fecha2 As String : Dim dt As New DataTable
+        Fecha1 = frm.fecha1 : Fecha2 = frm.fecha2 : dt = ObtenerTabla(Fecha1, Fecha2)
+
+        Dim mes As String : mes = Month(Fecha1)
+        If Length(mes) = 1 Then
+            mes = "0" & mes
+        End If
+
+        Dim anio As String
+        anio = Year(Fecha1)
+        GeneraExcelHoras(mes, anio, dt)
+        MsgBox("Fichero generado correctamente en N:\10. AUXILIARES\00. EXPERTIS\01. HORAS.")
+    End Sub
+    Public Function ObtenerTabla(ByVal Fecha1 As String, ByVal Fecha2 As String) As DataTable
+        Dim dt As New DataTable
+        Dim f As New Filter
+        f.Add("FechaInicio", FilterOperator.GreaterThanOrEqual, Fecha1)
+        f.Add("FechaInicio", FilterOperator.LessThanOrEqual, Fecha2)
+
+        dt = New BE.DataEngine().Filter("xTecozam50R2..vUnionSistLabListadoTrabajadoresObraMes", f, "Empresa, IDGET, IDOperario, DescOperario, IDOficio," _
+        & "IDCategoriaProfesionalSCCP, NObra, FechaInicio, MesNatural, AñoNatural, Horas, IDHora, HorasAdministrativas, Turno", "FechaInicio")
+        Return dt
+    End Function
+    Public Sub GeneraExcelHoras(ByVal mes As String, ByVal anio As String, ByVal dtFinal As DataTable)
+
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial
+
+        'Dim ruta As New FileInfo("N:\10. AUXILIARES\00. EXPERTIS\02. A3\" & mes & " A3 " & mes & anio.Substring(anio.Length - 2) & ".xlsx")
+        Dim ruta As New FileInfo("N:\10. AUXILIARES\00. EXPERTIS\01. HORAS\" & mes & " HORAS " & mes & anio.Substring(anio.Length - 2) & ".xlsx")
+        Dim rutaCadena As String = ""
+        rutaCadena = ruta.FullName
+
+        'Verificar si el archivo existe.
+        If File.Exists(rutaCadena) Then
+            'Si el archivo existe, eliminarlo.
+            File.Delete(rutaCadena)
+        End If
+
+        Using package As New ExcelPackage(ruta)
+            ' Crear una hoja de cálculo y obtener una referencia a ella.
+            Dim worksheet = package.Workbook.Worksheets.Add(mes & " HORAS " & anio)
+
+            ' Copiar los datos de la DataTable a la hoja de cálculo.
+            worksheet.Cells("A1").LoadFromDataTable(dtFinal, True)
+
+            ' Aplicar formato negrita a la fila 1
+            Dim fila1 As ExcelRange = worksheet.Cells(1, 1, 1, worksheet.Dimension.End.Column)
+            fila1.Style.Font.Bold = True
+
+            Dim columnaG As ExcelRange = worksheet.Cells("H2:H" & worksheet.Dimension.End.Row)
+            columnaG.Style.Numberformat.Format = "dd/mm/yyyy"
+            ' Guardar el archivo de Excel.
+            package.Save()
+        End Using
+
+    End Sub
+
+    Private Sub bDobleCotizacion_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bDobleCotizacion.Click
+        Dim dt As New DataTable
+        Dim filter As New Filter
+        dt = New BE.DataEngine().Filter("xTecozam50R2..vunionOperariodoblecotizacion", filter, , "IDGET")
+        GeneraExcelDobleCoti(dt)
+        MsgBox("Fichero generado correctamente en N:\10. AUXILIARES\00. EXPERTIS\03. DOBLE COTIZACION")
+    End Sub
+    Public Sub GeneraExcelDobleCoti(ByVal dtFinal As DataTable)
+
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial
+
+        'Dim ruta As New FileInfo("N:\10. AUXILIARES\00. EXPERTIS\02. A3\" & mes & " A3 " & mes & anio.Substring(anio.Length - 2) & ".xlsx")
+        Dim ruta As New FileInfo("N:\10. AUXILIARES\00. EXPERTIS\03. DOBLE COTIZACION\DOBLE COTIZACION.xlsx")
+        Dim rutaCadena As String = ""
+        rutaCadena = ruta.FullName
+
+        'Verificar si el archivo existe.
+        If File.Exists(rutaCadena) Then
+            'Si el archivo existe, eliminarlo.
+            File.Delete(rutaCadena)
+        End If
+
+        Using package As New ExcelPackage(ruta)
+            ' Crear una hoja de cálculo y obtener una referencia a ella.
+            Dim worksheet = package.Workbook.Worksheets.Add(" DOBLE COTIZACION ")
+
+            ' Copiar los datos de la DataTable a la hoja de cálculo.
+            worksheet.Cells("A1").LoadFromDataTable(dtFinal, True)
+
+            ' Aplicar formato negrita a la fila 1
+            Dim fila1 As ExcelRange = worksheet.Cells(1, 1, 1, worksheet.Dimension.End.Column)
+            fila1.Style.Font.Bold = True
+
+            ' Guardar el archivo de Excel.
+            package.Save()
+        End Using
+
+    End Sub
+
 End Class
