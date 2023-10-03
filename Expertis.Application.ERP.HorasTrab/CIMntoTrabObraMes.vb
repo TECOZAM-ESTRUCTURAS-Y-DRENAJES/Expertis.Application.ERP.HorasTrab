@@ -360,6 +360,25 @@ Public Class CIMntoTrabObraMes
             End If
             generarCuadranteIndividual(mes, anio, informe)
             e.Cancel = True
+        ElseIf e.Alias = "REGJESPERSONAL" Then
+
+            Dim informe As String = e.Alias
+            Dim frm As New frmDatosInformePersonal
+            Dim IDOperario As String
+
+            frm.ShowDialog()
+            mes = frm.mes
+            anio = frm.anio
+            IDOperario = frm.IDOperario
+
+            'Obra = frm.nobra
+            If frm.blEstado = True Then
+                MessageBox.Show("Proceso Cancelado", "Información", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+                e.Cancel = True
+                Exit Sub
+            End If
+            generarCuadranteIndividualPersonal(mes, anio, informe, IDOperario)
+            e.Cancel = True
         ElseIf e.Alias = "REGHOROF" Then
             Dim informe As String = e.Alias
             Dim frm As New frmDatosInforme
@@ -610,6 +629,57 @@ Public Class CIMntoTrabObraMes
 
         'End Try
 
+
+    End Function
+    Private Function generarCuadranteIndividualPersonal(ByVal mes As Integer, ByVal anio As Integer, ByVal informe As String, ByVal IDOperario As String)
+        Dim rp As New Report(informe)
+
+        Dim mesTiempo As String
+        Dim mesT As String
+        If (mes.ToString).Length = 1 Then
+            mesTiempo = "0" & mes.ToString
+            mesT = anio & "-" & mesTiempo
+        Else
+            mesTiempo = mes.ToString
+            mesT = anio & "-" & mesTiempo
+        End If
+
+        Dim filtro As New Filter
+        filtro.Add("Mes", FilterOperator.Equal, mes)
+        filtro.Add("Anio", FilterOperator.Equal, anio)
+
+        Dim dtInforme = New BE.DataEngine().Filter("vMaestroFechas", filtro)
+
+        'MsgBox("el informe tiene los siguientes registros " & dtInforme.rows.count)
+        Dim filtroPers As New Filter
+        filtroPers.Add("IDOperario", FilterOperator.Equal, IDOperario)
+        Dim dtPersonal As DataTable = New BE.DataEngine().Filter("vMaestroOperarioCompleta", filtroPers)
+
+
+        rp.DataSource = dtInforme
+        rp.Formulas("IDOperario").Text = dtPersonal.Rows(0)("IDOperario")
+        rp.Formulas("DescOperario").Text = dtPersonal.Rows(0)("DescOperario")
+        rp.Formulas("DNI").Text = dtPersonal.Rows(0)("DNI")
+        rp.Formulas("NAF").Text = dtPersonal.Rows(0)("N_Social")
+
+        rp.Formulas("anio").Text = anio
+        rp.Formulas("mes").Text = mesTiempo
+        If (mes.ToString).Length = 1 Then
+            rp.Formulas("Fecha Liquidacion").Text = "01/0" & mesTiempo + 1 & "/" & anio
+        Else
+            If mesTiempo = "12" Then
+                rp.Formulas("Fecha Liquidacion").Text = "01/01/" & anio + 1
+            Else
+                rp.Formulas("Fecha Liquidacion").Text = "01/" & mes + 1 & "/" & anio
+            End If
+        End If
+
+        Try
+
+            ExpertisApp.OpenReport(rp)
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
 
     End Function
 
