@@ -12,8 +12,6 @@
     End Sub
 
     Private Sub Button2_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button2.Click
-        fecha1 = FechaDesde.Value
-        fecha2 = FechaHasta.Value
         blEstado = False
         Me.Close()
     End Sub

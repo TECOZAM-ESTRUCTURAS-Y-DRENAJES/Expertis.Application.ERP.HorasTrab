@@ -38,9 +38,9 @@ Partial Class frmInformeFecha
         Me.Frame1.Controls.Add(Me.Label1)
         Me.Frame1.Controls.Add(Me.FechaDesde)
         Me.Frame1.Controls.Add(Me.Label2)
-        Me.Frame1.Location = New System.Drawing.Point(25, 22)
+        Me.Frame1.Location = New System.Drawing.Point(29, 22)
         Me.Frame1.Name = "Frame1"
-        Me.Frame1.Size = New System.Drawing.Size(200, 100)
+        Me.Frame1.Size = New System.Drawing.Size(233, 100)
         Me.Frame1.TabIndex = 9
         Me.Frame1.TabStop = False
         Me.Frame1.Text = "Filtros Fecha"
@@ -48,14 +48,14 @@ Partial Class frmInformeFecha
         'FechaHasta
         '
         Me.FechaHasta.DisabledBackColor = System.Drawing.Color.White
-        Me.FechaHasta.Location = New System.Drawing.Point(83, 61)
+        Me.FechaHasta.Location = New System.Drawing.Point(97, 61)
         Me.FechaHasta.Name = "FechaHasta"
-        Me.FechaHasta.Size = New System.Drawing.Size(105, 21)
-        Me.FechaHasta.TabIndex = 3
+        Me.FechaHasta.Size = New System.Drawing.Size(122, 21)
+        Me.FechaHasta.TabIndex = 2
         '
         'Label1
         '
-        Me.Label1.Location = New System.Drawing.Point(17, 28)
+        Me.Label1.Location = New System.Drawing.Point(20, 28)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(43, 13)
         Me.Label1.TabIndex = 0
@@ -64,14 +64,14 @@ Partial Class frmInformeFecha
         'FechaDesde
         '
         Me.FechaDesde.DisabledBackColor = System.Drawing.Color.White
-        Me.FechaDesde.Location = New System.Drawing.Point(83, 23)
+        Me.FechaDesde.Location = New System.Drawing.Point(97, 23)
         Me.FechaDesde.Name = "FechaDesde"
-        Me.FechaDesde.Size = New System.Drawing.Size(105, 21)
-        Me.FechaDesde.TabIndex = 2
+        Me.FechaDesde.Size = New System.Drawing.Size(122, 21)
+        Me.FechaDesde.TabIndex = 1
         '
         'Label2
         '
-        Me.Label2.Location = New System.Drawing.Point(17, 61)
+        Me.Label2.Location = New System.Drawing.Point(20, 61)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(39, 13)
         Me.Label2.TabIndex = 1
@@ -79,25 +79,25 @@ Partial Class frmInformeFecha
         '
         'Button2
         '
-        Me.Button2.Location = New System.Drawing.Point(150, 145)
+        Me.Button2.Location = New System.Drawing.Point(175, 145)
         Me.Button2.Name = "Button2"
-        Me.Button2.Size = New System.Drawing.Size(75, 23)
+        Me.Button2.Size = New System.Drawing.Size(87, 23)
         Me.Button2.TabIndex = 8
         Me.Button2.Text = "Cancelar"
         '
         'Button1
         '
-        Me.Button1.Location = New System.Drawing.Point(25, 145)
+        Me.Button1.Location = New System.Drawing.Point(29, 145)
         Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(75, 23)
+        Me.Button1.Size = New System.Drawing.Size(87, 23)
         Me.Button1.TabIndex = 7
         Me.Button1.Text = "Aceptar"
         '
         'frmInformeFecha
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(264, 194)
+        Me.ClientSize = New System.Drawing.Size(308, 194)
         Me.Controls.Add(Me.Frame1)
         Me.Controls.Add(Me.Button2)
         Me.Controls.Add(Me.Button1)

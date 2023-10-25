@@ -124,7 +124,7 @@ Public Class frmObraDias
                 drFinal("NObra") = CodigoObra
                 drFinal("Turnos") = Turnos
                 drFinal("Dias") = Dias
-                drFinal("Empresa") = "FERR."
+                drFinal("Empresa") = "FERR. "
                 dtFinal.Rows.Add(drFinal)
             Next
 

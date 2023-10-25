@@ -27,7 +27,9 @@ Public Class frmBorraHoras
         If TipoHoras = "Horas Productivas" Then
             IDHora = "HO"
         End If
-
+        If TipoHoras = "Horas Baja" Then
+            IDHora = "HB"
+        End If
         BorrarRegistros(IDOperario, NObra, FechaMa1, FechaMe2, IDHora)
 
     End Sub
@@ -45,6 +47,9 @@ Public Class frmBorraHoras
         dr = dtcombo.NewRow()
         dr("TipoHoras") = "Horas Productivas"
         dtcombo.Rows.Add(dr)
+        dr = dtcombo.NewRow()
+        dr("TipoHoras") = "Horas Baja"
+        dtcombo.Rows.Add(dr)
 
         cbTipoHoras.DataSource = dtcombo
     End Sub
@@ -59,10 +64,11 @@ Public Class frmBorraHoras
 
         Dim f As New Filter
         f.Add("IDOperario", FilterOperator.Equal, IDOperario)
-        If IDHora = "HA" Then
+        If IDHora = "HA" Or IDHora = "HB" Then
             f.Add("IDHora", FilterOperator.Equal, IDHora)
         Else
             f.Add("IDHora", FilterOperator.NotEqual, "HA")
+            f.Add("IDHora", FilterOperator.NotEqual, "HB")
         End If
 
         f.Add("IDObra", FilterOperator.Equal, IDObra)
@@ -83,6 +89,7 @@ Public Class frmBorraHoras
             'El finde se mete horas y el 31/12 tambien(En resumen)
             If intResponse = vbYes Then
                 Borrar(IDOperario, IDObra, Fecha1, Fecha2, IDHora)
+                MsgBox("Horas borradas correctamente.")
             Else
             End If
             Me.Close()
@@ -100,8 +107,8 @@ Public Class frmBorraHoras
     End Function
     Public Sub Borrar(ByVal IDOperario As String, ByVal IDObra As String, ByVal Fecha1 As String, ByVal Fecha2 As String, ByVal IDHora As String)
         Dim sql As String
-
-        If IDHora = "HA" Then
+        'ESTO SE HACE PORQUE HORAS PRODUCTIVAS PUEDEN SER HO, HX, HE...
+        If IDHora = "HA" Or IDHora = "HB" Then
             sql = "delete from tbObraMODControl "
             sql &= "where IDOperario='" & IDOperario & "' and IDObra='" & IDObra & "'"
             sql &= "and IDHora='" & IDHora & "'"
@@ -109,11 +116,9 @@ Public Class frmBorraHoras
         Else
             sql = "delete from tbObraMODControl "
             sql &= "where IDOperario='" & IDOperario & "' and IDObra='" & IDObra & "'"
-            sql &= "and IDHora!='HA'"
+            sql &= "and (IDHora!='HA' and IDHora!='HB')"
             sql &= "and FechaInicio>='" & Fecha1 & "' and FechaInicio<='" & Fecha2 & "'"
         End If
-
-        
 
         aux.EjecutarSql(sql)
     End Sub

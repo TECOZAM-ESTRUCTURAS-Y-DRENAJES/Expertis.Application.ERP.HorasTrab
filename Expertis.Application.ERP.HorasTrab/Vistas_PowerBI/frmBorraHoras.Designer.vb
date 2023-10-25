@@ -43,7 +43,7 @@ Partial Class frmBorraHoras
         '
         'bCancelar
         '
-        Me.bCancelar.Location = New System.Drawing.Point(107, 371)
+        Me.bCancelar.Location = New System.Drawing.Point(87, 343)
         Me.bCancelar.Name = "bCancelar"
         Me.bCancelar.Size = New System.Drawing.Size(85, 23)
         Me.bCancelar.TabIndex = 5
@@ -51,7 +51,7 @@ Partial Class frmBorraHoras
         '
         'bAceptar
         '
-        Me.bAceptar.Location = New System.Drawing.Point(294, 371)
+        Me.bAceptar.Location = New System.Drawing.Point(274, 343)
         Me.bAceptar.Name = "bAceptar"
         Me.bAceptar.Size = New System.Drawing.Size(89, 23)
         Me.bAceptar.TabIndex = 4
@@ -69,7 +69,7 @@ Partial Class frmBorraHoras
         Me.Frame1.Controls.Add(Me.Label2)
         Me.Frame1.Controls.Add(Me.Label1)
         Me.Frame1.Controls.Add(Me.advPersona)
-        Me.Frame1.Location = New System.Drawing.Point(62, 30)
+        Me.Frame1.Location = New System.Drawing.Point(29, 25)
         Me.Frame1.Name = "Frame1"
         Me.Frame1.Size = New System.Drawing.Size(365, 301)
         Me.Frame1.TabIndex = 3
@@ -172,7 +172,7 @@ Partial Class frmBorraHoras
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(485, 431)
+        Me.ClientSize = New System.Drawing.Size(417, 398)
         Me.Controls.Add(Me.bCancelar)
         Me.Controls.Add(Me.bAceptar)
         Me.Controls.Add(Me.Frame1)

@@ -15,8 +15,8 @@ Public Class frmCreaHorasOperarioObraFecha
     Private Sub bAceptar_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bAceptar.Click
         Dim NObra As String = advObra.Text.ToString
         Dim IDOperario As String = advPersona.Text.ToString
-        Dim FechaMa1 As String = Fecha1.Value.ToString
-        Dim FechaMe2 As String = Fecha2.Value.ToString
+        Dim FechaMa1 As DateTime = Fecha1.Value.ToString
+        Dim FechaMe2 As DateTime = Fecha2.Value.ToString
         Dim TipoHoras As String = cbTipoHoras.Text
 
         If Len(NObra) = 0 Or Len(IDOperario) = 0 Or Len(FechaMa1) = 0 Or Len(FechaMe2) = 0 Or Len(TipoHoras) = 0 Then
@@ -31,6 +31,9 @@ Public Class frmCreaHorasOperarioObraFecha
         If TipoHoras = "Horas Productivas" Then
             IDHora = "HO"
         End If
+        If TipoHoras = "Horas Baja" Then
+            IDHora = "HB"
+        End If
 
         Dim intResponse As Integer
         intResponse = MsgBox("¿Quieres que meta horas también en fines de semana y festivos?", vbYesNo + vbQuestion, "Información")
@@ -42,6 +45,7 @@ Public Class frmCreaHorasOperarioObraFecha
             CreaHorasSinFestivos(IDOperario, NObra, FechaMa1, FechaMe2, IDHora)
         End If
 
+        MsgBox("Horas creadas correctamente.")
         Me.Close()
     End Sub
     Public Function DevuelveIDCategoriaProfesionalSCCP(ByVal IDOperario As String) As Integer
@@ -105,7 +109,7 @@ Public Class frmCreaHorasOperarioObraFecha
         Dim dtObra As New DataTable
 
         Dim filtro As New Filter
-        filtro.Add("NObra", FilterOperator.GreaterThanOrEqual, NObra)
+        filtro.Add("NObra", FilterOperator.Equal, NObra)
         dtObra = New BE.DataEngine().Filter("tbObraCabecera", filtro)
 
         Return dtObra.Rows(0)("IDObra")
@@ -257,6 +261,19 @@ Public Class frmCreaHorasOperarioObraFecha
                      "HA" & "', '" & fecha & "', 0 , " & 0 & ", " & 0 & _
                      ", 0 , " & 0 & _
                      ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & IDOficio & "', 4, 8 ," & Nz(IDCategoriaProfesionalSCCP, "") & ")"
+            ElseIf IDHora = "HB" Then
+                Dim DescParte As String : DescParte = NObra & " " & Fecha1 & "-" & Fecha2 & "-HorasBaja"
+
+                txtSQL = "Insert into tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
+                   "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
+                    "ImpRealModA, HorasFactMod, ImpFactModA, DescParte, Facturable, FechaCreacionAudi, FechaModificacionAudi, Usuarioaudi, IDOficio, IdTipoTurno, HorasAdministrativas, IDCategoriaProfesionalSCCP, HorasBaja) " & _
+                    "Values(" & IDAutonumerico & ", " & IDTrabajo & ", " & IDObra & ", '" & _
+                    CodTrabajo & "', '" & DescTrabajo & "', '" & IdTipoTrabajo & "', '" & _
+                    IdSubTipoTrabajo & "', '" & IDOperario & "', 'PREDET', '" & _
+                    "HB" & "', '" & fecha & "', 0 , " & 0 & ", " & 0 & _
+                    ", 0 , " & 0 & _
+                    ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & IDOficio & "', 4, 0 ," & Nz(IDCategoriaProfesionalSCCP, "") & " ,8)"
+
             Else
                 Dim DescParte As String : DescParte = NObra & " " & Fecha1 & "-" & Fecha2 & "-INDIVI"
 
@@ -319,7 +336,7 @@ Public Class frmCreaHorasOperarioObraFecha
 
 
             If IDHora = "HA" Then
-                Dim DescParte As String : DescParte = "OFICINA" & " " & Fecha1 & "-" & Fecha2 & "-OFI"
+                Dim DescParte As String : DescParte = NObra & " " & Fecha1 & "-" & Fecha2 & "-HorasAdministrativas"
 
                 txtSQL = "Insert into tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
                     "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
@@ -330,6 +347,19 @@ Public Class frmCreaHorasOperarioObraFecha
                      "HA" & "', '" & fecha & "', 0 , " & 0 & ", " & 0 & _
                      ", 0 , " & 0 & _
                      ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & IDOficio & "', 4, 8 ," & Nz(IDCategoriaProfesionalSCCP, "") & ")"
+            ElseIf IDHora = "HB" Then
+                Dim DescParte As String : DescParte = NObra & " " & Fecha1 & "-" & Fecha2 & "-HorasBaja"
+
+                txtSQL = "Insert into tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
+                   "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
+                    "ImpRealModA, HorasFactMod, ImpFactModA, DescParte, Facturable, FechaCreacionAudi, FechaModificacionAudi, Usuarioaudi, IDOficio, IdTipoTurno, HorasAdministrativas, IDCategoriaProfesionalSCCP, HorasBaja) " & _
+                    "Values(" & IDAutonumerico & ", " & IDTrabajo & ", " & IDObra & ", '" & _
+                    CodTrabajo & "', '" & DescTrabajo & "', '" & IdTipoTrabajo & "', '" & _
+                    IdSubTipoTrabajo & "', '" & IDOperario & "', 'PREDET', '" & _
+                    "HB" & "', '" & fecha & "', 0 , " & 0 & ", " & 0 & _
+                    ", 0 , " & 0 & _
+                    ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & IDOficio & "', 4, 0 ," & Nz(IDCategoriaProfesionalSCCP, "") & " ,8)"
+
             Else
                 Dim DescParte As String : DescParte = NObra & " " & Fecha1 & "-" & Fecha2 & "-INDIVI"
 
@@ -363,6 +393,9 @@ Public Class frmCreaHorasOperarioObraFecha
         dtcombo.Rows.Add(dr)
         dr = dtcombo.NewRow()
         dr("TipoHoras") = "Horas Productivas"
+        dtcombo.Rows.Add(dr)
+        dr = dtcombo.NewRow()
+        dr("TipoHoras") = "Horas Baja"
         dtcombo.Rows.Add(dr)
 
         cbTipoHoras.DataSource = dtcombo
