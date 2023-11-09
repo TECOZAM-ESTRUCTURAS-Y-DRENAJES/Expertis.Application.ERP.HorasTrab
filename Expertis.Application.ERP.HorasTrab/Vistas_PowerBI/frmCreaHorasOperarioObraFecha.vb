@@ -157,6 +157,48 @@ Public Class frmCreaHorasOperarioObraFecha
 
         Return dtCalendario
     End Function
+    Public Function ObtieneDiasVacacionesYFestivos(ByVal IDOperario As String, ByVal Fecha1 As String, ByVal Fecha2 As String) As DataTable
+        Dim dtVacaciones As New DataTable
+        Dim dtFestivos As New DataTable
+        Dim dtTrabajados As New DataTable
+
+        Dim filtro As New Filter
+        'DIA DE VACACIONES = 2
+        filtro.Add("TipoDia", FilterOperator.Equal, 2)
+        filtro.Add("IDOperario", FilterOperator.Equal, IDOperario)
+        filtro.Add("Fecha", FilterOperator.GreaterThanOrEqual, Fecha1)
+        filtro.Add("Fecha", FilterOperator.LessThanOrEqual, Fecha2)
+
+        dtVacaciones = New BE.DataEngine().Filter("tbCalendarioOperario", filtro, "Fecha, TipoDia")
+        filtro.Clear()
+        'FESTIVOS Y FINDES = 1
+        filtro.Add("TipoDia", FilterOperator.Equal, 1)
+        filtro.Add("IDCentro", FilterOperator.Equal, "00")
+        filtro.Add("Fecha", FilterOperator.GreaterThanOrEqual, Fecha1)
+        filtro.Add("Fecha", FilterOperator.LessThanOrEqual, Fecha2)
+        dtFestivos = New BE.DataEngine().Filter("tbCalendarioCentro", filtro, "Fecha, TipoDia")
+
+
+        'FILTRO LOS DIAS TRABAJADOS
+        filtro.Clear()
+        filtro.Add("FechaInicio", FilterOperator.GreaterThanOrEqual, Fecha1)
+        filtro.Add("FechaInicio", FilterOperator.LessThanOrEqual, Fecha2)
+        filtro.Add("IDOperario", FilterOperator.Equal, IDOperario)
+        dtTrabajados = New BE.DataEngine().Filter("tbObraModControl", filtro, "FechaInicio As Fecha")
+        ' Crear un nuevo DataTable llamado dtCalendario
+        Dim dtCalendario As New DataTable()
+
+        ' Agregar las columnas Fecha y TipoDia al DataTable
+        dtCalendario.Columns.Add("Fecha", GetType(Date))
+        'dtCalendario.Columns.Add("TipoDia", GetType(Integer))
+
+        ' Unir los DataTables dtVacaciones y dtFestivos en el DataTable dtCalendario
+        dtCalendario.Merge(dtVacaciones)
+        dtCalendario.Merge(dtFestivos)
+        dtCalendario.Merge(dtTrabajados)
+
+        Return dtCalendario
+    End Function
 
     Public Function ObtieneFechasInsertar(ByVal IDOperario As String, ByVal dtCalendario As DataTable, ByVal dtOperarioCalendarioNoProductivo As DataTable) As DataTable
         Dim dtDiasInsertar As New DataTable
@@ -232,7 +274,7 @@ Public Class frmCreaHorasOperarioObraFecha
         IDObra = DevuelveIDObra(NObra)
         IDTrabajo = ObtieneIDTrabajo(IDObra, "PT1")
 
-        dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos("xTecozam50R2", IDOperario, Fecha1, Fecha2)
+        dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos(IDOperario, Fecha1, Fecha2)
         dtDiasInsertar = ObtieneFechasInsertar(IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
 
