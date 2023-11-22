@@ -43,7 +43,6 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame2 = New Solmicro.Expertis.Engine.UI.Frame
         Me.Frame3 = New Solmicro.Expertis.Engine.UI.Frame
         Me.Frame4 = New Solmicro.Expertis.Engine.UI.Frame
-        Me.bNota = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame5 = New Solmicro.Expertis.Engine.UI.Frame
         Me.bCreaHoras = New Solmicro.Expertis.Engine.UI.Button
         Me.Button1 = New Solmicro.Expertis.Engine.UI.Button
@@ -133,13 +132,17 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage1 = New Janus.Windows.UI.Tab.UITabPage
         Me.UiTabPage2 = New Janus.Windows.UI.Tab.UITabPage
         Me.UiTabPage3 = New Janus.Windows.UI.Tab.UITabPage
+        Me.Frame15 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bUk = New Solmicro.Expertis.Engine.UI.Button
+        Me.bDCZ = New Solmicro.Expertis.Engine.UI.Button
+        Me.Frame14 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bRegularizarSemestral = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame12 = New Solmicro.Expertis.Engine.UI.Frame
         Me.UiTabPage4 = New Janus.Windows.UI.Tab.UITabPage
         Me.Frame13 = New Solmicro.Expertis.Engine.UI.Frame
         Me.bPisarFicheroExtra = New Solmicro.Expertis.Engine.UI.Button
         Me.UiTabPage5 = New Janus.Windows.UI.Tab.UITabPage
-        Me.Frame14 = New Solmicro.Expertis.Engine.UI.Frame
-        Me.bRegularizarSemestral = New Solmicro.Expertis.Engine.UI.Button
+        Me.bNO = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame1.SuspendLayout()
         Me.Frame2.SuspendLayout()
         Me.Frame3.SuspendLayout()
@@ -162,11 +165,12 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage1.SuspendLayout()
         Me.UiTabPage2.SuspendLayout()
         Me.UiTabPage3.SuspendLayout()
+        Me.Frame15.SuspendLayout()
+        Me.Frame14.SuspendLayout()
         Me.Frame12.SuspendLayout()
         Me.UiTabPage4.SuspendLayout()
         Me.Frame13.SuspendLayout()
         Me.UiTabPage5.SuspendLayout()
-        Me.Frame14.SuspendLayout()
         Me.SuspendLayout()
         '
         'bBorrarExcel
@@ -280,7 +284,7 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame1.Size = New System.Drawing.Size(236, 105)
         Me.Frame1.TabIndex = 21
         Me.Frame1.TabStop = False
-        Me.Frame1.Text = "2. Carga horas jefes de producción y staff(1, 4, 5)"
+        Me.Frame1.Text = "2. Carga horas jefes de producción, técnicos de obra y staff(1, 4, 5)"
         '
         'Frame2
         '
@@ -312,16 +316,6 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame4.TabIndex = 24
         Me.Frame4.TabStop = False
         Me.Frame4.Text = "Borrar Horas"
-        '
-        'bNota
-        '
-        Me.bNota.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.bNota.Icon = CType(resources.GetObject("bNota.Icon"), System.Drawing.Icon)
-        Me.bNota.Location = New System.Drawing.Point(945, 87)
-        Me.bNota.Name = "bNota"
-        Me.bNota.Size = New System.Drawing.Size(78, 33)
-        Me.bNota.TabIndex = 25
-        Me.bNota.Text = "Nota"
         '
         'Frame5
         '
@@ -1195,6 +1189,7 @@ Partial Class CargaHorasJPSTAFF
         '
         'UiTabPage3
         '
+        Me.UiTabPage3.Controls.Add(Me.Frame15)
         Me.UiTabPage3.Controls.Add(Me.Frame14)
         Me.UiTabPage3.Controls.Add(Me.Frame12)
         Me.UiTabPage3.Controls.Add(Me.Frame6)
@@ -1203,6 +1198,58 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage3.Size = New System.Drawing.Size(959, 240)
         Me.UiTabPage3.TabStop = True
         Me.UiTabPage3.Text = "3. Combinar A3 y Mix"
+        '
+        'Frame15
+        '
+        Me.Frame15.Controls.Add(Me.bNO)
+        Me.Frame15.Controls.Add(Me.bUk)
+        Me.Frame15.Controls.Add(Me.bDCZ)
+        Me.Frame15.Location = New System.Drawing.Point(37, 138)
+        Me.Frame15.Name = "Frame15"
+        Me.Frame15.Size = New System.Drawing.Size(692, 87)
+        Me.Frame15.TabIndex = 31
+        Me.Frame15.TabStop = False
+        Me.Frame15.Text = "4. Pasar ficheros de PDF a EXCEL"
+        '
+        'bUk
+        '
+        Me.bUk.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bUk.Icon = CType(resources.GetObject("bUk.Icon"), System.Drawing.Icon)
+        Me.bUk.Location = New System.Drawing.Point(268, 34)
+        Me.bUk.Name = "bUk"
+        Me.bUk.Size = New System.Drawing.Size(144, 38)
+        Me.bUk.TabIndex = 31
+        Me.bUk.Text = "Pasar fichero UK"
+        '
+        'bDCZ
+        '
+        Me.bDCZ.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bDCZ.Icon = CType(resources.GetObject("bDCZ.Icon"), System.Drawing.Icon)
+        Me.bDCZ.Location = New System.Drawing.Point(22, 34)
+        Me.bDCZ.Name = "bDCZ"
+        Me.bDCZ.Size = New System.Drawing.Size(144, 38)
+        Me.bDCZ.TabIndex = 30
+        Me.bDCZ.Text = "Pasar fichero DCZ"
+        '
+        'Frame14
+        '
+        Me.Frame14.Controls.Add(Me.bRegularizarSemestral)
+        Me.Frame14.Location = New System.Drawing.Point(524, 28)
+        Me.Frame14.Name = "Frame14"
+        Me.Frame14.Size = New System.Drawing.Size(205, 103)
+        Me.Frame14.TabIndex = 29
+        Me.Frame14.TabStop = False
+        Me.Frame14.Text = "3. Regularización semestral A3"
+        '
+        'bRegularizarSemestral
+        '
+        Me.bRegularizarSemestral.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bRegularizarSemestral.Icon = CType(resources.GetObject("bRegularizarSemestral.Icon"), System.Drawing.Icon)
+        Me.bRegularizarSemestral.Location = New System.Drawing.Point(29, 35)
+        Me.bRegularizarSemestral.Name = "bRegularizarSemestral"
+        Me.bRegularizarSemestral.Size = New System.Drawing.Size(144, 38)
+        Me.bRegularizarSemestral.TabIndex = 20
+        Me.bRegularizarSemestral.Text = "Obtener fichero regularizacion"
         '
         'Frame12
         '
@@ -1255,32 +1302,21 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage5.TabStop = True
         Me.UiTabPage5.Text = "5. Otros"
         '
-        'Frame14
+        'bNO
         '
-        Me.Frame14.Controls.Add(Me.bRegularizarSemestral)
-        Me.Frame14.Location = New System.Drawing.Point(524, 28)
-        Me.Frame14.Name = "Frame14"
-        Me.Frame14.Size = New System.Drawing.Size(205, 103)
-        Me.Frame14.TabIndex = 29
-        Me.Frame14.TabStop = False
-        Me.Frame14.Text = "3. Regularización semestral A3"
-        '
-        'bRegularizarSemestral
-        '
-        Me.bRegularizarSemestral.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.bRegularizarSemestral.Icon = CType(resources.GetObject("bRegularizarSemestral.Icon"), System.Drawing.Icon)
-        Me.bRegularizarSemestral.Location = New System.Drawing.Point(29, 35)
-        Me.bRegularizarSemestral.Name = "bRegularizarSemestral"
-        Me.bRegularizarSemestral.Size = New System.Drawing.Size(144, 38)
-        Me.bRegularizarSemestral.TabIndex = 20
-        Me.bRegularizarSemestral.Text = "Obtener fichero regularizacion"
+        Me.bNO.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bNO.Icon = CType(resources.GetObject("bNO.Icon"), System.Drawing.Icon)
+        Me.bNO.Location = New System.Drawing.Point(516, 34)
+        Me.bNO.Name = "bNO"
+        Me.bNO.Size = New System.Drawing.Size(144, 38)
+        Me.bNO.TabIndex = 32
+        Me.bNO.Text = "Pasar fichero NO"
         '
         'CargaHorasJPSTAFF
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(1102, 558)
-        Me.Controls.Add(Me.bNota)
         Me.Controls.Add(Me.Tab1)
         Me.Controls.Add(Me.bDocumentacion)
         Me.Controls.Add(Me.Label2)
@@ -1317,11 +1353,12 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage1.ResumeLayout(False)
         Me.UiTabPage2.ResumeLayout(False)
         Me.UiTabPage3.ResumeLayout(False)
+        Me.Frame15.ResumeLayout(False)
+        Me.Frame14.ResumeLayout(False)
         Me.Frame12.ResumeLayout(False)
         Me.UiTabPage4.ResumeLayout(False)
         Me.Frame13.ResumeLayout(False)
         Me.UiTabPage5.ResumeLayout(False)
-        Me.Frame14.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -1341,7 +1378,6 @@ Partial Class CargaHorasJPSTAFF
     Friend WithEvents Frame2 As Solmicro.Expertis.Engine.UI.Frame
     Friend WithEvents Frame3 As Solmicro.Expertis.Engine.UI.Frame
     Friend WithEvents Frame4 As Solmicro.Expertis.Engine.UI.Frame
-    Friend WithEvents bNota As Solmicro.Expertis.Engine.UI.Button
     Friend WithEvents Frame5 As Solmicro.Expertis.Engine.UI.Frame
     Friend WithEvents bCreaHoras As Solmicro.Expertis.Engine.UI.Button
     Friend WithEvents Button1 As Solmicro.Expertis.Engine.UI.Button
@@ -1438,4 +1474,8 @@ Partial Class CargaHorasJPSTAFF
     Friend WithEvents bPisarFicheroExtra As Solmicro.Expertis.Engine.UI.Button
     Friend WithEvents Frame14 As Solmicro.Expertis.Engine.UI.Frame
     Friend WithEvents bRegularizarSemestral As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents bDCZ As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents Frame15 As Solmicro.Expertis.Engine.UI.Frame
+    Friend WithEvents bUk As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents bNO As Solmicro.Expertis.Engine.UI.Button
 End Class

@@ -563,7 +563,7 @@ Public Class CargaHorasJPSTAFF
         f.Add("IDOperario", FilterOperator.Equal, IDOperario)
         dt = New BE.DataEngine().Filter(basededatos & "..vOperarioCategoriaProf", f)
         If dt.Rows.Count > 0 Then
-            Return dt(0)("Abreviatura")
+            Return Nz(dt(0)("Abreviatura"), 0)
         Else
             Return 0
         End If
@@ -894,12 +894,12 @@ Public Class CargaHorasJPSTAFF
         '------COMO YO LO DE DEJARIA---------
         sql = "select IDOperario, Obra_Predeterminada from " & DB_FERRALLAS & "..tbMaestroOperarioSat " & _
         "where (Obra_Predeterminada='12677838' Or Obra_Predeterminada='12677615' Or Obra_Predeterminada='12678141') and " & _
-        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<='" & Fecha2 & "'))" & _
+        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<=GETDATE()))" & _
         " Union " & _
         "select IDOperario, Proyecto AS Obra_Predeterminada " & _
         "from " & DB_FERRALLAS & "..tbHistoricoPersonal " & _
         "where (Proyecto = '12677838' OR Proyecto = '12677615' OR Proyecto = '12678141') and " & _
-        "((Fecha >= '" & Fecha1 & "' AND Fecha <= '" & Fecha2 & "'))"
+        "((Fecha >= '" & Fecha1 & "' AND Fecha <=GETDATE()))"
 
         dt = aux.EjecutarSqlSelect(sql)
         Return dt
@@ -911,12 +911,12 @@ Public Class CargaHorasJPSTAFF
         Dim sql As String
         sql = "select IDOperario, Obra_Predeterminada from " & DB_DCZ & "..tbMaestroOperarioSat " & _
         "where Obra_Predeterminada='11860026' and " & _
-        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<='" & Fecha2 & "'))" & _
+        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<=GETDATE()))" & _
         " Union " & _
         "select IDOperario, Proyecto AS Obra_Predeterminada " & _
         "from " & DB_DCZ & "..tbHistoricoPersonal " & _
         "where (Proyecto = '11860026') and " & _
-        "((Fecha >= '" & Fecha1 & "' AND Fecha <= '" & Fecha2 & "'))"
+        "((Fecha >= '" & Fecha1 & "' AND Fecha <=GETDATE()))"
 
         dt = aux.EjecutarSqlSelect(sql)
         Return dt
@@ -928,12 +928,12 @@ Public Class CargaHorasJPSTAFF
         '------COMO YO LO DE DEJARIA---------
         sql = "select IDOperario, Obra_Predeterminada from " & DB_TECOZAM & "..tbMaestroOperarioSat " & _
         "where (Obra_Predeterminada='16895681' Or Obra_Predeterminada='11984995') and " & _
-        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<='" & Fecha2 & "'))" & _
+        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<=GETDATE()))" & _
         " Union " & _
         "select IDOperario, Proyecto AS Obra_Predeterminada " & _
         "from " & DB_TECOZAM & "..tbHistoricoPersonal " & _
         "where (Proyecto = '16895681' OR Proyecto = '11984995') and " & _
-        "((Fecha >= '" & Fecha1 & "' AND Fecha <= '" & Fecha2 & "'))"
+        "((Fecha >= '" & Fecha1 & "' AND Fecha <=GETDATE()))"
 
 
         'sql = "select IDOperario, Obra_Predeterminada from DB_TECOZAM..tbMaestroOperarioSat where idoperario='T3450'"
@@ -947,12 +947,12 @@ Public Class CargaHorasJPSTAFF
         '------COMO YO LO DE DEJARIA---------
         sql = "select IDOperario, Obra_Predeterminada from " & DB_SECOZAM & "..tbMaestroOperarioSat " & _
         "where (Obra_Predeterminada='11854299' Or Obra_Predeterminada='11854231') and " & _
-        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<='" & Fecha2 & "'))" & _
+        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<=GETDATE()))" & _
         " Union " & _
         "select IDOperario, Proyecto AS Obra_Predeterminada " & _
         "from " & DB_SECOZAM & "..tbHistoricoPersonal " & _
         "where (Proyecto = '11854299' OR Proyecto = '11854231') and " & _
-        "((Fecha >= '" & Fecha1 & "' AND Fecha <= '" & Fecha2 & "'))"
+        "((Fecha >= '" & Fecha1 & "' AND Fecha <=GETDATE()))"
 
         dt = aux.EjecutarSqlSelect(sql)
         Return dt
@@ -1377,7 +1377,7 @@ Public Class CargaHorasJPSTAFF
 
     End Function
 
-    Private Sub bNota_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bNota.Click
+    Private Sub bNota_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
         MsgBox("JP Y STAFF: TECOZAM-DCK-UK " & vbCrLf _
                & "OFICINA: ESPAÑA " & vbCrLf _
                & "BAJA: ESPAÑA", MsgBoxStyle.OkOnly, "Ayuda")
@@ -1983,9 +1983,11 @@ Public Class CargaHorasJPSTAFF
             Case "T. ES.", "FERR.", "SEC."
                 rango = "B10:Z10000"
             Case "D. P."
-                rango = "A2:F500"
+                rango = "A3:F10000"
             Case "T. UK."
-                rango = "A2:F500"
+                rango = "A2:Q10000"
+            Case "T. NO."
+                rango = "A3:T10000"
             Case Else
                 MsgBox("El nombre identificado entre parentesis no se reconoce pero funciona. Coje las 3 primeras columnas.")
                 rango = "A2:C10000"
@@ -2087,6 +2089,9 @@ Public Class CargaHorasJPSTAFF
         ElseIf empresa = "T. UK." Then
             bbdd = DB_UK
             newDataTable = FormaTablaUK(dt, newDataTable, bbdd, mes, anio, empresa)
+        ElseIf empresa = "T. NO." Then
+            bbdd = DB_NO
+            newDataTable = FormaTablaNO(dt, newDataTable, bbdd, mes, anio, empresa)
         Else
             newDataTable = FormaTablaTipo(dt, newDataTable, mes, anio)
         End If
@@ -2184,7 +2189,7 @@ Public Class CargaHorasJPSTAFF
         Dim IDOperario As String = ""
         Dim diccionario As String = ""
         Dim descOperario As String = ""
-        Dim partes() As String
+
         ' Copiar los datos de las columnas seleccionadas al nuevo DataTable
         For Each row As DataRow In dt.Rows
             'Verificar si la celda está vacía
@@ -2194,14 +2199,18 @@ Public Class CargaHorasJPSTAFF
             End If
 
             Dim newRow As DataRow = newDataTable.NewRow()
-            partes = row("F1").Split("-"c)
 
-            diccionario = partes(0).Trim()
-            descOperario = partes(1).Trim()
+            Dim parts() As String = row("F1").ToString.Split("-"c)
 
+            ' Eliminar espacios adicionales en cada parte
+            For i As Integer = 0 To parts.Length - 1
+                parts(i) = parts(i).Trim()
+            Next
+
+            diccionario = parts(0)
             IDOperario = DevuelveIDOperarioDiccionario(bbdd, diccionario)
             newRow("IDOperario") = IDOperario
-            newRow("DescOperario") = descOperario
+            newRow("DescOperario") = parts(1)
             newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
             newRow("CosteEmpresa") = row("F3") + row("F4")
             newRow("Mes") = mes
@@ -2220,7 +2229,7 @@ Public Class CargaHorasJPSTAFF
         Dim CosteEFinal As Double = 0
 
         For Each dr As DataRow In dt.Rows
-            If Len(dr("F1").ToString) = 0 Or dr("F1").ToString = "TOTAL" Then
+            If Len(dr("F1").ToString) = 0 Then
                 'Return newDataTable
                 Exit For ' Salir del bucle si la celda está vacía
             End If
@@ -2279,7 +2288,7 @@ Public Class CargaHorasJPSTAFF
             newRow("IDOperario") = IDOperario
             newRow("DescOperario") = row("F2")
             newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
-            totallibras = row("F3") + row("F4") + row("F5") + row("F6")
+            totallibras = Nz(row("F9"), 0) + Nz(row("F10"), 0) + Nz(row("F15"), 0) + Nz(row("F16"), 0)
             totaleuros = CambioLibraAEuro(dtCambioMoneda, totallibras, mes, anio)
             newRow("CosteEmpresa") = totaleuros
             newRow("Mes") = mes
@@ -2302,15 +2311,14 @@ Public Class CargaHorasJPSTAFF
                 'Return newDataTable
                 Exit For ' Salir del bucle si la celda está vacía
             End If
-            CosteE1 = CosteE1 + dr("F3") + dr("F4") + dr("F5") + dr("F6")
+            CosteE1 = CosteE1 + Nz(dr("F9"), 0) + Nz(dr("F10"), 0) + Nz(dr("F15"), 0) + Nz(dr("F16"), 0)
         Next
 
         For Each dr As DataRow In dtOrdenada.Rows
             CosteEFinal = CosteEFinal + dr("CosteEmpresa")
         Next
-
-        Dim result As DialogResult = MessageBox.Show("El coste del excel introducido es " & CosteE1 & _
-        " libras =" & CambioLibraAEuro(dtCambioMoneda, CosteE1, mes, anio) & " €. El del excel resultante es " & CosteEFinal & _
+        Dim result As DialogResult = MessageBox.Show("El coste del excel introducido es " & CosteE1.ToString("N2") & _
+        " £ =" & CambioLibraAEuro(dtCambioMoneda, CosteE1, mes, anio).ToString("N2") & " €. El del excel resultante es " & CosteEFinal.ToString("N2") & _
         "€." & vbCrLf & "El cambio usado es: " & DevuelveCambioMoneda(dtCambioMoneda, mes, anio), "¿Desea Continuar?", MessageBoxButtons.YesNo)
         If result = DialogResult.No Then
             Return Nothing
@@ -2327,6 +2335,83 @@ Public Class CargaHorasJPSTAFF
 
         Return dtOrdenada
     End Function
+    Public Function FormaTablaNO(ByVal dt As DataTable, ByVal newDataTable As DataTable, ByVal bbdd As String, ByVal mes As String, ByVal anio As String, ByVal empresa As String)
+
+        Dim IDOperario As String = ""
+        Dim diccionario As String = ""
+        Dim totaleuros As Double = 0
+        Dim totalcoronas As Double = 0
+
+        'TABLA DE CAMBIO DE MONEDA LIBRAS
+        Dim ruta As String
+        ruta = "\\stor01\dg\SCCP_Prueba\03. COSTES\TIPO DE CAMBIO MONEDA.xlsx"
+        Dim hoja As String = "TIPO DE CAMBIO"
+        Dim rango As String = "A1:K10000"
+        Dim dtCambioMoneda As New DataTable
+        dtCambioMoneda = ObtenerDatosExcel(ruta, hoja, rango)
+
+
+        ' Copiar los datos de las columnas seleccionadas al nuevo DataTable
+        For Each row As DataRow In dt.Rows
+            'Verificar si la celda está vacía
+            If Len(row("F1").ToString) = 0 Then
+                'Return newDataTable
+                Exit For ' Salir del bucle si la celda está vacía
+            End If
+
+            Dim newRow As DataRow = newDataTable.NewRow()
+
+            IDOperario = DevuelveIDOperarioDiccionario(bbdd, row("F1"))
+            newRow("IDOperario") = IDOperario
+            newRow("DescOperario") = row("F2")
+            newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
+            totalcoronas = Nz(row("F19"), 0)
+            totaleuros = CambioCoronaAEuro(dtCambioMoneda, totalcoronas, mes, anio)
+            newRow("CosteEmpresa") = totaleuros
+            newRow("Mes") = mes
+            newRow("Anio") = anio
+            newRow("Empresa") = empresa
+
+            newDataTable.Rows.Add(newRow)
+        Next
+
+        Dim dtOrdenada As New DataTable
+        newDataTable.DefaultView.Sort = "IDOperario asc"
+        dtOrdenada = newDataTable.DefaultView.ToTable
+
+        'CHECK DE QUE EL EXCEL RESULTANTE TIENE EL MISMO COSTE EMPRESA TOTAL
+        Dim CosteE1 As Double = 0
+        Dim CosteEFinal As Double = 0
+
+        For Each dr As DataRow In dt.Rows
+            If Len(dr("F1").ToString) = 0 Then
+                'Return newDataTable
+                Exit For ' Salir del bucle si la celda está vacía
+            End If
+            CosteE1 = CosteE1 + Nz(dr("F19"), 0)
+        Next
+
+        For Each dr As DataRow In dtOrdenada.Rows
+            CosteEFinal = CosteEFinal + dr("CosteEmpresa")
+        Next
+        Dim result As DialogResult = MessageBox.Show("El coste del excel introducido es " & CosteE1.ToString("N2") & _
+        " NOK =" & CambioCoronaAEuro(dtCambioMoneda, CosteE1, mes, anio).ToString("N2") & " €. El del excel resultante es " & CosteEFinal.ToString("N2") & _
+        "€." & vbCrLf & "El cambio usado es: " & DevuelveCambioMonedaCorona(dtCambioMoneda, mes, anio), "¿Desea Continuar?", MessageBoxButtons.YesNo)
+        If result = DialogResult.No Then
+            Return Nothing
+            Exit Function
+        End If
+
+        Dim fila As DataRow = dtResumen.NewRow()
+        fila("Sociedad") = empresa
+        fila("Importe A3 origen") = CosteE1.ToString("N2")
+        fila("Tipo Moneda") = dtCambioMoneda(0)("F8")
+        fila("Cambio") = DevuelveCambioMonedaCorona(dtCambioMoneda, mes, anio)
+        fila("Importe A3 final(€)") = CosteEFinal
+        dtResumen.Rows.Add(fila)
+
+        Return dtOrdenada
+    End Function
     Public Function DevuelveCambioMoneda(ByVal dtCambioMoneda As DataTable, ByVal mes As String, ByVal anio As String) As Double
         Dim fecha As String
         Dim cambioMoneda As Double
@@ -2336,6 +2421,21 @@ Public Class CargaHorasJPSTAFF
                 fecha = dr("F1")
                 If Month(fecha) = mes And Year(fecha) = anio Then
                     cambioMoneda = dr("F4")
+                    Return cambioMoneda
+                End If
+            Catch ex As Exception
+            End Try
+        Next
+    End Function
+    Public Function DevuelveCambioMonedaCorona(ByVal dtCambioMoneda As DataTable, ByVal mes As String, ByVal anio As String) As Double
+        Dim fecha As String
+        Dim cambioMoneda As Double
+
+        For Each dr As DataRow In dtCambioMoneda.Rows
+            Try
+                fecha = dr("F1")
+                If Month(fecha) = mes And Year(fecha) = anio Then
+                    cambioMoneda = dr("F8")
                     Return cambioMoneda
                 End If
             Catch ex As Exception
@@ -2811,14 +2911,12 @@ Public Class CargaHorasJPSTAFF
             cont = cont + 1
         Next
 
-
-
         Return dtResultado
     End Function
     Private Sub bIDGET_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bIDGET.Click
         Dim vPersonas As New DataTable
         Dim f As New Filter
-        Dim bbdd As String
+        Dim bbdd As String = ""
         vPersonas = New BE.DataEngine().Filter(DB_TECOZAM & "..vPersonasTFSD", f, , "FechaAlta asc")
 
         For Each dr As DataRow In vPersonas.Rows
@@ -3236,7 +3334,7 @@ Public Class CargaHorasJPSTAFF
             insertarHorasBajas(bbdd, idoperario, idobra, fechaInicio)
         Else
             For Each dr As DataRow In dtCheck.Rows
-                If dr("IDHora") = "ACC" Or dr("IDHora") = "CC" Then
+                If dr("IDHora") = "ACC" Or dr("IDHora") = "CC" Or dr("IDHora") = "acc" Or dr("IDHora") = "cc" Then
                     'Actualizo horas baja a 8
                     actualizaHorasBajas(bbdd, idobra, idoperario, dtCheck.Rows(0)("IDLineaModControl").ToString)
                 End If
@@ -3523,7 +3621,12 @@ Public Class CargaHorasJPSTAFF
             worksheet2.Column(2).Width = 30
             ' HOJA 3
             Dim worksheet3 = package.Workbook.Worksheets.Add(mes & " RATIOS " & anio)
-            worksheet3.Cells("A1").LoadFromDataTable(dtRatiosGente, True)
+
+            ' Ordenar el DataTable por la columna L
+            dtRatiosGente.DefaultView.Sort = "Ratio ASC" ' Ajusta "ColumnaL" al nombre real de la columna
+            Dim dtRatiosOrdenado = dtRatiosGente.DefaultView.ToTable()
+
+            worksheet3.Cells("A1").LoadFromDataTable(dtRatiosOrdenado, True)
 
             Dim fila13 As ExcelRange = worksheet3.Cells(1, 1, 1, worksheet3.Dimension.End.Column)
             fila13.Style.Font.Bold = True
@@ -3543,6 +3646,7 @@ Public Class CargaHorasJPSTAFF
             worksheet3.Cells("A1:" & GetExcelColumnName(worksheet3.Dimension.End.Column) & "1").AutoFilter = True
             worksheet3.Column(3).Width = 30
             worksheet3.Column(5).Width = 15
+
 
             ' HOJA 4
             Dim worksheet4 = package.Workbook.Worksheets.Add(mes & " DOBLE COTIZACION " & anio)
@@ -4726,4 +4830,860 @@ Public Class CargaHorasJPSTAFF
 
         Return dtConsolidado
     End Function
+
+    Private Sub bDCZ_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bDCZ.Click
+        Dim dtPersonasPortugal As DataTable = SeleccionarPDFyLeerDataTable()
+        dtPersonasPortugal= darFormaTabla(dtPersonasPortugal)
+        ExportaExcel(dtPersonasPortugal)
+    End Sub
+
+    Public Sub ExportaExcel(ByVal dtPersonasPortugal As DataTable)
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial
+
+        'Dim ruta As New FileInfo("N:\10. AUXILIARES\00. EXPERTIS\02. A3\" & mes & " A3 " & mes & anio.Substring(anio.Length - 2) & ".xlsx")
+        Dim ruta As New FileInfo("N:\10. AUXILIARES\00. EXPERTIS\02. A3\" & rutaPDF.Substring(0, rutaPDF.Length - 4) & ".xlsx")
+        Dim rutaCadena As String = ""
+        rutaCadena = ruta.FullName
+
+        'Verificar si el archivo existe.
+        If File.Exists(rutaCadena) Then
+            'Si el archivo existe, eliminarlo.
+            File.Delete(rutaCadena)
+        End If
+
+        Using package As New ExcelPackage(ruta)
+            ' Crear una hoja de cálculo y obtener una referencia a ella.
+            Dim worksheet = package.Workbook.Worksheets.Add("1")
+
+            ' Copiar los datos de la DataTable a la hoja de cálculo.
+            worksheet.Cells("A1").LoadFromDataTable(dtPersonasPortugal, True)
+
+            Dim columnaA As ExcelRange = worksheet.Cells("A2:A" & worksheet.Dimension.End.Row)
+            columnaA.Style.Numberformat.Format = "@"
+
+            Dim rangoMoneda As ExcelRange = worksheet.Cells("B2:G" & worksheet.Dimension.End.Row)
+            rangoMoneda.Style.Numberformat.Format = "#,##0.00€"
+
+            ' Aplicar formato negrita a la fila 1
+            Dim fila1 As ExcelRange = worksheet.Cells(1, 1, 1, worksheet.Dimension.End.Column)
+            fila1.Style.Font.Bold = True
+
+            ' Agregar un filtro a la primera fila
+            worksheet.Cells("A1:" & GetExcelColumnName(worksheet.Dimension.End.Column) & "1").AutoFilter = True
+            worksheet.Column(2).Width = 30
+            worksheet.Column(3).Width = 12
+            worksheet.Column(4).Width = 12
+            worksheet.Column(5).Width = 12
+            worksheet.Column(6).Width = 12
+            worksheet.Column(7).Width = 12
+
+            ' Guardar el archivo de Excel.
+            package.Save()
+        End Using
+
+        MsgBox("Fichero creado correctamente en N:\10. AUXILIARES\00. EXPERTIS\02. A3\")
+    End Sub
+
+    Public Function darFormaTabla(ByVal dtPersonasPortugal As DataTable) As DataTable
+        Dim dataTable As New DataTable()
+        dataTable.Columns.Add("Diccionario")
+        dataTable.Columns.Add("Operario")
+        dataTable.Columns.Add("Venciminetos", System.Type.GetType("System.Double"))
+        dataTable.Columns.Add("Patronal", System.Type.GetType("System.Double"))
+        dataTable.Columns.Add("Remuneraciones", System.Type.GetType("System.Double"))
+        dataTable.Columns.Add("Descuentos", System.Type.GetType("System.Double"))
+        dataTable.Columns.Add("Liquidas", System.Type.GetType("System.Double"))
+
+        ' Recorrer cada fila de dtPersonaPortugal
+        For Each fila As DataRow In dtPersonasPortugal.Rows
+            ' Obtener los valores de la columna "valores" y dividirlos
+            Dim valores As String() = fila("valores").ToString().Split(" "c)
+
+            ' Añadir una nueva fila a la nueva tabla
+            Dim nuevaFila As DataRow = dataTable.NewRow()
+
+            ' Asignar los valores a las columnas correspondientes
+            nuevaFila("Venciminetos") = valores(0)
+            nuevaFila("Patronal") = valores(1)
+            nuevaFila("Remuneraciones") = valores(2)
+            nuevaFila("Descuentos") = valores(3)
+            Dim indiceComa As Integer = valores(4).IndexOf(",")
+            nuevaFila("Liquidas") = valores(4).Substring(0, indiceComa + 3)
+            'Separo el diccionario, dos digitos despues de la coma hasta el final
+            Dim diccionario As String = valores(4).Substring(indiceComa + 3)
+            nuevaFila("Diccionario") = diccionario
+            nuevaFila("Operario") = fila("operario").ToString()
+
+            ' Agregar la nueva fila a la nueva tabla
+            dataTable.Rows.Add(nuevaFila)
+        Next
+        Return dataTable
+    End Function
+
+    Dim rutaPDF As String
+
+    Function SeleccionarPDFyLeerDataTable() As DataTable
+        ' Crear un cuadro de diálogo para seleccionar el archivo PDF
+        Dim openFileDialog As New OpenFileDialog()
+        openFileDialog.Filter = "Archivos PDF|*.pdf"
+        openFileDialog.Title = "Selecciona un archivo PDF"
+
+        If openFileDialog.ShowDialog() = DialogResult.OK Then
+            ' Llamada a la función para leer el PDF y convertirlo a DataTable
+            rutaPDF = Path.GetFileName(openFileDialog.FileName)
+            Return LeerPDFaDataTableDCZ(openFileDialog.FileName)
+        Else
+            ' El usuario canceló la selección
+            Return Nothing
+        End If
+    End Function
+
+    Sub SeleccionarPDFyLeerDataTableUK()
+        ' Crear un cuadro de diálogo para seleccionar el archivo PDF
+        Dim openFileDialog As New OpenFileDialog()
+        openFileDialog.Filter = "Archivos PDF|*.pdf"
+        openFileDialog.Title = "Selecciona un archivo PDF"
+
+        If openFileDialog.ShowDialog() = DialogResult.OK Then
+            ' Llamada a la función para leer el PDF y convertirlo a DataTable
+            LeerPDFaDataTableUK(openFileDialog.FileName)
+        End If
+    End Sub
+
+    Function LeerPDFaDataTableDCZ(ByVal pdfPath As String) As DataTable
+        ' Crear un DataTable
+        Dim dataTable As New DataTable()
+
+        ' Crear columnas en el DataTable (puedes ajustar esto según tu PDF)
+        dataTable.Columns.Add("Valores")
+        dataTable.Columns.Add("Operario")
+
+        ' ... Agrega más columnas según sea necesario
+
+        ' Crear un lector de PDF
+        Dim pdfReader As New PdfReader(pdfPath)
+        ' Recorrer las páginas del PDF
+        For page As Integer = 1 To pdfReader.NumberOfPages
+            ' Obtener el texto de la página
+            Dim texto As String = PdfTextExtractor.GetTextFromPage(pdfReader, page)
+            ' Buscar la posición de "Liquidas"
+            Dim posicionLiquidas As Integer = texto.IndexOf("Liquidas")
+            ' Buscar la posición de "©"
+            Dim posicionCopyright As Integer = texto.IndexOf("©")
+
+            Dim resultado As String
+            resultado = texto.Substring(posicionLiquidas + "Liquidas".Length, posicionCopyright - posicionLiquidas - "Liquidas".Length).Trim()
+
+            ' Contar la cantidad de guiones en la variable resultado
+            Dim cantidadGuiones As Integer = resultado.Split("-"c).Length - 1
+
+            ' Recorrer un bucle for desde 0 hasta la cantidad de guiones
+            For i As Integer = 0 To cantidadGuiones
+                ' Encontrar la posición del guion "-"
+                Dim posicionGuion As Integer = resultado.IndexOf("-")
+
+                ' Verificar si se encontró el guion
+                If posicionGuion >= 0 Then
+                    ' Inicializar la variable para almacenar la posición del primer dígito después del guion
+                    Dim posicionDigito As Integer = -1
+
+                    ' Recorrer desde la posición del guion + 1 hasta el final de la cadena
+                    For j As Integer = posicionGuion + 1 To resultado.Length - 1
+                        ' Verificar si el carácter en la posición actual es un dígito
+                        If Char.IsDigit(resultado(j)) Then
+                            ' Almacenar la posición del primer dígito
+                            posicionDigito = j
+                            Exit For
+                        End If
+                    Next
+
+                    ' Verificar si se encontró un dígito después del guion
+                    If posicionDigito >= 0 Then
+                        ' Extraer las subcadenas
+                        Dim izquierda As String = resultado.Substring(0, posicionGuion).Trim()
+                        Dim derecha As String = resultado.Substring(posicionGuion + 1, posicionDigito - posicionGuion - 1).Trim()
+
+                        ' Agregar las subcadenas al DataTable
+                        dataTable.Rows.Add(izquierda, derecha)
+
+                        ' Actualizar la variable resultado para continuar desde donde terminó la última búsqueda
+                        resultado = resultado.Substring(posicionDigito)
+
+                    Else
+                        ' Si no se encontró un dígito después del guion, agregar la última parte al DataTable
+                        Dim izquierda As String = resultado.Substring(0, posicionGuion).Trim()
+                        Dim derecha As String = resultado.Substring(posicionGuion + 1).Trim()
+
+                        ' Agregar las subcadenas al DataTable
+                        dataTable.Rows.Add(izquierda, derecha)
+
+                        ' Salir del bucle ya que estamos al final de la cadena
+                        Exit For
+                    End If
+                End If
+            Next
+        Next
+
+        Return dataTable
+    End Function
+
+    Sub LeerPDFaDataTableUK(ByVal pdfPath As String)
+        ruta = pdfPath
+        UnificaFichero()
+    End Sub
+    Public Sub UnificaFichero()
+
+        Dim pdfReader As New PdfReader(ruta)
+        Dim texto_entero As String = PdfTextExtractor.GetTextFromPage(pdfReader, 1)
+        Dim palabras As String() = texto_entero.Split(" "c)
+        Dim ultimaPalabra As String = palabras(palabras.Length - 1)
+        Dim opcion As Integer
+
+        If ultimaPalabra.Contains("6") Then
+            opcion = 2
+        ElseIf ultimaPalabra.Contains("7") Then
+            opcion = 1
+        Else
+            MsgBox("Informe nuevo, hablar con David Velasco")
+            Exit Sub
+        End If
+
+        Select Case opcion
+            'La opcion 1 es para cuando detecta Employee Name en el algoritmo al leer el pdf
+            Case 1
+                ' Crear un lector de PDF
+                ' Recorrer las páginas del PDF
+                For page As Integer = 1 To pdfReader.NumberOfPages
+                    If page = pdfReader.NumberOfPages Then
+                        Dim texto As String = PdfTextExtractor.GetTextFromPage(pdfReader, page)
+                        Dim posicionName As Integer = texto.IndexOf("Employee Name")
+                        ' Buscar la posición de "©"
+                        Dim total As Integer = texto.IndexOf("Dept")
+                        Dim resultado As String
+                        resultado = texto.Substring(posicionName + "Employee Name".Length, total - posicionName - "Employee Name".Length).Trim()
+                        resultado &= vbCrLf
+                        cadenaFinal &= resultado
+                    Else
+                        ' Obtener el texto de la página
+                        Dim texto As String = PdfTextExtractor.GetTextFromPage(pdfReader, page)
+                        Dim posicionName As Integer = texto.IndexOf("Employee Name")
+                        ' Buscar la posición de "©"
+                        Dim posicionCopyright As Integer = texto.IndexOf("©")
+
+                        Dim resultado As String
+                        resultado = texto.Substring(posicionName + "Employee Name".Length, posicionCopyright - posicionName - "Employee Name".Length).Trim()
+                        resultado &= vbCrLf
+                        cadenaFinal &= resultado
+                    End If
+                Next
+            Case 2
+                ' Recorrer las páginas del PDF
+                For page As Integer = 1 To pdfReader.NumberOfPages
+                    If page = pdfReader.NumberOfPages Then
+                        Dim texto As String = PdfTextExtractor.GetTextFromPage(pdfReader, page)
+                        Dim posicionName As Integer = texto.IndexOf("Class 1A Pension")
+                        ' Buscar la posición de "©"
+                        Dim total As Integer = texto.IndexOf("Dept")
+                        Dim resultado As String
+                        resultado = texto.Substring(posicionName + "Class 1A Pension".Length, total - posicionName - "Class 1A Pension".Length).Trim()
+                        resultado &= vbCrLf
+                        cadenaFinal &= resultado
+                    Else
+                        ' Obtener el texto de la página
+                        Dim texto As String = PdfTextExtractor.GetTextFromPage(pdfReader, page)
+                        Dim posicionName As Integer = texto.IndexOf("Class 1A Pension")
+                        ' Buscar la posición de "©"
+                        Dim posicionCopyright As Integer = texto.IndexOf("©")
+
+                        Dim resultado As String
+                        resultado = texto.Substring(posicionName + "Class 1A Pension".Length, posicionCopyright - posicionName - "Class 1A Pension".Length).Trim()
+                        resultado &= vbCrLf
+                        cadenaFinal &= resultado
+                    End If
+                Next
+            Case 3
+            Case Else
+                Console.WriteLine("Falta un digito antes del (")
+        End Select
+    End Sub
+    Dim cadenaFinal As String
+    Dim ruta As String
+    Public Sub GuardaFicheroUkTxt()
+        Dim rutaArchivo As String = "N:\100. GESTION\01. A3\00. Pruebas\temp.txt"
+        ' Realizar los reemplazos
+        cadenaFinal = cadenaFinal.Replace("  ", " ").Replace(", ", ",")
+        ' Escribe la cadena en el archivo
+        File.WriteAllText(rutaArchivo, cadenaFinal)
+    End Sub
+
+    Public Sub darFormaTablaUK(ByRef dtPersonasUK As DataTable)
+        'En total 17 columnas.
+        dtPersonasUK.Columns.Add("Diccionario")
+        dtPersonasUK.Columns.Add("Operario") 'Aqui se incluye hasta la columna que hay una A o una M
+        dtPersonasUK.Columns.Add("Pre tax")
+        dtPersonasUK.Columns.Add("Gu Costs")
+        dtPersonasUK.Columns.Add("Abstence Pay")
+        dtPersonasUK.Columns.Add("Holiday Pay")
+        dtPersonasUK.Columns.Add("Pre Tax Pension")
+        dtPersonasUK.Columns.Add("Taxable Pay")
+        dtPersonasUK.Columns.Add("Tax")
+        dtPersonasUK.Columns.Add("Net NI")
+        dtPersonasUK.Columns.Add("Post Tax Add")
+        dtPersonasUK.Columns.Add("Post Tax Pension")
+        dtPersonasUK.Columns.Add("AEO")
+        dtPersonasUK.Columns.Add("Students Loans")
+        dtPersonasUK.Columns.Add("Net Pay")
+        dtPersonasUK.Columns.Add("Net Er NI")
+        dtPersonasUK.Columns.Add("Er Pension")
+    End Sub
+    Private Sub bUk_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bUk.Click
+        cadenaFinal = ""
+        Do
+            SeleccionarPDFyLeerDataTableUK()
+            Dim respuesta As DialogResult = MessageBox.Show("¿Deseas cargar algún Excel más?", "Continuar", MessageBoxButtons.YesNo)
+            ' Salir del bucle si el usuario responde "No"
+            If respuesta = DialogResult.No Then
+                Exit Do
+            End If
+        Loop
+        GuardaFicheroUkTxt()
+        LeeFicheroYGuardaEnExcel()
+    End Sub
+    Public Sub LeeFicheroYGuardaEnExcel()
+        Dim nombreArchivo As String = "N:\100. GESTION\01. A3\00. Pruebas\temp.txt"
+
+        If File.Exists(nombreArchivo) Then
+            ' Lee todas las líneas del archivo y las guarda en un array de String
+            Dim lineas As String() = File.ReadAllLines(nombreArchivo)
+            File.Delete(nombreArchivo)
+            FormaTablaFinal(lineas)
+        End If
+    End Sub
+
+    Public Sub FormaTablaFinal(ByVal lineas As String())
+        Dim dtUkPersonas As New DataTable
+        darFormaTablaUK(dtUkPersonas)
+
+        For Each fila As String In lineas
+            ' Añadir una nueva fila a la nueva tabla
+            Dim nuevaFila As DataRow = dtUkPersonas.NewRow()
+
+            nuevaFila("Diccionario") = fila.Substring(0, fila.IndexOf(" "))
+
+            ' Buscar la letra "A" o "M" y extraer el segundo valor (columna "Operario")
+            Dim letras() As String = {" A ", ")A ", " M ", ")M"}
+            Dim indiceEspacio1 As Integer = fila.IndexOf(" ")
+
+            ' Encontrar la posición de la letra después del primer espacio
+            Dim indiceLetra As Integer = -1
+
+            ' Buscar la letra en el array
+            For Each letra As String In letras
+                indiceLetra = fila.IndexOf(letra, indiceEspacio1)
+                If indiceLetra >= 0 Then
+                    Exit For ' Salir del bucle si se encontró la letra
+                End If
+            Next
+
+            ' Verificar si se encontró la letra
+            If indiceLetra >= 0 AndAlso indiceLetra > indiceEspacio1 Then
+                ' Extraer el segundo valor entre el primer espacio y la letra
+                Dim segundoValor As String = fila.Substring(indiceEspacio1 + 1, indiceLetra - indiceEspacio1 - 1 + 3).Trim()
+                ' Asignar el segundo valor a la columna "Operario"
+                nuevaFila("Operario") = segundoValor
+                '--------------------------
+                ' Ahora, extraer los valores desde el segundo hasta el próximo espacio y asignarlos a las columnas adicionales
+                Dim posInicio As Integer = indiceLetra + 3 ' Para empezar después de la letra y el espacio
+                Dim posFin As Integer = fila.IndexOf(" ", posInicio)
+
+                If posFin > posInicio Then
+                    ' Iterar sobre las columnas adicionales y asignar valores
+                    For Each columna As DataColumn In dtUkPersonas.Columns
+                        If columna.ColumnName <> "Diccionario" AndAlso columna.ColumnName <> "Operario" Then
+                            ' Extraer el valor entre posInicio y posFin
+                            Dim valorColumna As String = fila.Substring(posInicio, posFin - posInicio).Trim()
+                            nuevaFila(columna.ColumnName) = valorColumna
+                            ' Actualizar posInicio para el próximo ciclo
+                            posInicio = posFin + 1
+
+                            If posInicio < fila.Length Then
+                                posFin = fila.IndexOf(" ", posInicio)
+
+                                ' Si no se encuentra un espacio, establecer posFin al final de la cadena
+                                If posFin = -1 Then
+                                    posFin = fila.Length
+                                End If
+
+                                ' Resto del código...
+                            End If
+                            If posFin = -1 Then
+                                posFin = fila.Length ' Para manejar el último valor en la fila
+                            End If
+                        End If
+                    Next
+                End If
+            Else
+                ' Manejar el caso donde no se encuentra ninguna letra del array
+                MessageBox.Show("No se encontró ninguna letra 'A' o 'M' en la fila.")
+            End If
+
+
+            ' Agregar la nueva fila a la nueva tabla
+            dtUkPersonas.Rows.Add(nuevaFila)
+        Next
+
+        GeneraExcelUKUnificado(dtUkPersonas)
+    End Sub
+
+    Public Sub GeneraExcelUKUnificado(ByVal dtUkPersonas As DataTable)
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial
+
+        Dim saveFileDialog1 As New SaveFileDialog()
+
+        For Each fila As DataRow In dtUkPersonas.Rows
+            For Each columna As DataColumn In dtUkPersonas.Columns
+                ' Si el valor es de tipo Double, formatearlo con coma en lugar de punto
+                fila(columna) = DirectCast(fila(columna), String).Replace(".", ",")
+                fila(columna) = DirectCast(fila(columna), String).Replace("(", "-")
+                fila(columna) = DirectCast(fila(columna), String).Replace(")", "")
+
+                ' Si la columna es "Diccionario", eliminar letras y dejar solo dígitos
+                If columna.ColumnName = "Diccionario" Then
+                    Dim valorOriginal As String = DirectCast(fila(columna), String)
+                    Dim valorSinLetras As String = New String(valorOriginal.Where(Function(c) Char.IsDigit(c)).ToArray())
+                    fila(columna) = valorSinLetras
+                End If
+            Next
+        Next
+        ' Configurar propiedades del cuadro de diálogo
+
+        saveFileDialog1.Filter = "Archivos de texto|*.xlsx|Todos los archivos|*.*"
+        saveFileDialog1.Title = "Guardar archivo"
+
+        ' Mostrar el cuadro de diálogo y verificar si el usuario hizo clic en "Guardar"
+        If saveFileDialog1.ShowDialog() = DialogResult.OK Then
+            ' Obtener la ruta seleccionada por el usuario
+            Dim rutaArchivo As String = saveFileDialog1.FileName
+
+            'Verificar si el archivo existe.
+            If File.Exists(rutaArchivo) Then
+                'Si el archivo existe, eliminarlo.
+                File.Delete(rutaArchivo)
+            End If
+
+            dtUkPersonas.DefaultView.Sort = "Diccionario ASC" ' Ajusta "ColumnaL" al nombre real de la columna
+            Dim dtUkPersonasOrdenado = dtUkPersonas.DefaultView.ToTable()
+
+            Using package As New ExcelPackage(rutaArchivo)
+
+                ' Crear una hoja de cálculo y obtener una referencia a ella.
+                Dim worksheet = package.Workbook.Worksheets.Add("1")
+
+                ' Copiar los datos de la DataTable a la hoja de cálculo.
+                worksheet.Cells("A1").LoadFromDataTable(dtUkPersonasOrdenado, True)
+
+                Dim columnaA As ExcelRange = worksheet.Cells("A2:A" & worksheet.Dimension.End.Row)
+                columnaA.Style.Numberformat.Format = "@"
+
+                ' Aplicar formato negrita a la fila 1
+                Dim fila1 As ExcelRange = worksheet.Cells(1, 1, 1, worksheet.Dimension.End.Column)
+                fila1.Style.Font.Bold = True
+
+                For row As Integer = 2 To worksheet.Dimension.End.Row
+                    For col As Integer = 2 To 17
+                        Dim valorCelda As String = worksheet.Cells(row, col).Text
+                        Dim valorNumerico As Double
+
+                        ' Intentar convertir el valor a un número
+                        If Double.TryParse(valorCelda, valorNumerico) Then
+                            ' Si el valor está entre paréntesis, multiplicarlo por -1
+                            ' Asignar el valor numérico a la celda
+                            worksheet.Cells(row, col).Value = valorNumerico
+                        End If
+                    Next
+                Next
+                Dim rangoMoneda As ExcelRange = worksheet.Cells("B2:Q" & worksheet.Dimension.End.Row)
+                rangoMoneda.Style.Numberformat.Format = "#,##0.00£"
+
+                ' Agregar un filtro a la primera fila
+                worksheet.Cells("A1:" & GetExcelColumnName(worksheet.Dimension.End.Column) & "1").AutoFilter = True
+                worksheet.Column(2).Width = 30 : worksheet.Column(3).Width = 12 : worksheet.Column(4).Width = 12
+                worksheet.Column(5).Width = 12 : worksheet.Column(6).Width = 12 : worksheet.Column(7).Width = 12 : worksheet.Column(8).Width = 12
+                worksheet.Column(9).Width = 12 : worksheet.Column(10).Width = 12 : worksheet.Column(11).Width = 12
+                worksheet.Column(12).Width = 12 : worksheet.Column(13).Width = 12 : worksheet.Column(14).Width = 12
+                worksheet.Column(15).Width = 12 : worksheet.Column(16).Width = 12 : worksheet.Column(17).Width = 12
+                ' Guardar el archivo de Excel.
+                package.Save()
+            End Using
+
+            MsgBox("Fichero creado correctamente en N:\10. AUXILIARES\00. EXPERTIS\02. A3\")
+        End If
+    End Sub
+
+    Private Sub bNO_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bNO.Click
+        Dim dtPersonasPortugal As DataTable = SeleccionarPDFyLeerDataTableNO()
+        GeneraExcel(dtPersonasPortugal)
+    End Sub
+
+    Function SeleccionarPDFyLeerDataTableNO() As DataTable
+        ' Crear un cuadro de diálogo para seleccionar el archivo PDF
+        Dim openFileDialog As New OpenFileDialog()
+        openFileDialog.Filter = "Archivos PDF|*.pdf"
+        openFileDialog.Title = "Selecciona un archivo PDF"
+
+        If openFileDialog.ShowDialog() = DialogResult.OK Then
+            ' Llamada a la función para leer el PDF y convertirlo a DataTable
+            Return LeerPDFaDataTableNO(openFileDialog.FileName)
+        Else
+            ' El usuario canceló la selección
+            Return Nothing
+        End If
+    End Function
+    Dim accrued_holiday_pay As String = "10,20"
+    Dim accrued_holiday_pay_over_60_old As String = "2,30"
+    Dim accrued_EC_holiday As String = "14,10"
+    Dim employer_contribution As String = "14,10"
+
+
+
+    Function LeerPDFaDataTableNO(ByVal pdfPath As String) As DataTable
+        ' Crear un DataTable
+        Dim dataTable As New DataTable()
+        dataTable.Columns.Add("Diccionario")
+        dataTable.Columns.Add("Operario")
+        dataTable.Columns.Add("TAX")
+        dataTable.Columns.Add("Monthly wages (gross)")
+        dataTable.Columns.Add("Monthly food allowance (gross)")
+        dataTable.Columns.Add("Other Supplements (gross)")
+
+        dataTable.Columns.Add("Monthly wages (net)")
+        dataTable.Columns.Add("Monthly food allowance (net)")
+        dataTable.Columns.Add("Other Supplements")
+        dataTable.Columns.Add("Employee's Net Pay")
+
+        dataTable.Columns.Add("Free lodging - one or shared room")
+        dataTable.Columns.Add("Mandated pension")
+
+        dataTable.Columns.Add("Accrued holiday pay")
+        dataTable.Columns.Add("Accrued holiday pay over 60 yr old")
+        dataTable.Columns.Add("Accrued EC of holiday pay")
+
+        dataTable.Columns.Add("Employer's contribution")
+        dataTable.Columns.Add("Withholding taxes")
+
+        dataTable.Columns.Add("Mandated injury insurance")
+        dataTable.Columns.Add("Monthly payroll costs")
+        dataTable.Columns.Add("NET TO PAY")
+
+        'AÑADO LA NUEVA LINEA DE ANGEL
+        Dim nuevaFila As DataRow = dataTable.NewRow()
+
+        ' Asignar los valores a las columnas correspondientes
+        nuevaFila("Diccionario") = ""
+        nuevaFila("Operario") = ""
+
+        nuevaFila("TAX") = ""
+        nuevaFila("Monthly wages (gross)") = "25"
+        nuevaFila("Monthly food allowance (gross)") = "25"
+        nuevaFila("Other Supplements (gross)") = "25"
+        nuevaFila("Monthly wages (net)") = ""
+        nuevaFila("Monthly food allowance (net)") = ""
+        nuevaFila("Other Supplements") = ""
+        nuevaFila("Employee's Net Pay") = ""
+        nuevaFila("Free lodging - one or shared room") = "NOK 40 per day"
+        nuevaFila("Mandated pension") = ""
+        nuevaFila("Accrued holiday pay") = accrued_holiday_pay
+        nuevaFila("Accrued holiday pay over 60 yr old") = accrued_holiday_pay_over_60_old
+        nuevaFila("Accrued EC of holiday pay") = accrued_EC_holiday
+        nuevaFila("Employer's contribution") = employer_contribution
+        nuevaFila("Withholding taxes") = "25% (PAYE)"
+        nuevaFila("Mandated injury insurance") = ""
+        nuevaFila("Monthly payroll costs") = "COSTE EMPRESA"
+        dataTable.Rows.Add(nuevaFila)
+
+        ' Crear un lector de PDF
+        Dim pdfReader As New PdfReader(pdfPath)
+        ' Recorrer las páginas del PDF
+        For page As Integer = 1 To pdfReader.NumberOfPages
+            ' Obtener el texto de la página
+            Dim texto As String = PdfTextExtractor.GetTextFromPage(pdfReader, page)
+            Dim tax As Double
+            Dim wagesgross As Double
+            Dim foodgross As Double
+            Dim supplementsgross As Double
+
+            Dim wagesnet As Double
+            Dim foodnet As Double
+            Dim supplementsnet As Double
+            ' Añadir una nueva fila a la nueva tabla
+            nuevaFila = dataTable.NewRow()
+
+            ' Asignar los valores a las columnas correspondientes
+            nuevaFila("Diccionario") = devuelveDiccionarioNO(texto)
+            nuevaFila("Operario") = devuelveOperarioNO(texto)
+            tax = devuelveTAX(texto)
+            wagesgross = devuelveWages(texto)
+            foodgross = devuelveFood(texto)
+            supplementsgross = devuelveComplementos(texto)
+
+            nuevaFila("TAX") = tax
+            nuevaFila("Monthly wages (gross)") = wagesgross
+            nuevaFila("Monthly food allowance (gross)") = foodgross
+            nuevaFila("Other Supplements (gross)") = supplementsgross
+            'AHORA ENTRAN EN CUENTA LAS COLUMNAS CALCULADAS
+            wagesnet = wagesgross - (wagesgross * tax / 100)
+            foodnet = foodgross - (foodgross * tax / 100)
+            supplementsnet = supplementsgross - (supplementsgross * tax / 100)
+
+            nuevaFila("Monthly wages (net)") = wagesnet
+            nuevaFila("Monthly food allowance (net)") = foodnet
+            nuevaFila("Other Supplements") = supplementsnet
+            '-SUMA DE LAS 3 ANTERIORES
+            nuevaFila("Employee's Net Pay") = wagesnet + foodnet + supplementsnet
+
+            'Siguiente bloque
+            nuevaFila("Free lodging - one or shared room") = 0
+            nuevaFila("Mandated pension") = 0
+
+            nuevaFila("Accrued holiday pay") = wagesgross * Double.Parse(accrued_holiday_pay) / 100
+            nuevaFila("Accrued holiday pay over 60 yr old") = 0
+            nuevaFila("Accrued EC of holiday pay") = (wagesgross * Double.Parse(accrued_holiday_pay) / 100) * (Double.Parse(accrued_EC_holiday) / 100)
+            nuevaFila("Employer's contribution") = (wagesgross + foodgross + supplementsgross) * (Double.Parse(employer_contribution) / 100)
+            nuevaFila("Withholding taxes") = (wagesgross + foodgross + supplementsgross) * (tax / 100)
+            nuevaFila("Mandated injury insurance") = 0
+            nuevaFila("Monthly payroll costs") = (wagesgross + foodgross + supplementsgross) + (wagesgross * Double.Parse(accrued_holiday_pay) / 100) + _
+            (wagesgross * Double.Parse(accrued_holiday_pay) / 100) * (Double.Parse(accrued_EC_holiday) / 100) + _
+            (wagesgross + foodgross + supplementsgross) * (Double.Parse(employer_contribution) / 100)
+            nuevaFila("NET TO PAY") = (wagesgross + foodgross)-((wagesgross + foodgross + supplementsgross) * (tax / 100))
+            ' Agregar la nueva fila a la nueva tabla
+            dataTable.Rows.Add(nuevaFila)
+        Next
+
+        Return dataTable
+    End Function
+
+    Public Function devuelveDiccionarioNO(ByVal texto As String) As String
+        Dim buscar As String = "Employee No."
+        Dim startIndex As Integer = texto.IndexOf(buscar)
+
+        ' Obtener las 5 posiciones después de "Employee No."
+        Dim resultado As String = texto.Substring(startIndex + buscar.Length, 7)
+
+        Dim soloNumeros As String = New String(resultado.Where(Function(c) Char.IsDigit(c)).ToArray())
+
+        Return soloNumeros
+    End Function
+
+    Public Function devuelveOperarioNO(ByVal texto As String) As String
+        Dim startString As String = "931198114"
+        Dim endString As String = "PAYSLIP"
+
+        ' Encontrar las posiciones de inicio y fin
+        Dim startIndex As Integer = texto.IndexOf(startString) + startString.Length
+        Dim endIndex As Integer = texto.IndexOf(endString)
+
+        ' Extraer la subcadena
+        Dim operario As String = texto.Substring(startIndex, endIndex - startIndex)
+
+        Return operario.Trim
+    End Function
+
+    Public Function devuelveTAX(ByVal texto As String) As String
+        Dim startString As String = "Percentage deduction"
+        ' Encontrar la posición de la cadena de búsqueda
+        Dim startIndex As Integer = texto.IndexOf(startString)
+        ' Buscar la posición del primer "%" después de "Percentage deduction" a partir del índice donde se encuentra "Percentage deduction"
+        Dim porcentajeIndex As Integer = texto.IndexOf("%", startIndex + startString.Length)
+        ' Obtener la subcadena deseada
+        Dim porcentaje As String = texto.Substring(startIndex + startString.Length, porcentajeIndex - (startIndex + startString.Length) + 1)
+
+        Return porcentaje.Trim.Replace(" %", "")
+    End Function
+
+    Public Function devuelveWages(ByVal texto As String) As String
+        ' Cadena de búsqueda
+        Dim searchString As String = "Fixed salary "
+        ' Encontrar la posición de la cadena de búsqueda
+        Dim startIndex As Integer = texto.IndexOf(searchString)
+        ' Encontrar la posición de la primera coma después de "Fixed salary"
+        Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
+        ' Obtener la subcadena deseada
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
+
+        'Comprobar si tiene "Wage deduction for holiday"
+        'Si se encuentra se resta el valor
+        searchString = "Wage deduction for holiday "
+
+        If texto.Contains(searchString) Then
+            Dim holiday As String
+            ' Encontrar la posición de la cadena de búsqueda
+            startIndex = texto.IndexOf(searchString)
+            Dim guionIndex As Integer = texto.IndexOf("-", startIndex)
+            ' Buscar la posición de la primera coma "," después del guión "-"
+            comaIndex = texto.IndexOf(",", guionIndex)
+            ' Obtener la subcadena deseada
+            holiday = texto.Substring(guionIndex + 1, comaIndex - (guionIndex + 1) + 3)
+            'Y ahora hago la resta
+            Dim resultadoFinal As Double
+            resultadoFinal = resultado.Replace(" ", "") - holiday.Replace(" ", "")
+            Return resultadoFinal
+        Else
+            Return resultado.Trim.Replace(" ", "")
+        End If
+
+    End Function
+
+    Public Function devuelveFood(ByVal texto As String) As String
+        ' Cadena de búsqueda
+        Dim searchString As String = "Monthly Food Allowance "
+        ' Encontrar la posición de la cadena de búsqueda
+        Dim startIndex As Integer = texto.IndexOf(searchString)
+        ' Encontrar la posición de la primera coma después de "Fixed salary"
+        Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
+        ' Obtener la subcadena deseada
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
+        Return resultado.Trim.Replace(" ", "")
+    End Function
+
+    Public Function devuelveComplementos(ByVal texto As String) As Double
+        Dim overtime As Double = 0
+        Dim bonus As Double = 0
+        Dim other_complements As Double = 0
+
+        If texto.Contains("Overtime") Then
+            overtime = devuelveOvertime(texto)
+        End If
+        If texto.Contains("Bonus") Then
+            bonus = devuelveBonus(texto)
+        End If
+
+        If texto.Contains("Other supplements") Then
+            other_complements = devuelveOtrosComplementos(texto)
+        End If
+
+        Return (overtime + bonus + other_complements)
+    End Function
+
+    Public Function devuelveOvertime(ByVal texto As String) As Double
+        'Overtime va a multiplicar 20 * 333,68
+        Dim valor As String
+
+        ' Cadena de búsqueda
+        Dim searchString As String = "Overtime"
+
+        ' Encontrar la posición de la cadena de búsqueda
+        Dim startIndex As Integer = texto.IndexOf(searchString)
+
+        ' Buscar la posición del carácter "%" después de "Overtime"
+        Dim porcentajeIndex As Integer = texto.IndexOf("% ", startIndex)
+
+        ' Buscar la posición del siguiente espacio después de la coma
+        Dim espacioIndex As Integer = texto.IndexOf(" ", porcentajeIndex + 2)
+
+        ' Obtener la subcadena deseada
+        Dim porcentaje As String = texto.Substring(porcentajeIndex + 1, espacioIndex - (porcentajeIndex + 1))
+
+        '--------------OBTENGO SEGUNDO PARAMETRO
+
+        startIndex = texto.IndexOf(porcentaje.Trim)
+        Dim valorIndex As Integer = texto.IndexOf(" ", startIndex)
+        espacioIndex = texto.IndexOf(" ", valorIndex + 2)
+        valor = texto.Substring(valorIndex + 1, espacioIndex - (valorIndex + 1))
+
+        Dim total As Double
+        total = (porcentaje.Trim.Replace(" ", "") * valor.Replace(" ", ""))
+        Return total
+    End Function
+
+    Public Function devuelveBonus(ByVal texto As String) As String
+        ' Cadena de búsqueda
+        Dim searchString As String = "Bonus "
+        ' Encontrar la posición de la cadena de búsqueda
+        Dim startIndex As Integer = texto.IndexOf(searchString)
+        ' Buscar la posición del carácter "," después de "Bonus "
+        Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
+
+        ' Obtener la subcadena deseada
+        Dim valor As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
+
+        Return valor.Trim.Replace(" ", "")
+    End Function
+
+    Public Function devuelveOtrosComplementos(ByVal texto As String) As String
+        Dim searchString As String = "Other supplements "
+        ' Encontrar la posición de la cadena de búsqueda
+        Dim startIndex As Integer = texto.IndexOf(searchString)
+        ' Buscar la posición del carácter "," después de "Other supplements "
+        Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
+
+        ' Obtener la subcadena deseada
+        Dim valor As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
+
+        Return valor.Trim.Replace(" ", "")
+    End Function
+
+    Public Sub GeneraExcel(ByVal dtFinal As DataTable)
+
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial
+
+        Dim saveFileDialog1 As New SaveFileDialog()
+        saveFileDialog1.Filter = "Archivos de texto|*.xlsx|Todos los archivos|*.*"
+        saveFileDialog1.Title = "Guardar archivo"
+
+        ' Mostrar el cuadro de diálogo y verificar si el usuario hizo clic en "Guardar"
+        If saveFileDialog1.ShowDialog() = DialogResult.OK Then
+            ' Obtener la ruta seleccionada por el usuario
+            Dim rutaArchivo As String = saveFileDialog1.FileName
+            Dim ruta As New FileInfo(rutaArchivo)
+            Dim rutaCadena As String = ""
+            rutaCadena = ruta.FullName
+
+            'Verificar si el archivo existe.
+            If File.Exists(rutaCadena) Then
+                'Si el archivo existe, eliminarlo.
+                File.Delete(rutaCadena)
+            End If
+
+            Using package As New ExcelPackage(ruta)
+                ' Crear una hoja de cálculo y obtener una referencia a ella.
+                Dim worksheet = package.Workbook.Worksheets.Add("1")
+
+                ' Copiar los datos de la DataTable a la hoja de cálculo.
+                worksheet.Cells("A1").LoadFromDataTable(dtFinal, True)
+
+                ' Aplicar formato negrita a la fila 1
+                Dim fila1 As ExcelRange = worksheet.Cells(1, 1, 1, worksheet.Dimension.End.Column)
+                fila1.Style.Font.Bold = True
+
+                For row As Integer = 3 To worksheet.Dimension.End.Row
+                    For col As Integer = 3 To 20
+                        Dim valorCelda As String = worksheet.Cells(row, col).Text
+                        Dim valorNumerico As Double
+
+                        If Double.TryParse(valorCelda, valorNumerico) Then
+                            ' Redondear el valor numérico a dos decimales
+                            valorNumerico = Math.Round(valorNumerico, 2)
+
+                            ' Si el valor está entre paréntesis, multiplicarlo por -1
+                            ' Asignar el valor numérico redondeado a la celda
+                            worksheet.Cells(row, col).Value = valorNumerico
+                        End If
+                    Next
+                Next
+
+                ' Establecer el formato de moneda para la columna D
+                worksheet.Column(19).Width = 18
+
+                Dim rangoMoneda As ExcelRange = worksheet.Cells("S3:S" & worksheet.Dimension.End.Row)
+                rangoMoneda.Style.Numberformat.Format = "_-[$NOK] * #,##0.00_-;_-[$NOK] * -#,##0.00_-;_-[$NOK] * ""-""??_-;_-@_-"
+                ' Guardar el archivo de Excel.
+                package.Save()
+            End Using
+
+            MsgBox("Excel generado correctamente")
+        End If
+
+       
+    End Sub
+
 End Class
