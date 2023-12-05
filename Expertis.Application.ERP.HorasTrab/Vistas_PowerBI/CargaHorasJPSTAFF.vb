@@ -580,6 +580,7 @@ Public Class CargaHorasJPSTAFF
             Return ""
         End If
     End Function
+    
 
     Public Function ObtieneFechasInsertar(ByVal basededatos As String, ByVal IDOperario As String, ByVal dtCalendario As DataTable, ByVal dtOperarioCalendarioNoProductivo As DataTable) As DataTable
         Dim dtDiasInsertar As New DataTable
@@ -1423,9 +1424,299 @@ Public Class CargaHorasJPSTAFF
     End Sub
 
     Private Sub bCreaHoras_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bCreaHoras.Click
-        importarExcelPorEmpresa()
-    End Sub
+        'importarExcelPorEmpresa()
+        '----------NUEVO METODO CON EXCEL NUEVO -----------
+        '1. EN LA HOJA "DATOS ARCHIVO" CELDA A1 ESTA EL NOBRA
+        '2. EN LA HOJA "HORAS" ESTÁN TODAS LAS PERSONAS POR IDOPERARIO Y SUS HORAS
+        Dim ruta As String = lblRuta.Text
+        Dim hoja1 As String = "DATOS DE ARCHIVO"
+        Dim hoja2 As String = "HORAS"
+        Dim rango1 As String = "A1:B1"
+        Dim rango2 As String = "A5:BR300"
 
+        Dim dtObra As New DataTable
+        Dim dtHoras As New DataTable
+        dtObra = ObtenerDatosExcel(ruta, hoja1, rango1)
+        dtHoras = ObtenerDatosExcel(ruta, hoja2, rango2)
+
+        Dim basededatos As String
+        Dim obra As String
+
+        obra = dtObra.Rows(0)("F2").ToString.Trim()
+        basededatos = DevuelveBaseDeDatosInternacional(obra)
+
+        If basededatos = "0" Then
+            Exit Sub
+        End If
+
+        dtHoras = dtFormaInternacional(dtHoras)
+
+        '-------CHECK IDOPERARIO
+        Dim idoperario As String
+        For Each fila As DataRow In dtHoras.Rows
+            idoperario = fila("IDOperario").ToString
+            If idoperario.Length = 0 Then
+                Continue For
+            End If
+            Dim dt As New DataTable
+            Dim f As New Filter : f.Add("IDOperario", FilterOperator.Equal, idoperario)
+            dt = New BE.DataEngine().Filter("vUnionOperariosCategoriaProfesional", f)
+
+            If dt.Rows.Count = 0 Then
+                MsgBox("El operario " & idoperario & " no existe.")
+                Exit Sub
+            End If
+
+            If dt.Rows(0)("CategoriaProfesionalSCCP") Is Nothing OrElse IsDBNull(dt.Rows(0)("CategoriaProfesionalSCCP")) Then
+                MsgBox("El operario " & idoperario & " no tiene oficio asignado.")
+                Exit Sub
+            End If
+
+        Next
+        '----------------------
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dtHoras.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+        For Each dr As DataRow In dtHoras.Rows
+            idoperario = dr("IDOperario").ToString
+            If idoperario.Length = 0 Then
+                Continue For
+            End If
+            Windows.Forms.Application.DoEvents()
+            LProgreso.Text = "Importando : " & idoperario
+            Windows.Forms.Application.DoEvents()
+
+            ' Recorrer las columnas a partir de la tercera
+            For i As Integer = 3 To dtHoras.Columns.Count - 1
+                Dim value As Object = dr(i)
+                Dim fecha As String
+                ' Verificar si la cabecera de la columna es numérica
+                If IsNumeric(dtHoras.Columns(i).ColumnName) Then
+                    fecha = DevuelveFechaDeNumero(dtHoras.Columns(i).ColumnName)
+                Else
+                    fecha = DevuelveFechaConFormato(dtHoras.Columns(i).ColumnName)
+                End If
+
+                InsertaHorasBaseDeDatos(basededatos, obra, idoperario, fecha, value)
+            Next
+            filas = filas + 1
+            PvProgreso.Value = filas
+        Next
+
+        MsgBox("Proceso finalizado correctamente", MsgBoxStyle.Information)
+    End Sub
+    Public Sub InsertaHorasBaseDeDatos(ByVal basededatos As String, ByVal obra As String, ByVal idoperario As String, ByVal fecha As String, ByVal value As Object)
+        'CHECK SI EL OPERARIO ES CATEGORIA 2 O 3 ENTONCES INSERTA HORAS
+        Dim IDCategoriaProfesionalSCCP As String
+        IDCategoriaProfesionalSCCP = DevuelveIDCategoriaProfesionalSCCP(basededatos, idoperario)
+        'CHECK SI existe registro de esta persona este dia en la base de datos
+        Dim dtCheckRegistro As DataTable
+        Dim f As New Filter
+        Dim idobra As String
+        f.Add("FechaInicio", FilterOperator.Equal, fecha)
+        f.Add("IDOperario", FilterOperator.Equal, idoperario)
+        idobra = DevuelveIDObra(basededatos, obra)
+        f.Add("IDObra", FilterOperator.Equal, idobra)
+        dtCheckRegistro = New BE.DataEngine().Filter(basededatos & "..tbObraModControl", f)
+        Dim txtSQL As String
+        Dim idoficio As String
+        Dim IDTrabajo As String
+        Dim CodTrabajo As String
+        Dim IDAutonumerico As String
+
+        If dtCheckRegistro.Rows.Count = 0 Then
+            If IDCategoriaProfesionalSCCP = 2 Or IDCategoriaProfesionalSCCP = 3 Then
+                'CHECK SI value es numerico va a HorasRealMod
+                ' SI value es ACC o CC inserta 8 en horas baja.
+                If IsNumeric(value) Then
+                    Dim horas As Double = value
+                    IDOficio = DevuelveIDOficio(basededatos, idoperario)
+                    'idobra = DevuelveIDObra(basededatos, obra)
+                    IDTrabajo = ObtieneIDTrabajo(basededatos, idobra, "PT1")
+                    IDAutonumerico = auto.Autonumerico()
+
+                    Dim rsTrabajo As New DataTable
+                    Dim filtro2 As New Filter
+                    filtro2.Add("IDObra", FilterOperator.Equal, idobra)
+                    filtro2.Add("IdTrabajo", FilterOperator.Equal, IDTrabajo)
+
+                    rsTrabajo = New BE.DataEngine().Filter(basededatos & "..tbObraTrabajo", filtro2)
+                    'rsTrabajo = obraTrabajo.Filter(filtro2, , "IdTrabajo, CodTrabajo, DescTrabajo, IdTipoTrabajo, IdSubtipoTrabajo")
+                    IDTrabajo = rsTrabajo.Rows(0)("IdTrabajo")
+                    CodTrabajo = rsTrabajo.Rows(0)("CodTrabajo")
+                    Dim DescTrabajo As String = "" : Dim IdTipoTrabajo As String = "" : Dim IdSubTipoTrabajo As String = ""
+                    DescTrabajo = rsTrabajo.Rows(0)("DescTrabajo") : IdTipoTrabajo = rsTrabajo.Rows(0)("IdTipoTrabajo") : IdSubTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdSubtipotrabajo"), "")
+
+
+                    Dim DescParte As String : DescParte = "INTERNACIONAL PRODUCTIVAS"
+                    txtSQL = "Insert into " & basededatos & "..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
+                            "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
+                             "ImpRealModA, HorasFactMod, ImpFactModA, DescParte, Facturable, FechaCreacionAudi, FechaModificacionAudi, Usuarioaudi, IDOficio, IdTipoTurno, HorasAdministrativas, IDCategoriaProfesionalSCCP) " & _
+                             "Values(" & IDAutonumerico & ", " & IDTrabajo & ", " & idobra & ", '" & _
+                             CodTrabajo & "', '" & DescTrabajo & "', '" & IdTipoTrabajo & "', '" & _
+                             IdSubTipoTrabajo & "', '" & idoperario & "', 'PREDET', '" & _
+                             "HO" & "', '" & fecha & "',  " & horas.ToString.Replace(",", ".") & "  , " & 0 & ", " & 0 & _
+                             ", 0 , " & 0 & _
+                             ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & idoficio & "', 4,0 ," & Nz(IDCategoriaProfesionalSCCP, "") & ")"
+
+                    auto.Ejecutar(txtSQL)
+
+                ElseIf value IsNot Nothing AndAlso TypeOf value Is String Then
+                    If value = "ACC" Or value.ToString = "CC" Or value.ToString = "acc" Or value.ToString = "cc" Then
+                        idoficio = DevuelveIDOficio(basededatos, idoperario)
+                        idobra = DevuelveIDObra(basededatos, obra)
+                        IDTrabajo = ObtieneIDTrabajo(basededatos, idobra, "PT1")
+                        IDAutonumerico = auto.Autonumerico()
+
+                        Dim rsTrabajo As New DataTable
+                        Dim filtro2 As New Filter
+                        filtro2.Add("IDObra", FilterOperator.Equal, idobra)
+                        filtro2.Add("IdTrabajo", FilterOperator.Equal, IDTrabajo)
+
+                        rsTrabajo = New BE.DataEngine().Filter(basededatos & "..tbObraTrabajo", filtro2)
+                        'rsTrabajo = obraTrabajo.Filter(filtro2, , "IdTrabajo, CodTrabajo, DescTrabajo, IdTipoTrabajo, IdSubtipoTrabajo")
+                        IDTrabajo = rsTrabajo.Rows(0)("IdTrabajo")
+                        CodTrabajo = rsTrabajo.Rows(0)("CodTrabajo")
+                        Dim DescTrabajo As String = "" : Dim IdTipoTrabajo As String = "" : Dim IdSubTipoTrabajo As String = ""
+                        DescTrabajo = rsTrabajo.Rows(0)("DescTrabajo") : IdTipoTrabajo = rsTrabajo.Rows(0)("IdTipoTrabajo") : IdSubTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdSubtipotrabajo"), "")
+
+
+                        Dim DescParte As String : DescParte = "INTERNACIONAL BAJA"
+                        txtSQL = "Insert into " & basededatos & "..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
+                                "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
+                                 "ImpRealModA, HorasFactMod, ImpFactModA, DescParte, Facturable, FechaCreacionAudi, FechaModificacionAudi, Usuarioaudi, IDOficio, IdTipoTurno, HorasBaja, IDCategoriaProfesionalSCCP) " & _
+                                 "Values(" & IDAutonumerico & ", " & IDTrabajo & ", " & idobra & ", '" & _
+                                 CodTrabajo & "', '" & DescTrabajo & "', '" & IdTipoTrabajo & "', '" & _
+                                 IdSubTipoTrabajo & "', '" & idoperario & "', 'PREDET', '" & _
+                                 value & "', '" & fecha & "',  0 , " & 0 & ", " & 0 & _
+                                 ", 0 , " & 0 & _
+                                 ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & idoficio & "', 4,8," & Nz(IDCategoriaProfesionalSCCP, "") & ")"
+
+                        auto.Ejecutar(txtSQL)
+
+                    End If
+                Else
+
+                End If
+            End If
+            End If
+    End Sub
+    Public Function DevuelveFechaDeNumero(ByVal fechanumero As String) As String
+        Dim fechaString As String = fechanumero.ToString()
+        Dim fechaBase As New DateTime(1899, 12, 30)
+        Dim fechaFinal As DateTime = fechaBase.AddDays(fechaString)
+        ' Extraer día, mes y año
+        Dim dia As Integer = fechaFinal.Day
+        Dim mes As Integer = fechaFinal.Month
+        Dim anio As Integer = fechaFinal.Year
+
+        Return fechaFinal
+    End Function
+
+    Public Function DevuelveFechaConFormato(ByVal fechanumero As String) As String
+        Dim fechaActual As DateTime = fechanumero
+        Dim formatoPersonalizado As String = "dd/MM/yyyy"
+        Dim fechaComoStringConFormato As String = fechaActual.ToString(formatoPersonalizado)
+
+        Return fechaComoStringConFormato
+    End Function
+
+    Public Function DevuelveBaseDeDatosInternacional(ByVal obra As String) As String
+        Dim basededatos As String
+        If obra.StartsWith("TUK") Then
+            basededatos = "xTecozamUnitedKingdom50R2"
+        ElseIf obra.StartsWith("DP") Then
+            basededatos = "xDrenajesPortugal50R2"
+        ElseIf obra.StartsWith("TN") Then
+            basededatos = "xTecozamNorge50R2"
+        Else
+            MsgBox("No se encuentra base de datos para esta obra")
+            basededatos = "0"
+        End If
+
+        Return basededatos
+    End Function
+
+    Public Function dtFormaInternacional(ByRef dtHoras As DataTable) As DataTable
+        dtHoras.Columns.Remove("F4")
+        dtHoras.Columns.Remove("F5")
+        dtHoras.Columns.Remove("F6")
+        dtHoras.Columns.Remove("F7")
+        dtHoras.Columns.Remove("F8")
+        dtHoras.Columns.Remove("F10")
+        dtHoras.Columns.Remove("F12")
+        dtHoras.Columns.Remove("F14")
+        dtHoras.Columns.Remove("F16")
+        dtHoras.Columns.Remove("F18")
+        dtHoras.Columns.Remove("F20")
+        dtHoras.Columns.Remove("F22")
+        dtHoras.Columns.Remove("F24")
+        dtHoras.Columns.Remove("F26")
+        dtHoras.Columns.Remove("F28")
+        dtHoras.Columns.Remove("F30")
+        dtHoras.Columns.Remove("F32")
+        dtHoras.Columns.Remove("F34")
+        dtHoras.Columns.Remove("F36")
+        dtHoras.Columns.Remove("F38")
+        dtHoras.Columns.Remove("F40")
+        dtHoras.Columns.Remove("F42")
+        dtHoras.Columns.Remove("F44")
+        dtHoras.Columns.Remove("F46")
+        dtHoras.Columns.Remove("F48")
+        dtHoras.Columns.Remove("F50")
+        dtHoras.Columns.Remove("F52")
+        dtHoras.Columns.Remove("F54")
+        dtHoras.Columns.Remove("F56")
+        dtHoras.Columns.Remove("F58")
+        dtHoras.Columns.Remove("F60")
+        dtHoras.Columns.Remove("F62")
+        dtHoras.Columns.Remove("F64")
+        dtHoras.Columns.Remove("F66")
+        dtHoras.Columns.Remove("F68")
+        dtHoras.Columns.Remove("F70")
+
+        ' Crear un nuevo DataTable para almacenar el resultado con la primera fila como cabecera
+        Dim dtFinal As New DataTable()
+
+        ' Añadir columnas al DataTable con base en la primera fila de dtHoras
+        For Each columnaOriginal As DataColumn In dtHoras.Columns
+            ' Obtener el nombre de la columna original y agregarla como columna al nuevo DataTable
+            dtFinal.Columns.Add(dtHoras.Rows(0)(columnaOriginal.ColumnName).ToString(), columnaOriginal.DataType)
+        Next
+
+        ' Añadir filas al DataTable con base en las filas restantes de dtHoras
+        For i As Integer = 1 To dtHoras.Rows.Count - 1
+            Dim nuevaFila As DataRow = dtFinal.NewRow()
+
+            If dtHoras.Rows(i)(0).ToString() = "Fin" Or dtHoras.Rows(i)(0).ToString() = "FIN" Then
+                Exit For
+            End If
+            ' Copiar los datos de las filas restantes a las filas del nuevo DataTable
+            For j As Integer = 0 To dtHoras.Columns.Count - 1
+                nuevaFila(j) = dtHoras.Rows(i)(j)
+            Next
+
+            ' Añadir la nueva fila al DataTable con cabecera
+            dtFinal.Rows.Add(nuevaFila)
+        Next
+
+        '--------------BORRO LAS QUE EMPIEZAN POR COLUMN QUE SE COMPLETAN SOLAS
+        ' Supongamos que tienes un DataTable llamado dtFinal
+        Dim columnasAEliminar As New List(Of DataColumn)
+
+        ' Identificar las columnas a eliminar
+        For Each columna As DataColumn In dtFinal.Columns
+            If columna.ColumnName.StartsWith("Colum", StringComparison.OrdinalIgnoreCase) Then
+                columnasAEliminar.Add(columna)
+            End If
+        Next
+
+        ' Eliminar las columnas identificadas
+        For Each columnaAEliminar As DataColumn In columnasAEliminar
+            dtFinal.Columns.Remove(columnaAEliminar)
+        Next
+
+        Return dtFinal
+    End Function
     Public Sub importarExcelPorEmpresa()
         Dim obraCab As New ObraCabecera
 
@@ -1869,7 +2160,7 @@ Public Class CargaHorasJPSTAFF
         Dim filtro As New Filter
         Dim sql2 As String
 
-        sql2 = "Select * from " & DB_UK & "..tbObraCabecera where NObra='" & NObra & "'"
+        sql2 = "Select * from " & bbdd & "..tbObraCabecera where NObra='" & NObra & "'"
         dtObra = aux.EjecutarSqlSelect(sql2)
 
         Return dtObra.Rows(0)("IDObra")
@@ -1880,7 +2171,7 @@ Public Class CargaHorasJPSTAFF
     Private Sub bA3_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bA3.Click
 
         'CREO LA TABLA A MODO RESUMEN QUE VA EN EL A3 UNIFICADO(HOJA 2 DEL EXCEL)
-        FormaTablaResumen()
+        'FormaTablaResumen()
         '------------------
         Dim dtFinal As New DataTable
         FormaTablaFinal(dtFinal)
@@ -3516,6 +3807,8 @@ Public Class CargaHorasJPSTAFF
         '5. TABLA DE RESUMEN
         Dim dtResumenCategoriaProfesional As New DataTable
         dtResumenCategoriaProfesional = getResumenCategoria(dtRatiosGente)
+
+        
 
         'GENERACION EXCEL CON LAS 5 PESTAÑAS
         GeneraExcelHorasA3(dtGenteSiHorasNoEuros, dtGenteSiEurosNoHoras, dtRatiosGente, dtPersonasDobleCoti, dtResumenCategoriaProfesional, mes, anio)
@@ -5352,54 +5645,35 @@ Public Class CargaHorasJPSTAFF
         dataTable.Columns.Add("Diccionario")
         dataTable.Columns.Add("Operario")
         dataTable.Columns.Add("TAX")
-        dataTable.Columns.Add("Monthly wages (gross)")
-        dataTable.Columns.Add("Monthly food allowance (gross)")
-        dataTable.Columns.Add("Other Supplements (gross)")
-
-        dataTable.Columns.Add("Monthly wages (net)")
-        dataTable.Columns.Add("Monthly food allowance (net)")
-        dataTable.Columns.Add("Other Supplements")
-        dataTable.Columns.Add("Employee's Net Pay")
-
-        dataTable.Columns.Add("Free lodging - one or shared room")
-        dataTable.Columns.Add("Mandated pension")
-
+        dataTable.Columns.Add("Cash Benefit (gross)")
+        'dataTable.Columns.Add("Monthly food allowance (gross)")
+        'dataTable.Columns.Add("Other Supplements (gross)")
+        dataTable.Columns.Add("Payment in kind (gross)")
+        dataTable.Columns.Add("Impuestos")
+        dataTable.Columns.Add("Other deductions (net)")
+        dataTable.Columns.Add("NET TO PAY")
         dataTable.Columns.Add("Accrued holiday pay")
         dataTable.Columns.Add("Accrued holiday pay over 60 yr old")
         dataTable.Columns.Add("Accrued EC of holiday pay")
-
-        dataTable.Columns.Add("Employer's contribution")
+        dataTable.Columns.Add("Employer's Contribution")
         dataTable.Columns.Add("Withholding taxes")
+        dataTable.Columns.Add("COSTE EMPRESA")
 
-        dataTable.Columns.Add("Mandated injury insurance")
-        dataTable.Columns.Add("Monthly payroll costs")
-        dataTable.Columns.Add("NET TO PAY")
 
         'AÑADO LA NUEVA LINEA DE ANGEL
         Dim nuevaFila As DataRow = dataTable.NewRow()
 
-        ' Asignar los valores a las columnas correspondientes
-        nuevaFila("Diccionario") = ""
-        nuevaFila("Operario") = ""
+        '' Asignar los valores a las columnas correspondientes
+        'nuevaFila("Diccionario") = ""
+        'nuevaFila("Operario") = ""
 
-        nuevaFila("TAX") = ""
-        nuevaFila("Monthly wages (gross)") = "25"
-        nuevaFila("Monthly food allowance (gross)") = "25"
-        nuevaFila("Other Supplements (gross)") = "25"
-        nuevaFila("Monthly wages (net)") = ""
-        nuevaFila("Monthly food allowance (net)") = ""
-        nuevaFila("Other Supplements") = ""
-        nuevaFila("Employee's Net Pay") = ""
-        nuevaFila("Free lodging - one or shared room") = "NOK 40 per day"
-        nuevaFila("Mandated pension") = ""
-        nuevaFila("Accrued holiday pay") = accrued_holiday_pay
-        nuevaFila("Accrued holiday pay over 60 yr old") = accrued_holiday_pay_over_60_old
-        nuevaFila("Accrued EC of holiday pay") = accrued_EC_holiday
-        nuevaFila("Employer's contribution") = employer_contribution
-        nuevaFila("Withholding taxes") = "25% (PAYE)"
-        nuevaFila("Mandated injury insurance") = ""
-        nuevaFila("Monthly payroll costs") = "COSTE EMPRESA"
-        dataTable.Rows.Add(nuevaFila)
+        'nuevaFila("TAX") = ""
+        'nuevaFila("Monthly wages (gross)") = "25"
+        'nuevaFila("Monthly food allowance (gross)") = "25"
+        'nuevaFila("Other Supplements (gross)") = "25"
+
+        'nuevaFila("Monthly payroll costs") = "COSTE EMPRESA"
+        'dataTable.Rows.Add(nuevaFila)
 
         ' Crear un lector de PDF
         Dim pdfReader As New PdfReader(pdfPath)
@@ -5411,10 +5685,12 @@ Public Class CargaHorasJPSTAFF
             Dim wagesgross As Double
             Dim foodgross As Double
             Dim supplementsgross As Double
-
-            Dim wagesnet As Double
-            Dim foodnet As Double
-            Dim supplementsnet As Double
+            Dim paymentinkind As Double
+            Dim deductions As Double
+            Dim cashBenefit As Double
+            Dim impuestos As Double
+            Dim paybasis As Double
+            Dim old As Double
             ' Añadir una nueva fila a la nueva tabla
             nuevaFila = dataTable.NewRow()
 
@@ -5422,39 +5698,39 @@ Public Class CargaHorasJPSTAFF
             nuevaFila("Diccionario") = devuelveDiccionarioNO(texto)
             nuevaFila("Operario") = devuelveOperarioNO(texto)
             tax = devuelveTAX(texto)
-            wagesgross = devuelveWages(texto)
-            foodgross = devuelveFood(texto)
-            supplementsgross = devuelveComplementos(texto)
-
+            'wagesgross = devuelveWages(texto)
+            'foodgross = devuelveFood(texto)
+            'supplementsgross = devuelveComplementos(texto)
+            paymentinkind = Nz(devuelvePaymentInKind(texto), 0)
+            deductions = Nz(devuelveDeductions(texto), 0)
+            cashBenefit = devuelveCashBenefit(texto)
             nuevaFila("TAX") = tax
-            nuevaFila("Monthly wages (gross)") = wagesgross
-            nuevaFila("Monthly food allowance (gross)") = foodgross
-            nuevaFila("Other Supplements (gross)") = supplementsgross
-            'AHORA ENTRAN EN CUENTA LAS COLUMNAS CALCULADAS
-            wagesnet = wagesgross - (wagesgross * tax / 100)
-            foodnet = foodgross - (foodgross * tax / 100)
-            supplementsnet = supplementsgross - (supplementsgross * tax / 100)
+            nuevaFila("Cash Benefit (gross)") = cashBenefit
+            'nuevaFila("Monthly wages (gross)") = wagesgross
+            'nuevaFila("Monthly food allowance (gross)") = foodgross
+            'nuevaFila("Other Supplements (gross)") = supplementsgross
+            nuevaFila("Payment in kind (gross)") = paymentinkind
+            impuestos = (cashBenefit + paymentinkind) * (tax / 100)
+            nuevaFila("Impuestos") = (cashBenefit + paymentinkind) * (tax / 100)
+            nuevaFila("Other deductions (net)") = Math.Abs(deductions)
+            nuevaFila("NET TO PAY") = cashBenefit - impuestos + Math.Abs(deductions)
+            paybasis = devuelvePayBasis(texto) * 0.102
+            nuevaFila("Accrued holiday pay") = paybasis
+            old = DevuelvePagoPorViejo(devuelveDiccionarioNO(texto))
+            Dim viejos As Double = 0
+            If old = 1 Then
+                viejos = cashBenefit * 0.023
+                nuevaFila("Accrued holiday pay over 60 yr old") = viejos
+            End If
+            nuevaFila("Accrued EC of holiday pay") = (paybasis + viejos) * 0.141
 
-            nuevaFila("Monthly wages (net)") = wagesnet
-            nuevaFila("Monthly food allowance (net)") = foodnet
-            nuevaFila("Other Supplements") = supplementsnet
-            '-SUMA DE LAS 3 ANTERIORES
-            nuevaFila("Employee's Net Pay") = wagesnet + foodnet + supplementsnet
+            nuevaFila("Employer's Contribution") = (cashBenefit + paymentinkind) * 0.141
+            nuevaFila("Withholding taxes") = (cashBenefit + paymentinkind) * (tax / 100)
+            nuevaFila("COSTE EMPRESA") = (cashBenefit + paymentinkind) + paybasis + viejos + ((paybasis + viejos) * 0.141) + (cashBenefit + paymentinkind) * 0.141
 
-            'Siguiente bloque
-            nuevaFila("Free lodging - one or shared room") = 0
-            nuevaFila("Mandated pension") = 0
 
-            nuevaFila("Accrued holiday pay") = wagesgross * Double.Parse(accrued_holiday_pay) / 100
-            nuevaFila("Accrued holiday pay over 60 yr old") = 0
-            nuevaFila("Accrued EC of holiday pay") = (wagesgross * Double.Parse(accrued_holiday_pay) / 100) * (Double.Parse(accrued_EC_holiday) / 100)
-            nuevaFila("Employer's contribution") = (wagesgross + foodgross + supplementsgross) * (Double.Parse(employer_contribution) / 100)
-            nuevaFila("Withholding taxes") = (wagesgross + foodgross + supplementsgross) * (tax / 100)
-            nuevaFila("Mandated injury insurance") = 0
-            nuevaFila("Monthly payroll costs") = (wagesgross + foodgross + supplementsgross) + (wagesgross * Double.Parse(accrued_holiday_pay) / 100) + _
-            (wagesgross * Double.Parse(accrued_holiday_pay) / 100) * (Double.Parse(accrued_EC_holiday) / 100) + _
-            (wagesgross + foodgross + supplementsgross) * (Double.Parse(employer_contribution) / 100)
-            nuevaFila("NET TO PAY") = (wagesgross + foodgross)-((wagesgross + foodgross + supplementsgross) * (tax / 100))
+            'nuevaFila("NET TO PAY") = cashBenefit - impuestos + Math.Abs(deductions)
+            'nuevaFila("NET TO PAY") = (wagesgross + foodgross + supplementsgross) - ((wagesgross + foodgross + supplementsgross + paymentinkind) * (tax / 100)) + Math.Abs(deductions)
             ' Agregar la nueva fila a la nueva tabla
             dataTable.Rows.Add(nuevaFila)
         Next
@@ -5473,7 +5749,55 @@ Public Class CargaHorasJPSTAFF
 
         Return soloNumeros
     End Function
+    Public Function DevuelvePagoPorViejo(ByVal diccionario As String) As Double
+        Dim dt As New DataTable
+        Dim f As New Filter
+        f.Add("Diccionario", FilterOperator.Equal, diccionario)
 
+        dt = New BE.DataEngine().Filter(DB_NO & "..frmMntoOperario", f)
+
+        If dt.Rows.Count = 0 Then
+            MsgBox("El operario con diccionario " & diccionario & " no está dado de alta en Expertis.")
+            Return 0
+        End If
+        Dim fecha_nacimiento As String
+        Try
+            fecha_nacimiento = dt.Rows(0)("Fecha_Nacimiento")
+        Catch ex As Exception
+            Return 0
+        End Try
+
+
+        If fecha_nacimiento.Length = 0 Then
+            Return 0
+        Else
+            Dim fechaNacimiento As DateTime
+            If DateTime.TryParse(fecha_nacimiento, fechaNacimiento) Then
+                ' Calcular la edad
+                Dim edad As Integer = CalcularEdad(fechaNacimiento)
+
+                ' Verificar si la edad supera los 60 años
+                If edad > 60 Then
+                    Return 1
+                Else
+                    Return 0
+                End If
+            End If
+        End If
+
+    End Function
+
+    Function CalcularEdad(ByVal fechaNacimiento As DateTime) As Integer
+        ' Calcular la diferencia en años entre la fecha de nacimiento y la fecha actual
+        Dim edad As Integer = DateTime.Now.Year - fechaNacimiento.Year
+
+        ' Ajustar la edad si aún no ha llegado el cumpleaños en este año
+        If DateTime.Now < fechaNacimiento.AddYears(edad) Then
+            edad -= 1
+        End If
+
+        Return edad
+    End Function
     Public Function devuelveOperarioNO(ByVal texto As String) As String
         Dim startString As String = "931198114"
         Dim endString As String = "PAYSLIP"
@@ -5545,6 +5869,65 @@ Public Class CargaHorasJPSTAFF
         Return resultado.Trim.Replace(" ", "")
     End Function
 
+    Public Function devuelvePaymentInKind(ByVal texto As String) As String
+        ' Cadena de búsqueda
+        Dim searchString As String = "Payment in kind "
+        ' Encontrar la posición de la cadena de búsqueda
+        Dim startIndex As Integer = texto.IndexOf(searchString)
+        If startIndex = "-1" Then
+            Return 0
+        End If
+        ' Encontrar la posición de la primera coma después de "Fixed salary"
+        Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
+        ' Obtener la subcadena deseada
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
+        Return resultado.Trim.Replace(" ", "")
+    End Function
+
+    Public Function devuelveDeductions(ByVal texto As String) As String
+        ' Cadena de búsqueda
+        Dim searchString As String = "Other deductions "
+        ' Encontrar la posición de la cadena de búsqueda
+        Dim startIndex As Integer = texto.IndexOf(searchString)
+        If startIndex = "-1" Then
+            Return 0
+        End If
+        ' Encontrar la posición de la primera coma después de "Fixed salary"
+        Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
+        ' Obtener la subcadena deseada
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
+        Return resultado.Trim.Replace(" ", "")
+    End Function
+
+    Public Function devuelvePayBasis(ByVal texto As String) As String
+        ' Cadena de búsqueda
+        Dim searchString As String = "Holiday pay basis "
+        ' Encontrar la posición de la cadena de búsqueda
+        Dim startIndex As Integer = texto.IndexOf(searchString)
+        If startIndex = "-1" Then
+            Return 0
+        End If
+        ' Encontrar la posición de la primera coma después de "Fixed salary"
+        Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
+        ' Obtener la subcadena deseada
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
+        Return resultado.Trim.Replace(" ", "")
+    End Function
+
+    Public Function devuelveCashBenefit(ByVal texto As String) As String
+        ' Cadena de búsqueda
+        Dim searchString As String = "Cash benefit "
+        ' Encontrar la posición de la cadena de búsqueda
+        Dim startIndex As Integer = texto.IndexOf(searchString)
+        If startIndex = "-1" Then
+            Return 0
+        End If
+        ' Encontrar la posición de la primera coma después de "Fixed salary"
+        Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
+        ' Obtener la subcadena deseada
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
+        Return resultado.Trim.Replace(" ", "")
+    End Function
     Public Function devuelveComplementos(ByVal texto As String) As Double
         Dim overtime As Double = 0
         Dim bonus As Double = 0
@@ -5655,7 +6038,7 @@ Public Class CargaHorasJPSTAFF
                 Dim fila1 As ExcelRange = worksheet.Cells(1, 1, 1, worksheet.Dimension.End.Column)
                 fila1.Style.Font.Bold = True
 
-                For row As Integer = 3 To worksheet.Dimension.End.Row
+                For row As Integer = 2 To worksheet.Dimension.End.Row
                     For col As Integer = 3 To 20
                         Dim valorCelda As String = worksheet.Cells(row, col).Text
                         Dim valorNumerico As Double
@@ -5671,11 +6054,23 @@ Public Class CargaHorasJPSTAFF
                     Next
                 Next
 
-                ' Establecer el formato de moneda para la columna D
-                worksheet.Column(19).Width = 18
+                ' Establecer el formato de moneda para la columna N
+                worksheet.Column(14).Width = 18
 
-                Dim rangoMoneda As ExcelRange = worksheet.Cells("S3:S" & worksheet.Dimension.End.Row)
+                Dim rangoMoneda As ExcelRange = worksheet.Cells("N2:N" & worksheet.Dimension.End.Row)
                 rangoMoneda.Style.Numberformat.Format = "_-[$NOK] * #,##0.00_-;_-[$NOK] * -#,##0.00_-;_-[$NOK] * ""-""??_-;_-@_-"
+
+                ' Establecer el color de fondo de la columna N a verde
+                Dim rangoColumnaN As ExcelRange = worksheet.Cells(2, 14, worksheet.Dimension.End.Row, 14) ' Columna N es la 14
+                rangoColumnaN.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                rangoColumnaN.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(144, 238, 144)) ' Utilizando un tono de verde claro
+
+                ' Establecer el color de fondo de la columna H a un amarillo claro
+                Dim rangoColumnaH As ExcelRange = worksheet.Cells(2, 8, worksheet.Dimension.End.Row, 8) ' Columna H es la 8
+                rangoColumnaH.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                rangoColumnaH.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+
+
                 ' Guardar el archivo de Excel.
                 package.Save()
             End Using
@@ -5686,4 +6081,145 @@ Public Class CargaHorasJPSTAFF
        
     End Sub
 
+    Private Sub bMatriz_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bMatriz.Click
+        '6. TABLA DE HORAS POR PERSONAS
+        'Dim dtHorasPersonasDias As New DataTable
+        'FormaTablaMatriz(dtHorasPersonasDias)
+
+        Dim frm As New frmInformeFecha
+        frm.ShowDialog()
+        Dim Fecha1 As String : Dim Fecha2 As String
+        Fecha1 = frm.fecha1 : Fecha2 = frm.fecha2
+        Dim dtHoras As New DataTable
+        Dim f As New Filter
+        f.Add("FechaInicio", FilterOperator.GreaterThanOrEqual, Fecha1)
+        f.Add("FechaInicio", FilterOperator.LessThanOrEqual, Fecha2)
+
+        dtHoras = New BE.DataEngine().Filter("vUniontbObraModControl", f, , "Empresa asc")
+
+        ' Crear la estructura de la tabla dtHorasPersonasDias
+        Dim dtHorasPersonasDias As New DataTable()
+        dtHorasPersonasDias.Columns.Add("Empresa")
+        dtHorasPersonasDias.Columns.Add("IDGET")
+        dtHorasPersonasDias.Columns.Add("IDOperario")
+        dtHorasPersonasDias.Columns.Add("DescOperario")
+        dtHorasPersonasDias.Columns.Add("IDCategoriaProfesionalSCCP", System.Type.GetType("System.Double"))
+
+        For i As Integer = 1 To 31 ' Suponiendo que tu tabla tiene columnas para cada día del mes
+            dtHorasPersonasDias.Columns.Add(i.ToString(), System.Type.GetType("System.Double"))
+        Next
+
+        ' Iterar sobre las filas de dtHoras y calcular la suma por día y operario
+        For Each filaHoras As DataRow In dtHoras.Rows
+            Dim fechaTrabajo As DateTime = DateTime.Parse(filaHoras("FechaInicio").ToString())
+
+            ' Verificar si la fecha está dentro del rango especificado
+            If fechaTrabajo >= Fecha1 AndAlso fechaTrabajo <= Fecha2 Then
+                Dim idOperario As String = filaHoras("IDOperario").ToString()
+                Dim empresa As String = filaHoras("Empresa").ToString()
+                Dim totalHoras As Double = Convert.ToDouble(Nz(filaHoras("HorasRealMod"), 0)) + Convert.ToDouble(Nz(filaHoras("HorasAdministrativas"), 0)) + Convert.ToDouble(Nz(filaHoras("HorasBaja"), 0))
+
+                ' Buscar la fila correspondiente en dtHorasPersonasDias y actualizar el valor
+                Dim fila As DataRow = dtHorasPersonasDias.Rows.Cast(Of DataRow)().FirstOrDefault(Function(row) row("IDOperario").ToString() = idOperario)
+                If fila IsNot Nothing Then
+                    Dim diaDelMes As Integer = fechaTrabajo.Day
+                    'fila(diaDelMes.ToString()) = totalHoras
+                    fila(diaDelMes.ToString()) = Convert.ToDouble(Nz(fila(diaDelMes.ToString()), 0)) + totalHoras
+                Else
+                    ' Si la fila no existe, puedes agregarla
+                    fila = dtHorasPersonasDias.NewRow()
+                    fila("Empresa") = empresa
+
+                    Dim bbdd As String
+                    bbdd = DevuelveBaseDeDatos(empresa)
+                    fila("IDGET") = DevuelveIDGET(bbdd, idOperario)
+                    fila("IDOperario") = idOperario
+                    fila("DescOperario") = DevuelveDescOperario(bbdd, idOperario)
+                    fila("IDCategoriaProfesionalSCCP") = DevuelveIDCategoriaProfesionalSCCPTodasBasesDeDatos(idOperario)
+                    Dim diaDelMes As Integer = fechaTrabajo.Day
+                    fila(diaDelMes.ToString()) = totalHoras
+                    dtHorasPersonasDias.Rows.Add(fila)
+                End If
+            End If
+        Next
+
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial
+
+        Dim ruta As New FileInfo("N:\10. AUXILIARES\00. EXPERTIS\05. CHECK HORAS-A3\" & Month(Fecha1) & " MATRIZ HORAS " & Year(Fecha1) & ".xlsx")
+        'Dim ruta As New FileInfo("N:\01. A3\" & mes & " A3 " & mes & anio.Substring(anio.Length - 2) & ".xlsx")
+        Dim rutaCadena As String = ""
+        rutaCadena = ruta.FullName
+
+        'Verificar si el archivo existe.
+        If File.Exists(rutaCadena) Then
+            'Si el archivo existe, eliminarlo.
+            File.Delete(rutaCadena)
+        End If
+
+        Using package As New ExcelPackage(ruta)
+            ' HOJA 1
+            Dim worksheet = package.Workbook.Worksheets.Add("MATRIZ HORAS")
+            worksheet.Cells("A1").LoadFromDataTable(dtHorasPersonasDias, True)
+            Dim fila1 As ExcelRange = worksheet.Cells(1, 1, 1, worksheet.Dimension.End.Column)
+            fila1.Style.Font.Bold = True
+            worksheet.Cells("A1:" & GetExcelColumnName(worksheet.Dimension.End.Column) & "1").AutoFilter = True
+            
+            ' Guardar el archivo de Excel.
+            package.Save()
+
+            MsgBox("Fichero guardado en N:\10. AUXILIARES\00. EXPERTIS\05. CHECK HORAS-A3\")
+        End Using
+    End Sub
+    Public Sub FormaTablaMatriz(ByRef dtHorasPersonasDias As DataTable)
+        'dtHorasPersonasDias.Columns.Add("Empresa")
+        'dtHorasPersonasDias.Columns.Add("IDGET")
+        dtHorasPersonasDias.Columns.Add("IDOperario")
+        'dtHorasPersonasDias.Columns.Add("DescOperario")
+        dtHorasPersonasDias.Columns.Add("1")
+        dtHorasPersonasDias.Columns.Add("2")
+        dtHorasPersonasDias.Columns.Add("3")
+        dtHorasPersonasDias.Columns.Add("4")
+        dtHorasPersonasDias.Columns.Add("5")
+        dtHorasPersonasDias.Columns.Add("7")
+        dtHorasPersonasDias.Columns.Add("8")
+        dtHorasPersonasDias.Columns.Add("9")
+        dtHorasPersonasDias.Columns.Add("10")
+        dtHorasPersonasDias.Columns.Add("11")
+        dtHorasPersonasDias.Columns.Add("12")
+        dtHorasPersonasDias.Columns.Add("13")
+        dtHorasPersonasDias.Columns.Add("14")
+        dtHorasPersonasDias.Columns.Add("15")
+        dtHorasPersonasDias.Columns.Add("16")
+        dtHorasPersonasDias.Columns.Add("17")
+        dtHorasPersonasDias.Columns.Add("18")
+        dtHorasPersonasDias.Columns.Add("19")
+        dtHorasPersonasDias.Columns.Add("20")
+        dtHorasPersonasDias.Columns.Add("21")
+        dtHorasPersonasDias.Columns.Add("22")
+        dtHorasPersonasDias.Columns.Add("23")
+        dtHorasPersonasDias.Columns.Add("24")
+        dtHorasPersonasDias.Columns.Add("25")
+        dtHorasPersonasDias.Columns.Add("26")
+        dtHorasPersonasDias.Columns.Add("27")
+        dtHorasPersonasDias.Columns.Add("28")
+        dtHorasPersonasDias.Columns.Add("29")
+        dtHorasPersonasDias.Columns.Add("30")
+        dtHorasPersonasDias.Columns.Add("31")
+    End Sub
+
+    Private Sub CargaHorasJPSTAFF_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+        FormaTablaResumen()
+    End Sub
+
+    Private Sub bDuplicados_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bDuplicados.Click
+        Dim dt As New DataTable
+        Dim f As New Filter
+
+        dt = New BE.DataEngine().Filter("vUniontbObraMod", f)
+        If dt.Rows.Count > 0 Then
+            MsgBox("El operario " & dt.Rows(0)("IDGET").ToString & " tiene horas en mas de una empresa.")
+        Else
+            MsgBox("No hay registros duplicados con misma fecha en distintas empresas.")
+        End If
+    End Sub
 End Class

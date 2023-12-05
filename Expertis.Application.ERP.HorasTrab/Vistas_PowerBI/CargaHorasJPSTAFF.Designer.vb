@@ -132,7 +132,10 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage1 = New Janus.Windows.UI.Tab.UITabPage
         Me.UiTabPage2 = New Janus.Windows.UI.Tab.UITabPage
         Me.UiTabPage3 = New Janus.Windows.UI.Tab.UITabPage
+        Me.Frame16 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bMatriz = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame15 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bNO = New Solmicro.Expertis.Engine.UI.Button
         Me.bUk = New Solmicro.Expertis.Engine.UI.Button
         Me.bDCZ = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame14 = New Solmicro.Expertis.Engine.UI.Frame
@@ -142,7 +145,8 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame13 = New Solmicro.Expertis.Engine.UI.Frame
         Me.bPisarFicheroExtra = New Solmicro.Expertis.Engine.UI.Button
         Me.UiTabPage5 = New Janus.Windows.UI.Tab.UITabPage
-        Me.bNO = New Solmicro.Expertis.Engine.UI.Button
+        Me.Frame17 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bDuplicados = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame1.SuspendLayout()
         Me.Frame2.SuspendLayout()
         Me.Frame3.SuspendLayout()
@@ -165,12 +169,14 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage1.SuspendLayout()
         Me.UiTabPage2.SuspendLayout()
         Me.UiTabPage3.SuspendLayout()
+        Me.Frame16.SuspendLayout()
         Me.Frame15.SuspendLayout()
         Me.Frame14.SuspendLayout()
         Me.Frame12.SuspendLayout()
         Me.UiTabPage4.SuspendLayout()
         Me.Frame13.SuspendLayout()
         Me.UiTabPage5.SuspendLayout()
+        Me.Frame17.SuspendLayout()
         Me.SuspendLayout()
         '
         'bBorrarExcel
@@ -1161,7 +1167,7 @@ Partial Class CargaHorasJPSTAFF
         Me.Tab1.BackColor = System.Drawing.Color.FromArgb(CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer))
         Me.Tab1.Location = New System.Drawing.Point(62, 220)
         Me.Tab1.Name = "Tab1"
-        Me.Tab1.Size = New System.Drawing.Size(961, 262)
+        Me.Tab1.Size = New System.Drawing.Size(983, 262)
         Me.Tab1.TabIndex = 35
         Me.Tab1.TabPages.AddRange(New Janus.Windows.UI.Tab.UITabPage() {Me.UiTabPage1, Me.UiTabPage2, Me.UiTabPage3, Me.UiTabPage4, Me.UiTabPage5})
         Me.Tab1.UseThemes = True
@@ -1174,7 +1180,7 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage1.Controls.Add(Me.Frame1)
         Me.UiTabPage1.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage1.Name = "UiTabPage1"
-        Me.UiTabPage1.Size = New System.Drawing.Size(959, 240)
+        Me.UiTabPage1.Size = New System.Drawing.Size(981, 240)
         Me.UiTabPage1.TabStop = True
         Me.UiTabPage1.Text = "1. Creación de horas"
         '
@@ -1189,15 +1195,37 @@ Partial Class CargaHorasJPSTAFF
         '
         'UiTabPage3
         '
+        Me.UiTabPage3.Controls.Add(Me.Frame17)
+        Me.UiTabPage3.Controls.Add(Me.Frame16)
         Me.UiTabPage3.Controls.Add(Me.Frame15)
         Me.UiTabPage3.Controls.Add(Me.Frame14)
         Me.UiTabPage3.Controls.Add(Me.Frame12)
         Me.UiTabPage3.Controls.Add(Me.Frame6)
         Me.UiTabPage3.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage3.Name = "UiTabPage3"
-        Me.UiTabPage3.Size = New System.Drawing.Size(959, 240)
+        Me.UiTabPage3.Size = New System.Drawing.Size(981, 240)
         Me.UiTabPage3.TabStop = True
         Me.UiTabPage3.Text = "3. Combinar A3 y Mix"
+        '
+        'Frame16
+        '
+        Me.Frame16.Controls.Add(Me.bMatriz)
+        Me.Frame16.Location = New System.Drawing.Point(751, 31)
+        Me.Frame16.Name = "Frame16"
+        Me.Frame16.Size = New System.Drawing.Size(205, 103)
+        Me.Frame16.TabIndex = 32
+        Me.Frame16.TabStop = False
+        Me.Frame16.Text = "5. Matriz de horas"
+        '
+        'bMatriz
+        '
+        Me.bMatriz.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bMatriz.Icon = CType(resources.GetObject("bMatriz.Icon"), System.Drawing.Icon)
+        Me.bMatriz.Location = New System.Drawing.Point(29, 35)
+        Me.bMatriz.Name = "bMatriz"
+        Me.bMatriz.Size = New System.Drawing.Size(144, 38)
+        Me.bMatriz.TabIndex = 20
+        Me.bMatriz.Text = "Matriz horas"
         '
         'Frame15
         '
@@ -1210,6 +1238,16 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame15.TabIndex = 31
         Me.Frame15.TabStop = False
         Me.Frame15.Text = "4. Pasar ficheros de PDF a EXCEL"
+        '
+        'bNO
+        '
+        Me.bNO.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bNO.Icon = CType(resources.GetObject("bNO.Icon"), System.Drawing.Icon)
+        Me.bNO.Location = New System.Drawing.Point(516, 34)
+        Me.bNO.Name = "bNO"
+        Me.bNO.Size = New System.Drawing.Size(144, 38)
+        Me.bNO.TabIndex = 32
+        Me.bNO.Text = "Pasar fichero NO"
         '
         'bUk
         '
@@ -1267,7 +1305,7 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage4.Controls.Add(Me.Frame10)
         Me.UiTabPage4.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage4.Name = "UiTabPage4"
-        Me.UiTabPage4.Size = New System.Drawing.Size(959, 240)
+        Me.UiTabPage4.Size = New System.Drawing.Size(981, 240)
         Me.UiTabPage4.TabStop = True
         Me.UiTabPage4.Text = "4. Generación de extras"
         '
@@ -1302,15 +1340,25 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage5.TabStop = True
         Me.UiTabPage5.Text = "5. Otros"
         '
-        'bNO
+        'Frame17
         '
-        Me.bNO.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.bNO.Icon = CType(resources.GetObject("bNO.Icon"), System.Drawing.Icon)
-        Me.bNO.Location = New System.Drawing.Point(516, 34)
-        Me.bNO.Name = "bNO"
-        Me.bNO.Size = New System.Drawing.Size(144, 38)
-        Me.bNO.TabIndex = 32
-        Me.bNO.Text = "Pasar fichero NO"
+        Me.Frame17.Controls.Add(Me.bDuplicados)
+        Me.Frame17.Location = New System.Drawing.Point(751, 140)
+        Me.Frame17.Name = "Frame17"
+        Me.Frame17.Size = New System.Drawing.Size(205, 86)
+        Me.Frame17.TabIndex = 33
+        Me.Frame17.TabStop = False
+        Me.Frame17.Text = "6. Duplicidad de horas en distintas empresas"
+        '
+        'bDuplicados
+        '
+        Me.bDuplicados.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bDuplicados.Icon = CType(resources.GetObject("bDuplicados.Icon"), System.Drawing.Icon)
+        Me.bDuplicados.Location = New System.Drawing.Point(29, 35)
+        Me.bDuplicados.Name = "bDuplicados"
+        Me.bDuplicados.Size = New System.Drawing.Size(144, 38)
+        Me.bDuplicados.TabIndex = 20
+        Me.bDuplicados.Text = "¿Duplicados?"
         '
         'CargaHorasJPSTAFF
         '
@@ -1353,12 +1401,14 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage1.ResumeLayout(False)
         Me.UiTabPage2.ResumeLayout(False)
         Me.UiTabPage3.ResumeLayout(False)
+        Me.Frame16.ResumeLayout(False)
         Me.Frame15.ResumeLayout(False)
         Me.Frame14.ResumeLayout(False)
         Me.Frame12.ResumeLayout(False)
         Me.UiTabPage4.ResumeLayout(False)
         Me.Frame13.ResumeLayout(False)
         Me.UiTabPage5.ResumeLayout(False)
+        Me.Frame17.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -1478,4 +1528,8 @@ Partial Class CargaHorasJPSTAFF
     Friend WithEvents Frame15 As Solmicro.Expertis.Engine.UI.Frame
     Friend WithEvents bUk As Solmicro.Expertis.Engine.UI.Button
     Friend WithEvents bNO As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents Frame16 As Solmicro.Expertis.Engine.UI.Frame
+    Friend WithEvents bMatriz As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents Frame17 As Solmicro.Expertis.Engine.UI.Frame
+    Friend WithEvents bDuplicados As Solmicro.Expertis.Engine.UI.Button
 End Class
