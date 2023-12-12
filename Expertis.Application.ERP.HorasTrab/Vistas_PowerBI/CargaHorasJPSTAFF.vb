@@ -14,6 +14,7 @@ Imports System.Text.RegularExpressions
 Imports System.IO
 Imports OfficeOpenXml
 Imports System.Data
+Imports System.Globalization
 
 
 
@@ -580,7 +581,7 @@ Public Class CargaHorasJPSTAFF
             Return ""
         End If
     End Function
-    
+
 
     Public Function ObtieneFechasInsertar(ByVal basededatos As String, ByVal IDOperario As String, ByVal dtCalendario As DataTable, ByVal dtOperarioCalendarioNoProductivo As DataTable) As DataTable
         Dim dtDiasInsertar As New DataTable
@@ -759,7 +760,7 @@ Public Class CargaHorasJPSTAFF
                 End If
             Next
         End If
-        
+
         ' Crear un nuevo DataTable llamado dtCalendario
         Dim dtCalendario As New DataTable
         ' Agregar las columnas Fecha
@@ -887,7 +888,7 @@ Public Class CargaHorasJPSTAFF
 
             '-----------NORUEGA------------
         End If
-        
+
     End Sub
     Public Function getListadoPersonasOfiFerrallas(ByVal Fecha1 As String, ByVal Fecha2 As String) As DataTable
         Dim dt As New DataTable
@@ -1172,7 +1173,7 @@ Public Class CargaHorasJPSTAFF
 
                     auto.Ejecutar(txtSQL)
                 End If
-                
+
             Next
 
             filas = filas + 1
@@ -1271,7 +1272,7 @@ Public Class CargaHorasJPSTAFF
 
                     auto.Ejecutar(txtSQL)
                 End If
-               
+
             Next
 
             filas = filas + 1
@@ -1436,12 +1437,18 @@ Public Class CargaHorasJPSTAFF
 
         Dim dtObra As New DataTable
         Dim dtHoras As New DataTable
+        Dim dtFechas As New DataTable
         dtObra = ObtenerDatosExcel(ruta, hoja1, rango1)
         dtHoras = ObtenerDatosExcel(ruta, hoja2, rango2)
+        dtFechas = ObtenerDatosExcel(ruta, hoja1, "A1:B3")
 
         Dim basededatos As String
         Dim obra As String
+        Dim fecha1 As String
+        Dim fecha2 As String
 
+        fecha1 = dtFechas.Rows(1)("F2").ToString.Trim()
+        fecha2 = dtFechas.Rows(2)("F2").ToString.Trim()
         obra = dtObra.Rows(0)("F2").ToString.Trim()
         basededatos = DevuelveBaseDeDatosInternacional(obra)
 
@@ -1449,8 +1456,9 @@ Public Class CargaHorasJPSTAFF
             Exit Sub
         End If
 
-        dtHoras = dtFormaInternacional(dtHoras)
+        dtHoras = dtFormaInternacional(dtHoras, fecha1)
 
+        Exit Sub
         '-------CHECK IDOPERARIO
         Dim idoperario As String
         For Each fila As DataRow In dtHoras.Rows
@@ -1479,6 +1487,7 @@ Public Class CargaHorasJPSTAFF
         For Each dr As DataRow In dtHoras.Rows
             idoperario = dr("IDOperario").ToString
             If idoperario.Length = 0 Then
+                filas = filas + 1
                 Continue For
             End If
             Windows.Forms.Application.DoEvents()
@@ -1598,7 +1607,7 @@ Public Class CargaHorasJPSTAFF
 
                 End If
             End If
-            End If
+        End If
     End Sub
     Public Function DevuelveFechaDeNumero(ByVal fechanumero As String) As String
         Dim fechaString As String = fechanumero.ToString()
@@ -1613,11 +1622,13 @@ Public Class CargaHorasJPSTAFF
     End Function
 
     Public Function DevuelveFechaConFormato(ByVal fechanumero As String) As String
+
         Dim fechaActual As DateTime = fechanumero
         Dim formatoPersonalizado As String = "dd/MM/yyyy"
         Dim fechaComoStringConFormato As String = fechaActual.ToString(formatoPersonalizado)
 
         Return fechaComoStringConFormato
+
     End Function
 
     Public Function DevuelveBaseDeDatosInternacional(ByVal obra As String) As String
@@ -1636,7 +1647,7 @@ Public Class CargaHorasJPSTAFF
         Return basededatos
     End Function
 
-    Public Function dtFormaInternacional(ByRef dtHoras As DataTable) As DataTable
+    Public Function dtFormaInternacional(ByRef dtHoras As DataTable, ByVal fecha1 As String) As DataTable
         dtHoras.Columns.Remove("F4")
         dtHoras.Columns.Remove("F5")
         dtHoras.Columns.Remove("F6")
@@ -1713,6 +1724,19 @@ Public Class CargaHorasJPSTAFF
         ' Eliminar las columnas identificadas
         For Each columnaAEliminar As DataColumn In columnasAEliminar
             dtFinal.Columns.Remove(columnaAEliminar)
+        Next
+
+        'A partir de la tercera columna y solo para la cabecera pongo el format de dd/mm/yyyy
+        'David V 12/12/23
+        Dim fecha As DateTime = fecha1
+        fecha = fecha.AddDays(-1)
+        For i As Integer = 3 To dtFinal.Columns.Count - 1
+            If TypeOf dtFinal.Columns(i) Is DataColumn Then
+                Dim fechaColumna As DataColumn = CType(dtFinal.Columns(i), DataColumn)
+                ' Formatea la fecha y establece el nuevo formato en el nombre de la columna
+                fecha = fecha.AddDays(1)
+                fechaColumna.ColumnName = fecha
+            End If
         Next
 
         Return dtFinal
@@ -2084,7 +2108,7 @@ Public Class CargaHorasJPSTAFF
 
                 End If
                 'If IDCategoriaProfesionalSCCP = 2 Or IDCategoriaProfesionalSCCP = 3 Then
-                
+
                 'Else
                 '    txtSQL = "Insert into " & bbdd & "..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
                 '        "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
@@ -3198,7 +3222,7 @@ Public Class CargaHorasJPSTAFF
                 newRow = dtResultado.NewRow() : newRow("Empresa") = empresa : newRow("IDCategoriaProfesionalSCCP") = 0 : newRow("Total") = otros
                 dtResultado.Rows.Add(newRow)
             End Try
-            
+
             cont = cont + 1
         Next
 
@@ -3808,7 +3832,7 @@ Public Class CargaHorasJPSTAFF
         Dim dtResumenCategoriaProfesional As New DataTable
         dtResumenCategoriaProfesional = getResumenCategoria(dtRatiosGente)
 
-        
+
 
         'GENERACION EXCEL CON LAS 5 PESTAÑAS
         GeneraExcelHorasA3(dtGenteSiHorasNoEuros, dtGenteSiEurosNoHoras, dtRatiosGente, dtPersonasDobleCoti, dtResumenCategoriaProfesional, mes, anio)
@@ -4400,7 +4424,7 @@ Public Class CargaHorasJPSTAFF
             End If
 
             Using package As New ExcelPackage(ruta)
-                
+
                 ' HOJA 1
                 Dim worksheet2 = package.Workbook.Worksheets.Add("EXTRAS POR CATEGORIA PROF")
                 worksheet2.Cells("A1").LoadFromDataTable(dtImprimirCategorias, True)
@@ -4431,7 +4455,7 @@ Public Class CargaHorasJPSTAFF
             End Using
             primero = primero + 1
         Next
-        
+
 
     End Sub
 
@@ -4604,7 +4628,7 @@ Public Class CargaHorasJPSTAFF
         Catch ex As Exception
             Return "0"
         End Try
-        
+
 
         Return "1"
     End Function
@@ -4762,7 +4786,7 @@ Public Class CargaHorasJPSTAFF
         '2º. ESTA ES LA 2ª HOJA DEL EXCEL QUE SUMA LOS A3 QUE SE HAN GENERADO ENTRE DOS FECHAS
         dtA3EntreFechasPowerBi = getA3EntreFechasPowerBi(mes1, mes2, anio)
 
-        
+
         '3º. ESTA ES LA 1ª HOJA QUE ES LA DIFERENCIA ENTRE LOS FICHEROS QUE SE HAN SUMADO ENTRE DOS FECHAS Y UNO QUE AGRUPE AL RESTO
         'PRINCIPALMENTE SE HACE LA HERRAMIENTA PARA NORMALIZAR A CARACTER SEMESTRAL O ANUAL PARA NORMALIZAR
         Dim dtRegularizar As DataTable
@@ -5126,7 +5150,7 @@ Public Class CargaHorasJPSTAFF
 
     Private Sub bDCZ_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bDCZ.Click
         Dim dtPersonasPortugal As DataTable = SeleccionarPDFyLeerDataTable()
-        dtPersonasPortugal= darFormaTabla(dtPersonasPortugal)
+        dtPersonasPortugal = darFormaTabla(dtPersonasPortugal)
         ExportaExcel(dtPersonasPortugal)
     End Sub
 
@@ -6078,7 +6102,7 @@ Public Class CargaHorasJPSTAFF
             MsgBox("Excel generado correctamente")
         End If
 
-       
+
     End Sub
 
     Private Sub bMatriz_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bMatriz.Click
@@ -6163,7 +6187,7 @@ Public Class CargaHorasJPSTAFF
             Dim fila1 As ExcelRange = worksheet.Cells(1, 1, 1, worksheet.Dimension.End.Column)
             fila1.Style.Font.Bold = True
             worksheet.Cells("A1:" & GetExcelColumnName(worksheet.Dimension.End.Column) & "1").AutoFilter = True
-            
+
             ' Guardar el archivo de Excel.
             package.Save()
 
