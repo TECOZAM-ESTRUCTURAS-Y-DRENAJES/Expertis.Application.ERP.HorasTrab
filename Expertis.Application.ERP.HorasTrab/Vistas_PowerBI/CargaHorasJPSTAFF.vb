@@ -3228,7 +3228,7 @@ Public Class CargaHorasJPSTAFF
 
         Return dtResultado
     End Function
-    Private Sub bIDGET_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bIDGET.Click
+    Private Sub bIDGET_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
         Dim vPersonas As New DataTable
         Dim f As New Filter
         Dim bbdd As String = ""
@@ -4788,7 +4788,7 @@ Public Class CargaHorasJPSTAFF
 
 
         '3º. ESTA ES LA 1ª HOJA QUE ES LA DIFERENCIA ENTRE LOS FICHEROS QUE SE HAN SUMADO ENTRE DOS FECHAS Y UNO QUE AGRUPE AL RESTO
-        'PRINCIPALMENTE SE HACE LA HERRAMIENTA PARA NORMALIZAR A CARACTER SEMESTRAL O ANUAL PARA NORMALIZAR
+        'PRINCIPALMENTE SE HACE LA HERRAMIENTA PARA NORMALIZAR A CARACTER SEMESTRAL O ANUAL
         Dim dtRegularizar As DataTable
         dtRegularizar = generarTablaRegularizar(dtA3EntreFechasPowerBi, dtSemestral)
 
@@ -6105,7 +6105,7 @@ Public Class CargaHorasJPSTAFF
 
     End Sub
 
-    Private Sub bMatriz_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bMatriz.Click
+    Private Sub bMatriz_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
         '6. TABLA DE HORAS POR PERSONAS
         'Dim dtHorasPersonasDias As New DataTable
         'FormaTablaMatriz(dtHorasPersonasDias)
@@ -6235,7 +6235,7 @@ Public Class CargaHorasJPSTAFF
         FormaTablaResumen()
     End Sub
 
-    Private Sub bDuplicados_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bDuplicados.Click
+    Private Sub bDuplicados_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
         Dim dt As New DataTable
         Dim f As New Filter
 
@@ -6246,4 +6246,130 @@ Public Class CargaHorasJPSTAFF
             MsgBox("No hay registros duplicados con misma fecha en distintas empresas.")
         End If
     End Sub
+
+
+    Private Sub Button5_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button5.Click
+        Dim dt As New DataTable
+        Dim f As New Filter
+
+        Dim frm As New frmInformeFecha
+        frm.ShowDialog()
+        Dim Fecha1 As String : Dim Fecha2 As String
+        Fecha1 = frm.fecha1 : Fecha2 = frm.fecha2
+
+        f.Add("FechaInicio", FilterOperator.GreaterThanOrEqual, Fecha1)
+        f.Add("FechaInicio", FilterOperator.LessThanOrEqual, Fecha2)
+
+        dt = New BE.DataEngine().Filter("vUniontbObraMod", f)
+        Dim cont As Integer = 0
+        If dt.Rows.Count > 0 Then
+            For Each dr As DataRow In dt.Rows
+                If dr("IDGET") = "GET03540" Or dr("IDGET") = "GET03605" Then
+                    cont = 1
+                Else
+                    MsgBox("El operario " & dt.Rows(0)("IDGET").ToString & " tiene horas en mas de una empresa.")
+                End If
+            Next
+
+        Else
+            MsgBox("No hay registros duplicados con misma fecha en distintas empresas.", MsgBoxStyle.Information, "Check duplicidad horas")
+            Exit Sub
+        End If
+        If cont = 1 Then
+            MsgBox("No hay registros duplicados con misma fecha en distintas empresas.")
+        End If
+
+    End Sub
+
+    Private Sub Button2_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button2.Click
+        '6. TABLA DE HORAS POR PERSONAS
+        'Dim dtHorasPersonasDias As New DataTable
+        'FormaTablaMatriz(dtHorasPersonasDias)
+
+        Dim frm As New frmInformeFecha
+        frm.ShowDialog()
+        Dim Fecha1 As String : Dim Fecha2 As String
+        Fecha1 = frm.fecha1 : Fecha2 = frm.fecha2
+        Dim dtHoras As New DataTable
+        Dim f As New Filter
+        f.Add("FechaInicio", FilterOperator.GreaterThanOrEqual, Fecha1)
+        f.Add("FechaInicio", FilterOperator.LessThanOrEqual, Fecha2)
+
+        dtHoras = New BE.DataEngine().Filter("vUniontbObraModControl", f, , "Empresa asc")
+
+        ' Crear la estructura de la tabla dtHorasPersonasDias
+        Dim dtHorasPersonasDias As New DataTable()
+        dtHorasPersonasDias.Columns.Add("Empresa")
+        dtHorasPersonasDias.Columns.Add("IDGET")
+        dtHorasPersonasDias.Columns.Add("IDOperario")
+        dtHorasPersonasDias.Columns.Add("DescOperario")
+        dtHorasPersonasDias.Columns.Add("IDCategoriaProfesionalSCCP", System.Type.GetType("System.Double"))
+
+        For i As Integer = 1 To 31 ' Suponiendo que tu tabla tiene columnas para cada día del mes
+            dtHorasPersonasDias.Columns.Add(i.ToString(), System.Type.GetType("System.Double"))
+        Next
+
+        ' Iterar sobre las filas de dtHoras y calcular la suma por día y operario
+        For Each filaHoras As DataRow In dtHoras.Rows
+            Dim fechaTrabajo As DateTime = DateTime.Parse(filaHoras("FechaInicio").ToString())
+
+            ' Verificar si la fecha está dentro del rango especificado
+            If fechaTrabajo >= Fecha1 AndAlso fechaTrabajo <= Fecha2 Then
+                Dim idOperario As String = filaHoras("IDOperario").ToString()
+                Dim empresa As String = filaHoras("Empresa").ToString()
+                Dim totalHoras As Double = Convert.ToDouble(Nz(filaHoras("HorasRealMod"), 0)) + Convert.ToDouble(Nz(filaHoras("HorasAdministrativas"), 0)) + Convert.ToDouble(Nz(filaHoras("HorasBaja"), 0))
+
+                ' Buscar la fila correspondiente en dtHorasPersonasDias y actualizar el valor
+                Dim fila As DataRow = dtHorasPersonasDias.Rows.Cast(Of DataRow)().FirstOrDefault(Function(row) row("IDOperario").ToString() = idOperario)
+                If fila IsNot Nothing Then
+                    Dim diaDelMes As Integer = fechaTrabajo.Day
+                    'fila(diaDelMes.ToString()) = totalHoras
+                    fila(diaDelMes.ToString()) = Convert.ToDouble(Nz(fila(diaDelMes.ToString()), 0)) + totalHoras
+                Else
+                    ' Si la fila no existe, puedes agregarla
+                    fila = dtHorasPersonasDias.NewRow()
+                    fila("Empresa") = empresa
+
+                    Dim bbdd As String
+                    bbdd = DevuelveBaseDeDatos(empresa)
+                    fila("IDGET") = DevuelveIDGET(bbdd, idOperario)
+                    fila("IDOperario") = idOperario
+                    fila("DescOperario") = DevuelveDescOperario(bbdd, idOperario)
+                    fila("IDCategoriaProfesionalSCCP") = DevuelveIDCategoriaProfesionalSCCPTodasBasesDeDatos(idOperario)
+                    Dim diaDelMes As Integer = fechaTrabajo.Day
+                    fila(diaDelMes.ToString()) = totalHoras
+                    dtHorasPersonasDias.Rows.Add(fila)
+                End If
+            End If
+        Next
+
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial
+
+        Dim ruta As New FileInfo("N:\10. AUXILIARES\00. EXPERTIS\05. CHECK HORAS-A3\" & Month(Fecha1) & " MATRIZ HORAS " & Year(Fecha1) & ".xlsx")
+        'Dim ruta As New FileInfo("N:\01. A3\" & mes & " A3 " & mes & anio.Substring(anio.Length - 2) & ".xlsx")
+        Dim rutaCadena As String = ""
+        rutaCadena = ruta.FullName
+
+        'Verificar si el archivo existe.
+        If File.Exists(rutaCadena) Then
+            'Si el archivo existe, eliminarlo.
+            File.Delete(rutaCadena)
+        End If
+
+        Using package As New ExcelPackage(ruta)
+            ' HOJA 1
+            Dim worksheet = package.Workbook.Worksheets.Add("MATRIZ HORAS")
+            worksheet.Cells("A1").LoadFromDataTable(dtHorasPersonasDias, True)
+            Dim fila1 As ExcelRange = worksheet.Cells(1, 1, 1, worksheet.Dimension.End.Column)
+            fila1.Style.Font.Bold = True
+            worksheet.Cells("A1:" & GetExcelColumnName(worksheet.Dimension.End.Column) & "1").AutoFilter = True
+
+            ' Guardar el archivo de Excel.
+            package.Save()
+
+            MsgBox("Fichero guardado en N:\10. AUXILIARES\00. EXPERTIS\05. CHECK HORAS-A3\")
+        End Using
+    End Sub
+
+
 End Class
