@@ -6386,4 +6386,9 @@ Public Class CargaHorasJPSTAFF
     End Sub
 
 
+    Private Sub bDobleCotizacion_Click_1(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bDobleCotizacion.Click
+        Dim frmCrea As New frmCreaHorasDobleCotizacion
+        frmCrea.ShowDialog()
+
+    End Sub
 End Class

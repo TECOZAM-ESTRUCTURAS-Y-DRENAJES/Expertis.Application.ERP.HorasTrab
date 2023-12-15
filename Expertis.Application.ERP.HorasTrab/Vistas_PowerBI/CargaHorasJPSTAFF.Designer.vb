@@ -129,31 +129,33 @@ Partial Class CargaHorasJPSTAFF
         Me.Grid3 = New Solmicro.Expertis.Engine.UI.Grid
         Me.Tab1 = New Solmicro.Expertis.Engine.UI.Tab
         Me.UiTabPage1 = New Janus.Windows.UI.Tab.UITabPage
-        Me.UiTabPage2 = New Janus.Windows.UI.Tab.UITabPage
-        Me.Frame18 = New Solmicro.Expertis.Engine.UI.Frame
-        Me.Button2 = New Solmicro.Expertis.Engine.UI.Button
-        Me.UiTabPage3 = New Janus.Windows.UI.Tab.UITabPage
-        Me.Frame15 = New Solmicro.Expertis.Engine.UI.Frame
-        Me.bNO = New Solmicro.Expertis.Engine.UI.Button
-        Me.bUk = New Solmicro.Expertis.Engine.UI.Button
-        Me.bDCZ = New Solmicro.Expertis.Engine.UI.Button
-        Me.Frame14 = New Solmicro.Expertis.Engine.UI.Frame
-        Me.bRegularizarSemestral = New Solmicro.Expertis.Engine.UI.Button
-        Me.Frame12 = New Solmicro.Expertis.Engine.UI.Frame
-        Me.UiTabPage4 = New Janus.Windows.UI.Tab.UITabPage
-        Me.Frame13 = New Solmicro.Expertis.Engine.UI.Frame
-        Me.bPisarFicheroExtra = New Solmicro.Expertis.Engine.UI.Button
-        Me.UiTabPage5 = New Janus.Windows.UI.Tab.UITabPage
-        Me.Button5 = New Solmicro.Expertis.Engine.UI.Button
-        Me.Frame19 = New Solmicro.Expertis.Engine.UI.Frame
         Me.Tab2 = New Solmicro.Expertis.Engine.UI.Tab
         Me.UiTabPage6 = New Janus.Windows.UI.Tab.UITabPage
+        Me.Frame16 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bDobleCotizacion = New Solmicro.Expertis.Engine.UI.Button
         Me.UiTabPage7 = New Janus.Windows.UI.Tab.UITabPage
+        Me.Frame18 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.Button2 = New Solmicro.Expertis.Engine.UI.Button
+        Me.Frame19 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.Button5 = New Solmicro.Expertis.Engine.UI.Button
         Me.UiTabPage8 = New Janus.Windows.UI.Tab.UITabPage
+        Me.UiTabPage2 = New Janus.Windows.UI.Tab.UITabPage
         Me.Tab3 = New Solmicro.Expertis.Engine.UI.Tab
         Me.UiTabPage9 = New Janus.Windows.UI.Tab.UITabPage
+        Me.Frame15 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bNO = New Solmicro.Expertis.Engine.UI.Button
+        Me.bDCZ = New Solmicro.Expertis.Engine.UI.Button
+        Me.bUk = New Solmicro.Expertis.Engine.UI.Button
         Me.UiTabPage10 = New Janus.Windows.UI.Tab.UITabPage
         Me.UiTabPage11 = New Janus.Windows.UI.Tab.UITabPage
+        Me.Frame12 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.UiTabPage3 = New Janus.Windows.UI.Tab.UITabPage
+        Me.Frame13 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bPisarFicheroExtra = New Solmicro.Expertis.Engine.UI.Button
+        Me.UiTabPage4 = New Janus.Windows.UI.Tab.UITabPage
+        Me.Frame14 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bRegularizarSemestral = New Solmicro.Expertis.Engine.UI.Button
+        Me.UiTabPage5 = New Janus.Windows.UI.Tab.UITabPage
         Me.Tab4 = New Solmicro.Expertis.Engine.UI.Tab
         Me.UiTabPage12 = New Janus.Windows.UI.Tab.UITabPage
         Me.UiTabPage13 = New Janus.Windows.UI.Tab.UITabPage
@@ -177,26 +179,27 @@ Partial Class CargaHorasJPSTAFF
         CType(Me.Tab1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Tab1.SuspendLayout()
         Me.UiTabPage1.SuspendLayout()
-        Me.UiTabPage2.SuspendLayout()
-        Me.Frame18.SuspendLayout()
-        Me.UiTabPage3.SuspendLayout()
-        Me.Frame15.SuspendLayout()
-        Me.Frame14.SuspendLayout()
-        Me.Frame12.SuspendLayout()
-        Me.UiTabPage4.SuspendLayout()
-        Me.Frame13.SuspendLayout()
-        Me.UiTabPage5.SuspendLayout()
-        Me.Frame19.SuspendLayout()
         CType(Me.Tab2, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Tab2.SuspendLayout()
         Me.UiTabPage6.SuspendLayout()
+        Me.Frame16.SuspendLayout()
         Me.UiTabPage7.SuspendLayout()
+        Me.Frame18.SuspendLayout()
+        Me.Frame19.SuspendLayout()
         Me.UiTabPage8.SuspendLayout()
+        Me.UiTabPage2.SuspendLayout()
         CType(Me.Tab3, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Tab3.SuspendLayout()
         Me.UiTabPage9.SuspendLayout()
+        Me.Frame15.SuspendLayout()
         Me.UiTabPage10.SuspendLayout()
         Me.UiTabPage11.SuspendLayout()
+        Me.Frame12.SuspendLayout()
+        Me.UiTabPage3.SuspendLayout()
+        Me.Frame13.SuspendLayout()
+        Me.UiTabPage4.SuspendLayout()
+        Me.Frame14.SuspendLayout()
+        Me.UiTabPage5.SuspendLayout()
         CType(Me.Tab4, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Tab4.SuspendLayout()
         Me.UiTabPage12.SuspendLayout()
@@ -309,7 +312,7 @@ Partial Class CargaHorasJPSTAFF
         '
         Me.Frame1.Controls.Add(Me.cmdUbicacion)
         Me.Frame1.Controls.Add(Me.btnAceptar)
-        Me.Frame1.Location = New System.Drawing.Point(251, 32)
+        Me.Frame1.Location = New System.Drawing.Point(217, 32)
         Me.Frame1.Name = "Frame1"
         Me.Frame1.Size = New System.Drawing.Size(236, 105)
         Me.Frame1.TabIndex = 21
@@ -319,7 +322,7 @@ Partial Class CargaHorasJPSTAFF
         'Frame2
         '
         Me.Frame2.Controls.Add(Me.bHorasOficina)
-        Me.Frame2.Location = New System.Drawing.Point(527, 32)
+        Me.Frame2.Location = New System.Drawing.Point(472, 32)
         Me.Frame2.Name = "Frame2"
         Me.Frame2.Size = New System.Drawing.Size(176, 105)
         Me.Frame2.TabIndex = 22
@@ -329,7 +332,7 @@ Partial Class CargaHorasJPSTAFF
         'Frame3
         '
         Me.Frame3.Controls.Add(Me.bAñadirHorasPersona)
-        Me.Frame3.Location = New System.Drawing.Point(711, 32)
+        Me.Frame3.Location = New System.Drawing.Point(665, 32)
         Me.Frame3.Name = "Frame3"
         Me.Frame3.Size = New System.Drawing.Size(189, 105)
         Me.Frame3.TabIndex = 23
@@ -433,7 +436,7 @@ Partial Class CargaHorasJPSTAFF
         'Frame9
         '
         Me.Frame9.Controls.Add(Me.bCrearHorasBaja)
-        Me.Frame9.Location = New System.Drawing.Point(39, 32)
+        Me.Frame9.Location = New System.Drawing.Point(25, 32)
         Me.Frame9.Name = "Frame9"
         Me.Frame9.Size = New System.Drawing.Size(172, 105)
         Me.Frame9.TabIndex = 32
@@ -1182,7 +1185,7 @@ Partial Class CargaHorasJPSTAFF
         Me.Tab1.BackColor = System.Drawing.Color.FromArgb(CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer))
         Me.Tab1.Location = New System.Drawing.Point(62, 211)
         Me.Tab1.Name = "Tab1"
-        Me.Tab1.Size = New System.Drawing.Size(983, 309)
+        Me.Tab1.Size = New System.Drawing.Size(1145, 309)
         Me.Tab1.TabIndex = 35
         Me.Tab1.TabPages.AddRange(New Janus.Windows.UI.Tab.UITabPage() {Me.UiTabPage1, Me.UiTabPage2, Me.UiTabPage3, Me.UiTabPage4, Me.UiTabPage5})
         Me.Tab1.UseThemes = True
@@ -1192,18 +1195,62 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage1.Controls.Add(Me.Tab2)
         Me.UiTabPage1.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage1.Name = "UiTabPage1"
-        Me.UiTabPage1.Size = New System.Drawing.Size(981, 287)
+        Me.UiTabPage1.Size = New System.Drawing.Size(1143, 287)
         Me.UiTabPage1.TabStop = True
         Me.UiTabPage1.Text = "HORAS"
         '
-        'UiTabPage2
+        'Tab2
         '
-        Me.UiTabPage2.Controls.Add(Me.Tab3)
-        Me.UiTabPage2.Location = New System.Drawing.Point(1, 21)
-        Me.UiTabPage2.Name = "UiTabPage2"
-        Me.UiTabPage2.Size = New System.Drawing.Size(981, 287)
-        Me.UiTabPage2.TabStop = True
-        Me.UiTabPage2.Text = "A3"
+        Me.Tab2.BackColor = System.Drawing.Color.FromArgb(CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer))
+        Me.Tab2.Location = New System.Drawing.Point(25, 23)
+        Me.Tab2.Name = "Tab2"
+        Me.Tab2.Size = New System.Drawing.Size(1095, 243)
+        Me.Tab2.TabIndex = 33
+        Me.Tab2.TabPages.AddRange(New Janus.Windows.UI.Tab.UITabPage() {Me.UiTabPage6, Me.UiTabPage7, Me.UiTabPage8})
+        Me.Tab2.UseThemes = True
+        '
+        'UiTabPage6
+        '
+        Me.UiTabPage6.Controls.Add(Me.Frame16)
+        Me.UiTabPage6.Controls.Add(Me.Frame9)
+        Me.UiTabPage6.Controls.Add(Me.Frame3)
+        Me.UiTabPage6.Controls.Add(Me.Frame1)
+        Me.UiTabPage6.Controls.Add(Me.Frame2)
+        Me.UiTabPage6.Location = New System.Drawing.Point(1, 21)
+        Me.UiTabPage6.Name = "UiTabPage6"
+        Me.UiTabPage6.Size = New System.Drawing.Size(1093, 221)
+        Me.UiTabPage6.TabStop = True
+        Me.UiTabPage6.Text = "INSERCION HORAS"
+        '
+        'Frame16
+        '
+        Me.Frame16.Controls.Add(Me.bDobleCotizacion)
+        Me.Frame16.Location = New System.Drawing.Point(873, 32)
+        Me.Frame16.Name = "Frame16"
+        Me.Frame16.Size = New System.Drawing.Size(189, 105)
+        Me.Frame16.TabIndex = 33
+        Me.Frame16.TabStop = False
+        Me.Frame16.Text = "5. Doble cotización"
+        '
+        'bDobleCotizacion
+        '
+        Me.bDobleCotizacion.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bDobleCotizacion.Icon = CType(resources.GetObject("bDobleCotizacion.Icon"), System.Drawing.Icon)
+        Me.bDobleCotizacion.Location = New System.Drawing.Point(19, 43)
+        Me.bDobleCotizacion.Name = "bDobleCotizacion"
+        Me.bDobleCotizacion.Size = New System.Drawing.Size(144, 38)
+        Me.bDobleCotizacion.TabIndex = 19
+        Me.bDobleCotizacion.Text = "Crear horas doble cotizacion"
+        '
+        'UiTabPage7
+        '
+        Me.UiTabPage7.Controls.Add(Me.Frame18)
+        Me.UiTabPage7.Controls.Add(Me.Frame19)
+        Me.UiTabPage7.Location = New System.Drawing.Point(1, 21)
+        Me.UiTabPage7.Name = "UiTabPage7"
+        Me.UiTabPage7.Size = New System.Drawing.Size(1115, 221)
+        Me.UiTabPage7.TabStop = True
+        Me.UiTabPage7.Text = "CHECK HORAS"
         '
         'Frame18
         '
@@ -1225,15 +1272,62 @@ Partial Class CargaHorasJPSTAFF
         Me.Button2.TabIndex = 20
         Me.Button2.Text = "Matriz horas"
         '
-        'UiTabPage3
+        'Frame19
         '
-        Me.UiTabPage3.Controls.Add(Me.Frame13)
-        Me.UiTabPage3.Controls.Add(Me.Frame10)
-        Me.UiTabPage3.Location = New System.Drawing.Point(1, 21)
-        Me.UiTabPage3.Name = "UiTabPage3"
-        Me.UiTabPage3.Size = New System.Drawing.Size(981, 287)
-        Me.UiTabPage3.TabStop = True
-        Me.UiTabPage3.Text = "EXTRAS"
+        Me.Frame19.Controls.Add(Me.Button5)
+        Me.Frame19.Location = New System.Drawing.Point(39, 29)
+        Me.Frame19.Name = "Frame19"
+        Me.Frame19.Size = New System.Drawing.Size(184, 111)
+        Me.Frame19.TabIndex = 34
+        Me.Frame19.TabStop = False
+        Me.Frame19.Text = "1. Duplicidad de horas en distintas empresas"
+        '
+        'Button5
+        '
+        Me.Button5.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button5.Icon = CType(resources.GetObject("Button5.Icon"), System.Drawing.Icon)
+        Me.Button5.Location = New System.Drawing.Point(22, 43)
+        Me.Button5.Name = "Button5"
+        Me.Button5.Size = New System.Drawing.Size(144, 38)
+        Me.Button5.TabIndex = 20
+        Me.Button5.Text = "¿Duplicados?"
+        '
+        'UiTabPage8
+        '
+        Me.UiTabPage8.Controls.Add(Me.Frame7)
+        Me.UiTabPage8.Location = New System.Drawing.Point(1, 21)
+        Me.UiTabPage8.Name = "UiTabPage8"
+        Me.UiTabPage8.Size = New System.Drawing.Size(1115, 221)
+        Me.UiTabPage8.TabStop = True
+        Me.UiTabPage8.Text = "GENERACION FICHERO HORAS"
+        '
+        'UiTabPage2
+        '
+        Me.UiTabPage2.Controls.Add(Me.Tab3)
+        Me.UiTabPage2.Location = New System.Drawing.Point(1, 21)
+        Me.UiTabPage2.Name = "UiTabPage2"
+        Me.UiTabPage2.Size = New System.Drawing.Size(981, 287)
+        Me.UiTabPage2.TabStop = True
+        Me.UiTabPage2.Text = "A3"
+        '
+        'Tab3
+        '
+        Me.Tab3.BackColor = System.Drawing.Color.FromArgb(CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer))
+        Me.Tab3.Location = New System.Drawing.Point(24, 24)
+        Me.Tab3.Name = "Tab3"
+        Me.Tab3.Size = New System.Drawing.Size(895, 220)
+        Me.Tab3.TabIndex = 0
+        Me.Tab3.TabPages.AddRange(New Janus.Windows.UI.Tab.UITabPage() {Me.UiTabPage9, Me.UiTabPage10, Me.UiTabPage11})
+        Me.Tab3.UseThemes = True
+        '
+        'UiTabPage9
+        '
+        Me.UiTabPage9.Controls.Add(Me.Frame15)
+        Me.UiTabPage9.Location = New System.Drawing.Point(1, 21)
+        Me.UiTabPage9.Name = "UiTabPage9"
+        Me.UiTabPage9.Size = New System.Drawing.Size(893, 198)
+        Me.UiTabPage9.TabStop = True
+        Me.UiTabPage9.Text = "PASOS PREVIOS"
         '
         'Frame15
         '
@@ -1257,16 +1351,6 @@ Partial Class CargaHorasJPSTAFF
         Me.bNO.TabIndex = 32
         Me.bNO.Text = "Pasar fichero NO"
         '
-        'bUk
-        '
-        Me.bUk.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.bUk.Icon = CType(resources.GetObject("bUk.Icon"), System.Drawing.Icon)
-        Me.bUk.Location = New System.Drawing.Point(32, 34)
-        Me.bUk.Name = "bUk"
-        Me.bUk.Size = New System.Drawing.Size(144, 38)
-        Me.bUk.TabIndex = 31
-        Me.bUk.Text = "Pasar fichero UK"
-        '
         'bDCZ
         '
         Me.bDCZ.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
@@ -1278,25 +1362,33 @@ Partial Class CargaHorasJPSTAFF
         Me.bDCZ.Text = "Pasar fichero DCZ"
         Me.bDCZ.Visible = False
         '
-        'Frame14
+        'bUk
         '
-        Me.Frame14.Controls.Add(Me.bRegularizarSemestral)
-        Me.Frame14.Location = New System.Drawing.Point(49, 37)
-        Me.Frame14.Name = "Frame14"
-        Me.Frame14.Size = New System.Drawing.Size(262, 103)
-        Me.Frame14.TabIndex = 29
-        Me.Frame14.TabStop = False
-        Me.Frame14.Text = "1. Regularización anual A3"
+        Me.bUk.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bUk.Icon = CType(resources.GetObject("bUk.Icon"), System.Drawing.Icon)
+        Me.bUk.Location = New System.Drawing.Point(32, 34)
+        Me.bUk.Name = "bUk"
+        Me.bUk.Size = New System.Drawing.Size(144, 38)
+        Me.bUk.TabIndex = 31
+        Me.bUk.Text = "Pasar fichero UK"
         '
-        'bRegularizarSemestral
+        'UiTabPage10
         '
-        Me.bRegularizarSemestral.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.bRegularizarSemestral.Icon = CType(resources.GetObject("bRegularizarSemestral.Icon"), System.Drawing.Icon)
-        Me.bRegularizarSemestral.Location = New System.Drawing.Point(29, 35)
-        Me.bRegularizarSemestral.Name = "bRegularizarSemestral"
-        Me.bRegularizarSemestral.Size = New System.Drawing.Size(144, 38)
-        Me.bRegularizarSemestral.TabIndex = 20
-        Me.bRegularizarSemestral.Text = "Obtener fichero regularizacion"
+        Me.UiTabPage10.Controls.Add(Me.Frame6)
+        Me.UiTabPage10.Location = New System.Drawing.Point(1, 21)
+        Me.UiTabPage10.Name = "UiTabPage10"
+        Me.UiTabPage10.Size = New System.Drawing.Size(875, 182)
+        Me.UiTabPage10.TabStop = True
+        Me.UiTabPage10.Text = "GENERAR FICHERO A3"
+        '
+        'UiTabPage11
+        '
+        Me.UiTabPage11.Controls.Add(Me.Frame12)
+        Me.UiTabPage11.Location = New System.Drawing.Point(1, 21)
+        Me.UiTabPage11.Name = "UiTabPage11"
+        Me.UiTabPage11.Size = New System.Drawing.Size(875, 182)
+        Me.UiTabPage11.TabStop = True
+        Me.UiTabPage11.Text = "CHECK A3 VS HORAS"
         '
         'Frame12
         '
@@ -1308,14 +1400,15 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame12.TabStop = False
         Me.Frame12.Text = "1. Fiscalización datos"
         '
-        'UiTabPage4
+        'UiTabPage3
         '
-        Me.UiTabPage4.Controls.Add(Me.Frame14)
-        Me.UiTabPage4.Location = New System.Drawing.Point(1, 21)
-        Me.UiTabPage4.Name = "UiTabPage4"
-        Me.UiTabPage4.Size = New System.Drawing.Size(981, 287)
-        Me.UiTabPage4.TabStop = True
-        Me.UiTabPage4.Text = "REGULARIZACIONES"
+        Me.UiTabPage3.Controls.Add(Me.Frame13)
+        Me.UiTabPage3.Controls.Add(Me.Frame10)
+        Me.UiTabPage3.Location = New System.Drawing.Point(1, 21)
+        Me.UiTabPage3.Name = "UiTabPage3"
+        Me.UiTabPage3.Size = New System.Drawing.Size(981, 287)
+        Me.UiTabPage3.TabStop = True
+        Me.UiTabPage3.Text = "EXTRAS"
         '
         'Frame13
         '
@@ -1337,6 +1430,35 @@ Partial Class CargaHorasJPSTAFF
         Me.bPisarFicheroExtra.TabIndex = 19
         Me.bPisarFicheroExtra.Text = "Regularizar previsión extras"
         '
+        'UiTabPage4
+        '
+        Me.UiTabPage4.Controls.Add(Me.Frame14)
+        Me.UiTabPage4.Location = New System.Drawing.Point(1, 21)
+        Me.UiTabPage4.Name = "UiTabPage4"
+        Me.UiTabPage4.Size = New System.Drawing.Size(981, 287)
+        Me.UiTabPage4.TabStop = True
+        Me.UiTabPage4.Text = "REGULARIZACIONES"
+        '
+        'Frame14
+        '
+        Me.Frame14.Controls.Add(Me.bRegularizarSemestral)
+        Me.Frame14.Location = New System.Drawing.Point(49, 37)
+        Me.Frame14.Name = "Frame14"
+        Me.Frame14.Size = New System.Drawing.Size(262, 103)
+        Me.Frame14.TabIndex = 29
+        Me.Frame14.TabStop = False
+        Me.Frame14.Text = "1. Regularización anual A3"
+        '
+        'bRegularizarSemestral
+        '
+        Me.bRegularizarSemestral.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bRegularizarSemestral.Icon = CType(resources.GetObject("bRegularizarSemestral.Icon"), System.Drawing.Icon)
+        Me.bRegularizarSemestral.Location = New System.Drawing.Point(29, 35)
+        Me.bRegularizarSemestral.Name = "bRegularizarSemestral"
+        Me.bRegularizarSemestral.Size = New System.Drawing.Size(144, 38)
+        Me.bRegularizarSemestral.TabIndex = 20
+        Me.bRegularizarSemestral.Text = "Obtener fichero regularizacion"
+        '
         'UiTabPage5
         '
         Me.UiTabPage5.Controls.Add(Me.Tab4)
@@ -1345,104 +1467,6 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage5.Size = New System.Drawing.Size(981, 287)
         Me.UiTabPage5.TabStop = True
         Me.UiTabPage5.Text = "VARIOS"
-        '
-        'Button5
-        '
-        Me.Button5.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Button5.Icon = CType(resources.GetObject("Button5.Icon"), System.Drawing.Icon)
-        Me.Button5.Location = New System.Drawing.Point(22, 43)
-        Me.Button5.Name = "Button5"
-        Me.Button5.Size = New System.Drawing.Size(144, 38)
-        Me.Button5.TabIndex = 20
-        Me.Button5.Text = "¿Duplicados?"
-        '
-        'Frame19
-        '
-        Me.Frame19.Controls.Add(Me.Button5)
-        Me.Frame19.Location = New System.Drawing.Point(39, 29)
-        Me.Frame19.Name = "Frame19"
-        Me.Frame19.Size = New System.Drawing.Size(184, 111)
-        Me.Frame19.TabIndex = 34
-        Me.Frame19.TabStop = False
-        Me.Frame19.Text = "1. Duplicidad de horas en distintas empresas"
-        '
-        'Tab2
-        '
-        Me.Tab2.BackColor = System.Drawing.Color.FromArgb(CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer))
-        Me.Tab2.Location = New System.Drawing.Point(25, 23)
-        Me.Tab2.Name = "Tab2"
-        Me.Tab2.Size = New System.Drawing.Size(918, 221)
-        Me.Tab2.TabIndex = 33
-        Me.Tab2.TabPages.AddRange(New Janus.Windows.UI.Tab.UITabPage() {Me.UiTabPage6, Me.UiTabPage7, Me.UiTabPage8})
-        Me.Tab2.UseThemes = True
-        '
-        'UiTabPage6
-        '
-        Me.UiTabPage6.Controls.Add(Me.Frame9)
-        Me.UiTabPage6.Controls.Add(Me.Frame3)
-        Me.UiTabPage6.Controls.Add(Me.Frame1)
-        Me.UiTabPage6.Controls.Add(Me.Frame2)
-        Me.UiTabPage6.Location = New System.Drawing.Point(1, 21)
-        Me.UiTabPage6.Name = "UiTabPage6"
-        Me.UiTabPage6.Size = New System.Drawing.Size(916, 199)
-        Me.UiTabPage6.TabStop = True
-        Me.UiTabPage6.Text = "INSERCION HORAS"
-        '
-        'UiTabPage7
-        '
-        Me.UiTabPage7.Controls.Add(Me.Frame18)
-        Me.UiTabPage7.Controls.Add(Me.Frame19)
-        Me.UiTabPage7.Location = New System.Drawing.Point(1, 21)
-        Me.UiTabPage7.Name = "UiTabPage7"
-        Me.UiTabPage7.Size = New System.Drawing.Size(916, 199)
-        Me.UiTabPage7.TabStop = True
-        Me.UiTabPage7.Text = "CHECK HORAS"
-        '
-        'UiTabPage8
-        '
-        Me.UiTabPage8.Controls.Add(Me.Frame7)
-        Me.UiTabPage8.Location = New System.Drawing.Point(1, 21)
-        Me.UiTabPage8.Name = "UiTabPage8"
-        Me.UiTabPage8.Size = New System.Drawing.Size(916, 199)
-        Me.UiTabPage8.TabStop = True
-        Me.UiTabPage8.Text = "GENERACION FICHERO HORAS"
-        '
-        'Tab3
-        '
-        Me.Tab3.BackColor = System.Drawing.Color.FromArgb(CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer))
-        Me.Tab3.Location = New System.Drawing.Point(24, 24)
-        Me.Tab3.Name = "Tab3"
-        Me.Tab3.Size = New System.Drawing.Size(895, 220)
-        Me.Tab3.TabIndex = 0
-        Me.Tab3.TabPages.AddRange(New Janus.Windows.UI.Tab.UITabPage() {Me.UiTabPage9, Me.UiTabPage10, Me.UiTabPage11})
-        Me.Tab3.UseThemes = True
-        '
-        'UiTabPage9
-        '
-        Me.UiTabPage9.Controls.Add(Me.Frame15)
-        Me.UiTabPage9.Location = New System.Drawing.Point(1, 21)
-        Me.UiTabPage9.Name = "UiTabPage9"
-        Me.UiTabPage9.Size = New System.Drawing.Size(893, 198)
-        Me.UiTabPage9.TabStop = True
-        Me.UiTabPage9.Text = "PASOS PREVIOS"
-        '
-        'UiTabPage10
-        '
-        Me.UiTabPage10.Controls.Add(Me.Frame6)
-        Me.UiTabPage10.Location = New System.Drawing.Point(1, 21)
-        Me.UiTabPage10.Name = "UiTabPage10"
-        Me.UiTabPage10.Size = New System.Drawing.Size(875, 182)
-        Me.UiTabPage10.TabStop = True
-        Me.UiTabPage10.Text = "GENERAR FICHERO A3"
-        '
-        'UiTabPage11
-        '
-        Me.UiTabPage11.Controls.Add(Me.Frame12)
-        Me.UiTabPage11.Location = New System.Drawing.Point(1, 21)
-        Me.UiTabPage11.Name = "UiTabPage11"
-        Me.UiTabPage11.Size = New System.Drawing.Size(875, 182)
-        Me.UiTabPage11.TabStop = True
-        Me.UiTabPage11.Text = "CHECK A3 VS HORAS"
         '
         'Tab4
         '
@@ -1476,7 +1500,7 @@ Partial Class CargaHorasJPSTAFF
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(1102, 558)
+        Me.ClientSize = New System.Drawing.Size(1262, 558)
         Me.Controls.Add(Me.Tab1)
         Me.Controls.Add(Me.bDocumentacion)
         Me.Controls.Add(Me.Label2)
@@ -1511,26 +1535,27 @@ Partial Class CargaHorasJPSTAFF
         CType(Me.Tab1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Tab1.ResumeLayout(False)
         Me.UiTabPage1.ResumeLayout(False)
-        Me.UiTabPage2.ResumeLayout(False)
-        Me.Frame18.ResumeLayout(False)
-        Me.UiTabPage3.ResumeLayout(False)
-        Me.Frame15.ResumeLayout(False)
-        Me.Frame14.ResumeLayout(False)
-        Me.Frame12.ResumeLayout(False)
-        Me.UiTabPage4.ResumeLayout(False)
-        Me.Frame13.ResumeLayout(False)
-        Me.UiTabPage5.ResumeLayout(False)
-        Me.Frame19.ResumeLayout(False)
         CType(Me.Tab2, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Tab2.ResumeLayout(False)
         Me.UiTabPage6.ResumeLayout(False)
+        Me.Frame16.ResumeLayout(False)
         Me.UiTabPage7.ResumeLayout(False)
+        Me.Frame18.ResumeLayout(False)
+        Me.Frame19.ResumeLayout(False)
         Me.UiTabPage8.ResumeLayout(False)
+        Me.UiTabPage2.ResumeLayout(False)
         CType(Me.Tab3, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Tab3.ResumeLayout(False)
         Me.UiTabPage9.ResumeLayout(False)
+        Me.Frame15.ResumeLayout(False)
         Me.UiTabPage10.ResumeLayout(False)
         Me.UiTabPage11.ResumeLayout(False)
+        Me.Frame12.ResumeLayout(False)
+        Me.UiTabPage3.ResumeLayout(False)
+        Me.Frame13.ResumeLayout(False)
+        Me.UiTabPage4.ResumeLayout(False)
+        Me.Frame14.ResumeLayout(False)
+        Me.UiTabPage5.ResumeLayout(False)
         CType(Me.Tab4, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Tab4.ResumeLayout(False)
         Me.UiTabPage12.ResumeLayout(False)
@@ -1668,4 +1693,6 @@ Partial Class CargaHorasJPSTAFF
     Friend WithEvents Tab4 As Solmicro.Expertis.Engine.UI.Tab
     Friend WithEvents UiTabPage12 As Janus.Windows.UI.Tab.UITabPage
     Friend WithEvents UiTabPage13 As Janus.Windows.UI.Tab.UITabPage
+    Friend WithEvents Frame16 As Solmicro.Expertis.Engine.UI.Frame
+    Friend WithEvents bDobleCotizacion As Solmicro.Expertis.Engine.UI.Button
 End Class
