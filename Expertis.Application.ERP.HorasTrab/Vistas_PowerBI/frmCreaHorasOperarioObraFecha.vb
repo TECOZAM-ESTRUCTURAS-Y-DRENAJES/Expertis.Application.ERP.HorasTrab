@@ -176,7 +176,7 @@ Public Class frmCreaHorasOperarioObraFecha
         filtro.Add("IDCentro", FilterOperator.Equal, "00")
         filtro.Add("Fecha", FilterOperator.GreaterThanOrEqual, Fecha1)
         filtro.Add("Fecha", FilterOperator.LessThanOrEqual, Fecha2)
-        dtFestivos = New BE.DataEngine().Filter("tbCalendarioCentro", filtro, "Fecha, TipoDia")
+        dtFestivos = New BE.DataEngine().Filter("xTecozam50R2..tbCalendarioCentro", filtro, "Fecha, TipoDia")
 
 
         'FILTRO LOS DIAS TRABAJADOS

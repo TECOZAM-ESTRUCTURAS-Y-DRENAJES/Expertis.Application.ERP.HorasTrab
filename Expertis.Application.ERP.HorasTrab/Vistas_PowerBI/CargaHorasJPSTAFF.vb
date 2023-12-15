@@ -1458,7 +1458,6 @@ Public Class CargaHorasJPSTAFF
 
         dtHoras = dtFormaInternacional(dtHoras, fecha1)
 
-        Exit Sub
         '-------CHECK IDOPERARIO
         Dim idoperario As String
         For Each fila As DataRow In dtHoras.Rows
@@ -1570,7 +1569,7 @@ Public Class CargaHorasJPSTAFF
                     auto.Ejecutar(txtSQL)
 
                 ElseIf value IsNot Nothing AndAlso TypeOf value Is String Then
-                    If value = "ACC" Or value.ToString = "CC" Or value.ToString = "acc" Or value.ToString = "cc" Then
+                    If value = "ACC" Or value.ToString = "CC" Or value.ToString = "acc" Or value.ToString = "cc" Or value.ToString = "SSP" Then
                         idoficio = DevuelveIDOficio(basededatos, idoperario)
                         idobra = DevuelveIDObra(basededatos, obra)
                         IDTrabajo = ObtieneIDTrabajo(basededatos, idobra, "PT1")
@@ -4181,7 +4180,7 @@ Public Class CargaHorasJPSTAFF
             Dim rowDescOperario As String = row("F4")
             Dim rowCategoriaProfesional As String = Nz(row("F6"), "")
             If rowCategoriaProfesional.ToString.Length = 0 Then
-                ExpertisApp.GenerateMessage("El operario con IDGET no tiene categoria profesional" & rowIDGET)
+                ExpertisApp.GenerateMessage("El operario con IDGET no tiene categoria profesional: " & rowIDGET)
             End If
             Dim rowHoras As Double = Convert.ToDouble(row("F11"))
             Dim rowHorasAdmin As Double = Convert.ToDouble(row("F13"))
@@ -4318,7 +4317,7 @@ Public Class CargaHorasJPSTAFF
     Private Sub bDocumentacion_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bDocumentacion.Click
         'ABRE EL WORD DEL MANUAL DEL USUARIO QUE TENGO EN LA RUTA
         'N:\DOCUMENTACION_OFICIAL\ManualDelUsuario.docx
-        Dim filePath As String = "N:\DOCUMENTACION_OFICIAL\Manual_Del_Usuario.docx"
+        Dim filePath As String = "N:\1000. DOCUMENTACION OFICIAL\Manual_Del_Usuario.docx"
 
         If System.IO.File.Exists(filePath) Then
             Process.Start(filePath)
@@ -5420,7 +5419,7 @@ Public Class CargaHorasJPSTAFF
                 Next
             Case 3
             Case Else
-                Console.WriteLine("Falta un digito antes del (")
+                Console.WriteLine("Falta un digito (")
         End Select
     End Sub
     Dim cadenaFinal As String
@@ -5560,9 +5559,24 @@ Public Class CargaHorasJPSTAFF
         For Each fila As DataRow In dtUkPersonas.Rows
             For Each columna As DataColumn In dtUkPersonas.Columns
                 ' Si el valor es de tipo Double, formatearlo con coma en lugar de punto
-                fila(columna) = DirectCast(fila(columna), String).Replace(".", ",")
-                fila(columna) = DirectCast(fila(columna), String).Replace("(", "-")
-                fila(columna) = DirectCast(fila(columna), String).Replace(")", "")
+                Try
+                    fila(columna) = (DirectCast(fila(columna), String).Replace(".", ","))
+                Catch ex As Exception
+                    fila(columna) = ""
+                End Try
+
+                Try
+                    fila(columna) = (DirectCast(fila(columna), String).Replace("(", "-"))
+                Catch ex As Exception
+                    fila(columna) = ""
+                End Try
+
+                Try
+                    fila(columna) = (DirectCast(fila(columna), String).Replace(")", ""))
+                Catch ex As Exception
+                    fila(columna) = ""
+                End Try
+
 
                 ' Si la columna es "Diccionario", eliminar letras y dejar solo dígitos
                 If columna.ColumnName = "Diccionario" Then

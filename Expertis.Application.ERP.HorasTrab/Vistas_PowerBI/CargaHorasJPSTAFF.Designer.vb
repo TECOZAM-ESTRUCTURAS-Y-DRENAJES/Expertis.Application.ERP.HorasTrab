@@ -1410,9 +1410,9 @@ Partial Class CargaHorasJPSTAFF
         'Tab3
         '
         Me.Tab3.BackColor = System.Drawing.Color.FromArgb(CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer))
-        Me.Tab3.Location = New System.Drawing.Point(42, 40)
+        Me.Tab3.Location = New System.Drawing.Point(24, 24)
         Me.Tab3.Name = "Tab3"
-        Me.Tab3.Size = New System.Drawing.Size(877, 204)
+        Me.Tab3.Size = New System.Drawing.Size(895, 220)
         Me.Tab3.TabIndex = 0
         Me.Tab3.TabPages.AddRange(New Janus.Windows.UI.Tab.UITabPage() {Me.UiTabPage9, Me.UiTabPage10, Me.UiTabPage11})
         Me.Tab3.UseThemes = True
@@ -1422,7 +1422,7 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage9.Controls.Add(Me.Frame15)
         Me.UiTabPage9.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage9.Name = "UiTabPage9"
-        Me.UiTabPage9.Size = New System.Drawing.Size(875, 182)
+        Me.UiTabPage9.Size = New System.Drawing.Size(893, 198)
         Me.UiTabPage9.TabStop = True
         Me.UiTabPage9.Text = "PASOS PREVIOS"
         '
@@ -1447,9 +1447,9 @@ Partial Class CargaHorasJPSTAFF
         'Tab4
         '
         Me.Tab4.BackColor = System.Drawing.Color.FromArgb(CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer))
-        Me.Tab4.Location = New System.Drawing.Point(37, 21)
+        Me.Tab4.Location = New System.Drawing.Point(29, 24)
         Me.Tab4.Name = "Tab4"
-        Me.Tab4.Size = New System.Drawing.Size(865, 246)
+        Me.Tab4.Size = New System.Drawing.Size(873, 222)
         Me.Tab4.TabIndex = 29
         Me.Tab4.TabPages.AddRange(New Janus.Windows.UI.Tab.UITabPage() {Me.UiTabPage12, Me.UiTabPage13})
         Me.Tab4.UseThemes = True
@@ -1459,7 +1459,7 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage12.Controls.Add(Me.Frame5)
         Me.UiTabPage12.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage12.Name = "UiTabPage12"
-        Me.UiTabPage12.Size = New System.Drawing.Size(863, 224)
+        Me.UiTabPage12.Size = New System.Drawing.Size(871, 200)
         Me.UiTabPage12.TabStop = True
         Me.UiTabPage12.Text = "HORAS INTERNACIONAL"
         '
@@ -1468,7 +1468,7 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage13.Controls.Add(Me.Frame4)
         Me.UiTabPage13.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage13.Name = "UiTabPage13"
-        Me.UiTabPage13.Size = New System.Drawing.Size(863, 224)
+        Me.UiTabPage13.Size = New System.Drawing.Size(871, 200)
         Me.UiTabPage13.TabStop = True
         Me.UiTabPage13.Text = "BORRAR HORAS"
         '
