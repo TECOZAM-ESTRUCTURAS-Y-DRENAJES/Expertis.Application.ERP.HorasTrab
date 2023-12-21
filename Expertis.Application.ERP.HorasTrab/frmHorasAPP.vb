@@ -12,7 +12,7 @@ Public Class frmHorasAPP
     Private Sub LoadToolBarActions()
         Me.FormActions.Add("Insertar Horas", AddressOf InsertarPartes)
         Me.AddSeparator()
-        Me.FormActions.Add("Comprueba horas y las modifica si ya están insertadas.", AddressOf CompruebaeInsertaPartes)
+        'Me.FormActions.Add("Comprueba horas y las modifica si ya están insertadas.", AddressOf CompruebaeInsertaPartes)
     End Sub
 
 

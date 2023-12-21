@@ -1306,7 +1306,7 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage2.Controls.Add(Me.Tab3)
         Me.UiTabPage2.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage2.Name = "UiTabPage2"
-        Me.UiTabPage2.Size = New System.Drawing.Size(981, 287)
+        Me.UiTabPage2.Size = New System.Drawing.Size(1143, 287)
         Me.UiTabPage2.TabStop = True
         Me.UiTabPage2.Text = "A3"
         '
@@ -1406,7 +1406,7 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage3.Controls.Add(Me.Frame10)
         Me.UiTabPage3.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage3.Name = "UiTabPage3"
-        Me.UiTabPage3.Size = New System.Drawing.Size(981, 287)
+        Me.UiTabPage3.Size = New System.Drawing.Size(1143, 287)
         Me.UiTabPage3.TabStop = True
         Me.UiTabPage3.Text = "EXTRAS"
         '
@@ -1464,9 +1464,9 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage5.Controls.Add(Me.Tab4)
         Me.UiTabPage5.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage5.Name = "UiTabPage5"
-        Me.UiTabPage5.Size = New System.Drawing.Size(981, 287)
+        Me.UiTabPage5.Size = New System.Drawing.Size(1143, 287)
         Me.UiTabPage5.TabStop = True
-        Me.UiTabPage5.Text = "VARIOS"
+        Me.UiTabPage5.Text = "VARIOS "
         '
         'Tab4
         '

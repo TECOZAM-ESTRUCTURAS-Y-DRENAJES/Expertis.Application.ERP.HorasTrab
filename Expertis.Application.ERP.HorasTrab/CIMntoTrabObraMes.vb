@@ -299,22 +299,62 @@ Public Class CIMntoTrabObraMes
 
             Next
             'strSelect2 &= " order by fecha,numobra"
-
             'MsgBox(strSelect2)
-
             'rp.DataSource = AdminData.GetData(strSelect2, False)
-            rp.DataSource = DE.RetrieveData(strSelect2, , , "fecha,numobra", False)
+
+            'David Velasco 18/12/23 Solucion Error Dias FESTIVOS
+            Dim dtGente As New DataTable
+            dtGente = DE.RetrieveData(strSelect2, , , "fecha,numobra", False)
+
+
+            Dim Fecha1 As String
+            Fecha1 = DevuelvePrimerDia(mes, anio)
+
+            Dim Fecha2 As String
+            Fecha2 = DevuelveUltimoDia(mes, anio)
+
+            Dim dtFestivos As New DataTable
+            Dim f As New Filter
+            f.Add("TipoDia", FilterOperator.Equal, 1)
+            f.Add("Fecha", FilterOperator.GreaterThanOrEqual, Fecha1)
+            f.Add("Fecha", FilterOperator.LessThanOrEqual, Fecha2)
+            f.Add("IDCentro", FilterOperator.Equal, "00")
+            dtFestivos = New BE.DataEngine().Filter("tbCalendarioCentro", f)
+
+
+            For Each dr As DataRow In dtGente.Rows
+                For Each filaFecha As DataRow In dtFestivos.Rows
+                    If dr("fecha") = filaFecha("Fecha") Then
+                        dr("Horas") = 0
+                    End If
+                Next
+            Next
+
+
+            rp.DataSource = dtGente
             'DE.RetrieveData(
             ExpertisApp.OpenReport(rp)
-
-
         Catch ex As SqlClient.SqlException
-
-
             MsgBox(ex.Message)
-
         End Try
 
+    End Function
+    Public Function DevuelvePrimerDia(ByVal mes As String, ByVal anio As String) As DateTime
+        Dim txtSql As String
+        txtSql = "SELECT MIN(fecha) AS Fecha FROM tbMaestroFechas WHERE YEAR(fecha) = " & anio & " AND MONTH(fecha) = " & mes & ""
+        Dim s As New Solmicro.Expertis.Business.ClasesTecozam.ControlArticuloNSerie
+        Dim dt As DataTable
+        dt = s.EjecutarSqlSelect(txtSql)
+        Return dt.Rows(0)("Fecha").ToString
+    End Function
+
+    Public Function DevuelveUltimoDia(ByVal mes As String, ByVal anio As String) As DateTime
+        Dim txtSql As String
+        txtSql = "SELECT MAX(fecha) AS Fecha FROM tbMaestroFechas WHERE YEAR(fecha) = " & anio & " AND MONTH(fecha) = " & mes & ""
+        Dim s As New Solmicro.Expertis.Business.ClasesTecozam.ControlArticuloNSerie
+        Dim dt As DataTable
+        dt = s.EjecutarSqlSelect(txtSql)
+        Return dt.Rows(0)("Fecha").ToString
     End Function
 
     Private Sub CIMntoTrabObraMes_SetReportDesignObjects(ByVal sender As Object, ByVal e As Solmicro.Expertis.Engine.UI.ReportDesignObjectsEventArgs) Handles MyBase.SetReportDesignObjects
@@ -514,6 +554,31 @@ Public Class CIMntoTrabObraMes
 
         'MsgBox("el informe tiene los siguientes registros " & dtInforme.rows.count)
 
+        'David Velasco 18/12/23 Solucion Error Dias FESTIVOS
+        Dim Fecha1 As String
+        Fecha1 = DevuelvePrimerDia(mes, anio)
+
+        Dim Fecha2 As String
+        Fecha2 = DevuelveUltimoDia(mes, anio)
+
+        Dim dtFestivos As New DataTable
+        Dim f As New Filter
+        f.Add("TipoDia", FilterOperator.Equal, 1)
+        f.Add("Fecha", FilterOperator.GreaterThanOrEqual, Fecha1)
+        f.Add("Fecha", FilterOperator.LessThanOrEqual, Fecha2)
+        f.Add("IDCentro", FilterOperator.Equal, "00")
+        dtFestivos = New BE.DataEngine().Filter("tbCalendarioCentro", f)
+
+
+        For Each dr As DataRow In dtInforme.Rows
+            For Each filaFecha As DataRow In dtFestivos.Rows
+                If dr("fecha") = filaFecha("Fecha") Then
+                    dr("Horas") = 0
+                End If
+            Next
+        Next
+
+
 
         rp.DataSource = dtInforme
 
@@ -535,11 +600,6 @@ Public Class CIMntoTrabObraMes
         Catch ex As Exception
             MsgBox(ex.Message)
         End Try
-
-
-
-
-
 
         'Dim dtObrasMes As New DataTable
         'Dim dtTrabMes As New DataTable
