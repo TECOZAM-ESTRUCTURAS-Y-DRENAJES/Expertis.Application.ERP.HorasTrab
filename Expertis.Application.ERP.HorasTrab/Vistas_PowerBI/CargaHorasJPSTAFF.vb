@@ -2855,7 +2855,7 @@ Public Class CargaHorasJPSTAFF
             newRow("IDOperario") = IDOperario
             newRow("DescOperario") = row("F2")
             newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
-            totalcoronas = Nz(row("F14"), 0)
+            totalcoronas = Nz(row("F15"), 0)
             totaleuros = CambioCoronaAEuro(dtCambioMoneda, totalcoronas, mes, anio)
             newRow("CosteEmpresa") = totaleuros
             newRow("Mes") = mes
@@ -2878,7 +2878,7 @@ Public Class CargaHorasJPSTAFF
                 'Return newDataTable
                 Exit For ' Salir del bucle si la celda está vacía
             End If
-            CosteE1 = CosteE1 + Nz(dr("F14"), 0)
+            CosteE1 = CosteE1 + Nz(dr("F15"), 0)
         Next
 
         For Each dr As DataRow In dtOrdenada.Rows
@@ -5918,6 +5918,7 @@ Public Class CargaHorasJPSTAFF
         dataTable.Columns.Add("Impuestos")
         dataTable.Columns.Add("Other deductions (net)")
         dataTable.Columns.Add("NET TO PAY")
+        dataTable.Columns.Add("BRUTO")
         dataTable.Columns.Add("Accrued holiday pay")
         dataTable.Columns.Add("Accrued holiday pay over 60 yr old")
         dataTable.Columns.Add("Accrued EC of holiday pay")
@@ -5925,21 +5926,8 @@ Public Class CargaHorasJPSTAFF
         dataTable.Columns.Add("Withholding taxes")
         dataTable.Columns.Add("COSTE EMPRESA")
 
-
         'AÑADO LA NUEVA LINEA DE ANGEL
         Dim nuevaFila As DataRow = dataTable.NewRow()
-
-        '' Asignar los valores a las columnas correspondientes
-        'nuevaFila("Diccionario") = ""
-        'nuevaFila("Operario") = ""
-
-        'nuevaFila("TAX") = ""
-        'nuevaFila("Monthly wages (gross)") = "25"
-        'nuevaFila("Monthly food allowance (gross)") = "25"
-        'nuevaFila("Other Supplements (gross)") = "25"
-
-        'nuevaFila("Monthly payroll costs") = "COSTE EMPRESA"
-        'dataTable.Rows.Add(nuevaFila)
 
         ' Crear un lector de PDF
         Dim pdfReader As New PdfReader(pdfPath)
@@ -5948,15 +5936,15 @@ Public Class CargaHorasJPSTAFF
             ' Obtener el texto de la página
             Dim texto As String = PdfTextExtractor.GetTextFromPage(pdfReader, page)
             Dim tax As Double
-            Dim wagesgross As Double
-            Dim foodgross As Double
-            Dim supplementsgross As Double
+            Dim accruedholidaypay As Double
+            Dim accruedEC As Double
             Dim paymentinkind As Double
             Dim deductions As Double
             Dim cashBenefit As Double
             Dim impuestos As Double
-            Dim paybasis As Double
+            Dim contribucion As Double
             Dim old As Double
+            Dim bruto As Double
             ' Añadir una nueva fila a la nueva tabla
             nuevaFila = dataTable.NewRow()
 
@@ -5964,20 +5952,15 @@ Public Class CargaHorasJPSTAFF
             nuevaFila("Diccionario") = devuelveDiccionarioNO(texto)
             nuevaFila("Operario") = devuelveOperarioNO(texto)
             tax = devuelveTAX(texto)
-            'wagesgross = devuelveWages(texto)
-            'foodgross = devuelveFood(texto)
-            'supplementsgross = devuelveComplementos(texto)
+
             paymentinkind = Nz(devuelvePaymentInKind(texto), 0)
             deductions = Nz(devuelveDeductions(texto), 0)
             cashBenefit = devuelveCashBenefit(texto)
             nuevaFila("TAX") = tax
             nuevaFila("Cash Benefit (gross)") = cashBenefit
-            'nuevaFila("Monthly wages (gross)") = wagesgross
-            'nuevaFila("Monthly food allowance (gross)") = foodgross
-            'nuevaFila("Other Supplements (gross)") = supplementsgross
             nuevaFila("Payment in kind (gross)") = paymentinkind
             impuestos = (cashBenefit + paymentinkind) * (tax / 100)
-            nuevaFila("Impuestos") = (cashBenefit + paymentinkind) * (tax / 100)
+            nuevaFila("Impuestos") = impuestos
             If deductions >= 0 Then
                 'deductions = deductions * -1
                 deductions = 0
@@ -5986,23 +5969,23 @@ Public Class CargaHorasJPSTAFF
             End If
             nuevaFila("Other deductions (net)") = deductions
             nuevaFila("NET TO PAY") = cashBenefit - impuestos + deductions
-            paybasis = devuelvePayBasis(texto) * 0.102
-            nuevaFila("Accrued holiday pay") = paybasis
+            bruto = (cashBenefit - impuestos + deductions) + ((cashBenefit - impuestos + deductions) * (tax / 100))
+            nuevaFila("BRUTO") = bruto
+            accruedholidaypay = devuelvePayBasis(texto) * 0.102
+            nuevaFila("Accrued holiday pay") = accruedholidaypay
             old = DevuelvePagoPorViejo(devuelveDiccionarioNO(texto))
             Dim viejos As Double = 0
             If old = 1 Then
                 viejos = cashBenefit * 0.023
                 nuevaFila("Accrued holiday pay over 60 yr old") = viejos
             End If
-            nuevaFila("Accrued EC of holiday pay") = (paybasis + viejos) * 0.141
-
-            nuevaFila("Employer's Contribution") = (cashBenefit + paymentinkind) * 0.141
-            nuevaFila("Withholding taxes") = (cashBenefit + paymentinkind) * (tax / 100)
-            nuevaFila("COSTE EMPRESA") = (cashBenefit + paymentinkind) + paybasis + viejos + ((paybasis + viejos) * 0.141) + (cashBenefit + paymentinkind) * 0.141
-
-
-            'nuevaFila("NET TO PAY") = cashBenefit - impuestos + Math.Abs(deductions)
-            'nuevaFila("NET TO PAY") = (wagesgross + foodgross + supplementsgross) - ((wagesgross + foodgross + supplementsgross + paymentinkind) * (tax / 100)) + Math.Abs(deductions)
+            accruedEC = (accruedholidaypay + viejos) * 0.141
+            nuevaFila("Accrued EC of holiday pay") = accruedEC
+            contribucion = (cashBenefit + paymentinkind) * 0.141
+            nuevaFila("Employer's Contribution") = contribucion
+            nuevaFila("Withholding taxes") = impuestos
+            'nuevaFila("COSTE EMPRESA") = (cashBenefit + paymentinkind) + paybasis + viejos + ((paybasis + viejos) * 0.141) + ((cashBenefit + paymentinkind) * 0.141)
+            nuevaFila("COSTE EMPRESA") = bruto + accruedholidaypay + viejos + accruedEC + contribucion
             ' Agregar la nueva fila a la nueva tabla
             dataTable.Rows.Add(nuevaFila)
         Next
@@ -6327,22 +6310,36 @@ Public Class CargaHorasJPSTAFF
                 Next
 
                 ' Establecer el formato de moneda para la columna N
-                worksheet.Column(14).Width = 18
+                worksheet.Column(15).Width = 18
 
-                Dim rangoMoneda As ExcelRange = worksheet.Cells("N2:N" & worksheet.Dimension.End.Row)
+                Dim rangoMoneda As ExcelRange = worksheet.Cells("O2:O" & worksheet.Dimension.End.Row)
                 rangoMoneda.Style.Numberformat.Format = "_-[$NOK] * #,##0.00_-;_-[$NOK] * -#,##0.00_-;_-[$NOK] * ""-""??_-;_-@_-"
-
-                ' Establecer el color de fondo de la columna N a verde
-                Dim rangoColumnaN As ExcelRange = worksheet.Cells(2, 14, worksheet.Dimension.End.Row, 14) ' Columna N es la 14
-                rangoColumnaN.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
-                rangoColumnaN.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(144, 238, 144)) ' Utilizando un tono de verde claro
 
                 ' Establecer el color de fondo de la columna H a un amarillo claro
                 Dim rangoColumnaH As ExcelRange = worksheet.Cells(2, 8, worksheet.Dimension.End.Row, 8) ' Columna H es la 8
                 rangoColumnaH.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
                 rangoColumnaH.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
 
+                ' Establecer el color de fondo de la columna H a un amarillo claro
+                Dim rangoColumnaI As ExcelRange = worksheet.Cells(2, 9, worksheet.Dimension.End.Row, 9) ' Columna I es la 9
+                rangoColumnaI.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                rangoColumnaI.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 181, 82)) ' Amarillo claro
 
+                ' Establecer el color de fondo de la columna N a verde
+                Dim rangoColumnaN As ExcelRange = worksheet.Cells(2, 15, worksheet.Dimension.End.Row, 15) ' Columna O es la 15
+                rangoColumnaN.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                rangoColumnaN.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(144, 238, 144)) ' Utilizando un tono de verde claro
+
+                Dim dtExplicacionNo As DataTable = devuelveExplicacionNO()
+                Dim worksheet2 = package.Workbook.Worksheets.Add("2")
+
+                ' Copiar los datos de la DataTable a la hoja de cálculo.
+                worksheet2.Cells("A1").LoadFromDataTable(dtExplicacionNo, True)
+                worksheet2.Column(1).Width = 25
+                worksheet2.Column(2).Width = 30
+
+                Dim fila11 As ExcelRange = worksheet2.Cells(1, 1, 1, worksheet2.Dimension.End.Column)
+                fila11.Style.Font.Bold = True
                 ' Guardar el archivo de Excel.
                 package.Save()
             End Using
@@ -6352,6 +6349,72 @@ Public Class CargaHorasJPSTAFF
 
 
     End Sub
+    Public Function devuelveExplicacionNO() As DataTable
+        Dim dtExplicacionNoruega As New DataTable()
+        dtExplicacionNoruega.Columns.Add("VALOR")
+        dtExplicacionNoruega.Columns.Add("EXPLICACION")
+        Dim nuevaFil As DataRow = dtExplicacionNoruega.NewRow()
+        nuevaFil("VALOR") = "CASH BENEFIT"
+        nuevaFil("EXPLICACION") = "NOMINA"
+        dtExplicacionNoruega.Rows.Add(nuevaFil)
+        '---
+        nuevaFil = dtExplicacionNoruega.NewRow()
+        nuevaFil("VALOR") = "PAYMENT IN KIND"
+        nuevaFil("EXPLICACION") = "NOMINA"
+        dtExplicacionNoruega.Rows.Add(nuevaFil)
+        '---
+        nuevaFil = dtExplicacionNoruega.NewRow()
+        nuevaFil("VALOR") = "DEDUCTIONS"
+        nuevaFil("EXPLICACION") = "NOMINA"
+        dtExplicacionNoruega.Rows.Add(nuevaFil)
+        '---
+        nuevaFil = dtExplicacionNoruega.NewRow()
+        nuevaFil("VALOR") = "IMPUESTOS ="
+        nuevaFil("EXPLICACION") = "(CASH BENEFIT + PAYMENT IN KIND)* (TAX /100)"
+        dtExplicacionNoruega.Rows.Add(nuevaFil)
+        '---
+        nuevaFil = dtExplicacionNoruega.NewRow()
+        nuevaFil("VALOR") = "NET TO PAY = "
+        nuevaFil("EXPLICACION") = "CASH BENEFIT - IMPUESTOS + DEDUCTIONS"
+        dtExplicacionNoruega.Rows.Add(nuevaFil)
+        '---
+        nuevaFil = dtExplicacionNoruega.NewRow()
+        nuevaFil("VALOR") = "BRUTO ="
+        nuevaFil("EXPLICACION") = "NET TO PAY + (NET TO PAY * (TAX/100))"
+        dtExplicacionNoruega.Rows.Add(nuevaFil)
+        '---
+        nuevaFil = dtExplicacionNoruega.NewRow()
+        nuevaFil("VALOR") = "ACCRUED HOLIDAY PAY ="
+        nuevaFil("EXPLICACION") = "HOLIDAY PAY BASIS (NOMINA ABAJO) * 0,102"
+        dtExplicacionNoruega.Rows.Add(nuevaFil)
+        '---
+        nuevaFil = dtExplicacionNoruega.NewRow()
+        nuevaFil("VALOR") = "ACCRUED HOLIDAY > 60 OLD ="
+        nuevaFil("EXPLICACION") = "CASH BENEFIT * 0,023"
+        dtExplicacionNoruega.Rows.Add(nuevaFil)
+        '---
+        nuevaFil = dtExplicacionNoruega.NewRow()
+        nuevaFil("VALOR") = "ACCRUED EC ="
+        nuevaFil("EXPLICACION") = "(ACCRUED HOLIDAY PAY + ACCRUED HOLIDAY > 60 OLD ) * 0,141"
+        dtExplicacionNoruega.Rows.Add(nuevaFil)
+        '---
+        nuevaFil = dtExplicacionNoruega.NewRow()
+        nuevaFil("VALOR") = "EMPLOYER'S CONTIBUTION ="
+        nuevaFil("EXPLICACION") = "(CASH BENEFIT + PAYMENT IN KIND) * 0,141"
+        dtExplicacionNoruega.Rows.Add(nuevaFil)
+        '---
+        nuevaFil = dtExplicacionNoruega.NewRow()
+        nuevaFil("VALOR") = "WITHOLDING TAXES ="
+        nuevaFil("EXPLICACION") = "IMPUESTOS"
+        dtExplicacionNoruega.Rows.Add(nuevaFil)
+        '---
+        nuevaFil = dtExplicacionNoruega.NewRow()
+        nuevaFil("VALOR") = "COSTE EMPRESA ="
+        nuevaFil("EXPLICACION") = "(BRUTO + ACCRUED HOLIDAY PAY + ACCRUED HOLIDAY > 60 OLD + ACCRUED EC + EMPLOYER'S CONTIBUTION)"
+        dtExplicacionNoruega.Rows.Add(nuevaFil)
+
+        Return dtExplicacionNoruega
+    End Function
 
     Private Sub bMatriz_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
         '6. TABLA DE HORAS POR PERSONAS
