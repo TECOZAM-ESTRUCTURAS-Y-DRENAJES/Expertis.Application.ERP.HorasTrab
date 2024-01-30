@@ -3195,6 +3195,7 @@ Public Class CargaHorasJPSTAFF
         dtFinalOrdenado.Columns.Add("Anio", GetType(String))
         dtFinalOrdenado.Columns.Add("CosteEmpresa", GetType(Decimal))
         dtFinalOrdenado.Columns.Add("IDCategoriaProfesionalSCCP", GetType(String))
+        dtFinalOrdenado.Columns.Add("IDOficio", GetType(String))
 
         ' Copiar los datos del DataTable original al DataTable ordenado
         For Each dr As DataRow In dtFinal.Rows
@@ -3208,6 +3209,7 @@ Public Class CargaHorasJPSTAFF
             newRow("Anio") = dr("Anio")
             newRow("CosteEmpresa") = dr("CosteEmpresa")
             newRow("IDCategoriaProfesionalSCCP") = DevuelveIDCategoriaProfesionalSCCP(DevuelveBaseDeDatos(dr("Empresa")), dr("IDOperario"))
+            newRow("IDOficio") = DevuelveIDOficio(DevuelveBaseDeDatos(dr("Empresa")), dr("IDOperario"))
             dtFinalOrdenado.Rows.Add(newRow)
         Next
 
@@ -5830,7 +5832,14 @@ Public Class CargaHorasJPSTAFF
                 File.Delete(rutaArchivo)
             End If
 
-            dtUkPersonas.DefaultView.Sort = "Diccionario ASC" ' Ajusta "ColumnaL" al nombre real de la columna
+            Dim result As DialogResult = MessageBox.Show("¿Deseas ordenar los registros?", "Confirmacion", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+
+            ' Check the user's choice
+            If result = DialogResult.Yes Then
+                dtUkPersonas.DefaultView.Sort = "Diccionario ASC" ' Ajusta "ColumnaL" al nombre real de la columna
+            End If
+
+
             Dim dtUkPersonasOrdenado = dtUkPersonas.DefaultView.ToTable()
 
             Using package As New ExcelPackage(rutaArchivo)
