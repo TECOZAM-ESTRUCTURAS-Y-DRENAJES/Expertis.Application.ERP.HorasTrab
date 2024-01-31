@@ -1665,7 +1665,7 @@ Public Class CargaHorasJPSTAFF
                     auto.Ejecutar(txtSQL)
 
                 ElseIf value IsNot Nothing AndAlso TypeOf value Is String Then
-                    If value = "ACC" Or value.ToString = "CC" Or value.ToString = "acc" Or value.ToString = "cc" Or value.ToString = "SSP" Then
+                    If value = "ACC" Or value.ToString = "CC" Or value.ToString = "acc" Or value.ToString = "cc" Or value.ToString = "SSP" Or value.ToString = "B" Then
                         idoficio = DevuelveIDOficio(basededatos, idoperario)
                         idobra = DevuelveIDObra(basededatos, obra)
                         IDTrabajo = ObtieneIDTrabajo(basededatos, idobra, "PT1")
@@ -1742,7 +1742,7 @@ Public Class CargaHorasJPSTAFF
                     auto.Ejecutar(txtSQL)
 
                 ElseIf value IsNot Nothing AndAlso TypeOf value Is String Then
-                    If value = "ACC" Or value.ToString = "CC" Or value.ToString = "acc" Or value.ToString = "cc" Or value.ToString = "SSP" Then
+                    If value = "ACC" Or value.ToString = "CC" Or value.ToString = "acc" Or value.ToString = "cc" Or value.ToString = "SSP" Or value.ToString = "B" Then
                         idoficio = DevuelveIDOficio(basededatos, idoperario)
                         idobra = DevuelveIDObra(basededatos, obra)
                         IDTrabajo = ObtieneIDTrabajo(basededatos, idobra, "PT1")
@@ -3488,6 +3488,9 @@ Public Class CargaHorasJPSTAFF
         Dim Fecha1 As String : Dim Fecha2 As String : Dim dt As New DataTable
         Fecha1 = frm.fecha1 : Fecha2 = frm.fecha2 : dt = ObtenerTabla(Fecha1, Fecha2)
 
+        If frm.blEstado = False Then
+            Exit Sub
+        End If
         Dim mes As String : mes = Month(Fecha1)
         If Length(mes) = 1 Then
             mes = "0" & mes
