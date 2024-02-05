@@ -159,6 +159,7 @@ Partial Class CargaHorasJPSTAFF
         Me.Tab4 = New Solmicro.Expertis.Engine.UI.Tab
         Me.UiTabPage12 = New Janus.Windows.UI.Tab.UITabPage
         Me.UiTabPage13 = New Janus.Windows.UI.Tab.UITabPage
+        Me.bUKNuevo = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame1.SuspendLayout()
         Me.Frame2.SuspendLayout()
         Me.Frame3.SuspendLayout()
@@ -1231,6 +1232,7 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame16.TabIndex = 33
         Me.Frame16.TabStop = False
         Me.Frame16.Text = "5. Doble cotización"
+        Me.Frame16.Visible = False
         '
         'bDobleCotizacion
         '
@@ -1248,7 +1250,7 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage7.Controls.Add(Me.Frame19)
         Me.UiTabPage7.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage7.Name = "UiTabPage7"
-        Me.UiTabPage7.Size = New System.Drawing.Size(1115, 221)
+        Me.UiTabPage7.Size = New System.Drawing.Size(1093, 221)
         Me.UiTabPage7.TabStop = True
         Me.UiTabPage7.Text = "CHECK HORAS"
         '
@@ -1297,7 +1299,7 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage8.Controls.Add(Me.Frame7)
         Me.UiTabPage8.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage8.Name = "UiTabPage8"
-        Me.UiTabPage8.Size = New System.Drawing.Size(1115, 221)
+        Me.UiTabPage8.Size = New System.Drawing.Size(1093, 221)
         Me.UiTabPage8.TabStop = True
         Me.UiTabPage8.Text = "GENERACION FICHERO HORAS"
         '
@@ -1323,6 +1325,8 @@ Partial Class CargaHorasJPSTAFF
         'UiTabPage9
         '
         Me.UiTabPage9.Controls.Add(Me.Frame15)
+        Me.UiTabPage9.Controls.Add(Me.bDCZ)
+        Me.UiTabPage9.Controls.Add(Me.bUk)
         Me.UiTabPage9.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage9.Name = "UiTabPage9"
         Me.UiTabPage9.Size = New System.Drawing.Size(893, 198)
@@ -1331,9 +1335,8 @@ Partial Class CargaHorasJPSTAFF
         '
         'Frame15
         '
+        Me.Frame15.Controls.Add(Me.bUKNuevo)
         Me.Frame15.Controls.Add(Me.bNO)
-        Me.Frame15.Controls.Add(Me.bDCZ)
-        Me.Frame15.Controls.Add(Me.bUk)
         Me.Frame15.Location = New System.Drawing.Point(34, 23)
         Me.Frame15.Name = "Frame15"
         Me.Frame15.Size = New System.Drawing.Size(676, 114)
@@ -1345,7 +1348,7 @@ Partial Class CargaHorasJPSTAFF
         '
         Me.bNO.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.bNO.Icon = CType(resources.GetObject("bNO.Icon"), System.Drawing.Icon)
-        Me.bNO.Location = New System.Drawing.Point(287, 34)
+        Me.bNO.Location = New System.Drawing.Point(248, 34)
         Me.bNO.Name = "bNO"
         Me.bNO.Size = New System.Drawing.Size(144, 38)
         Me.bNO.TabIndex = 32
@@ -1355,7 +1358,7 @@ Partial Class CargaHorasJPSTAFF
         '
         Me.bDCZ.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.bDCZ.Icon = CType(resources.GetObject("bDCZ.Icon"), System.Drawing.Icon)
-        Me.bDCZ.Location = New System.Drawing.Point(508, 34)
+        Me.bDCZ.Location = New System.Drawing.Point(744, 3)
         Me.bDCZ.Name = "bDCZ"
         Me.bDCZ.Size = New System.Drawing.Size(144, 38)
         Me.bDCZ.TabIndex = 30
@@ -1366,18 +1369,19 @@ Partial Class CargaHorasJPSTAFF
         '
         Me.bUk.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.bUk.Icon = CType(resources.GetObject("bUk.Icon"), System.Drawing.Icon)
-        Me.bUk.Location = New System.Drawing.Point(32, 34)
+        Me.bUk.Location = New System.Drawing.Point(744, 57)
         Me.bUk.Name = "bUk"
         Me.bUk.Size = New System.Drawing.Size(144, 38)
         Me.bUk.TabIndex = 31
         Me.bUk.Text = "Pasar fichero UK"
+        Me.bUk.Visible = False
         '
         'UiTabPage10
         '
         Me.UiTabPage10.Controls.Add(Me.Frame6)
         Me.UiTabPage10.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage10.Name = "UiTabPage10"
-        Me.UiTabPage10.Size = New System.Drawing.Size(875, 182)
+        Me.UiTabPage10.Size = New System.Drawing.Size(893, 198)
         Me.UiTabPage10.TabStop = True
         Me.UiTabPage10.Text = "GENERAR FICHERO A3"
         '
@@ -1435,7 +1439,7 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage4.Controls.Add(Me.Frame14)
         Me.UiTabPage4.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage4.Name = "UiTabPage4"
-        Me.UiTabPage4.Size = New System.Drawing.Size(981, 287)
+        Me.UiTabPage4.Size = New System.Drawing.Size(1143, 287)
         Me.UiTabPage4.TabStop = True
         Me.UiTabPage4.Text = "REGULARIZACIONES"
         '
@@ -1495,6 +1499,16 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage13.Size = New System.Drawing.Size(871, 200)
         Me.UiTabPage13.TabStop = True
         Me.UiTabPage13.Text = "BORRAR HORAS"
+        '
+        'bUKNuevo
+        '
+        Me.bUKNuevo.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bUKNuevo.Icon = CType(resources.GetObject("bUKNuevo.Icon"), System.Drawing.Icon)
+        Me.bUKNuevo.Location = New System.Drawing.Point(21, 34)
+        Me.bUKNuevo.Name = "bUKNuevo"
+        Me.bUKNuevo.Size = New System.Drawing.Size(164, 38)
+        Me.bUKNuevo.TabIndex = 33
+        Me.bUKNuevo.Text = "Pasar fichero UK Nuevo"
         '
         'CargaHorasJPSTAFF
         '
@@ -1695,4 +1709,5 @@ Partial Class CargaHorasJPSTAFF
     Friend WithEvents UiTabPage13 As Janus.Windows.UI.Tab.UITabPage
     Friend WithEvents Frame16 As Solmicro.Expertis.Engine.UI.Frame
     Friend WithEvents bDobleCotizacion As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents bUKNuevo As Solmicro.Expertis.Engine.UI.Button
 End Class
