@@ -2897,7 +2897,7 @@ Public Class CargaHorasJPSTAFF
         Dim fila As DataRow = dtResumen.NewRow()
         fila("Sociedad") = empresa
         fila("Importe A3 origen") = CosteE1.ToString("N2")
-        fila("Tipo Moneda") = dtCambioMoneda(0)("F8")
+        fila("Tipo Moneda") = dtCambioMoneda(0)("F10")
         fila("Cambio") = DevuelveCambioMonedaCorona(dtCambioMoneda, mes, anio)
         fila("Importe A3 final(€)") = CosteEFinal
         dtResumen.Rows.Add(fila)
@@ -2927,7 +2927,7 @@ Public Class CargaHorasJPSTAFF
             Try
                 fecha = dr("F1")
                 If Month(fecha) = mes And Year(fecha) = anio Then
-                    cambioMoneda = dr("F8")
+                    cambioMoneda = dr("F10")
                     Return cambioMoneda
                 End If
             Catch ex As Exception
@@ -2963,7 +2963,7 @@ Public Class CargaHorasJPSTAFF
             Try
                 fecha = dr("F1")
                 If Month(fecha) = mes And Year(fecha) = anio Then
-                    cambioMoneda = dr("F8")
+                    cambioMoneda = dr("F10")
                 End If
             Catch ex As Exception
             End Try
@@ -3774,7 +3774,6 @@ Public Class CargaHorasJPSTAFF
             'If dr("idoperario") <> "T3249" Then
             'Continue For ' Esto pasará a la siguiente iteración
             'End If
-            MsgBox(dr("idoperario"))
             bbdd = dr("Empresa") : idoperario = dr("idoperario") : fechabaja = dr("Fecha_Baja") : fechaalta = Nz(dr("Fecha_Alta"), Fecha2)
             fechaCalculos = Fecha1 : idobra = Nz(dr("IDObra").ToString, getObraBaja(bbdd, idoperario, fechabaja))
 
@@ -4890,7 +4889,7 @@ Public Class CargaHorasJPSTAFF
         '------
         'EN JUNIO NORMALIZO EL FICHERO 6 GENERADO AL METER EL 12 RESTANDO DEL A3 DE JUNIO PRORRATEADO
         Dim CD As New OpenFileDialog()
-        MsgBox("Selecciona el fichero de extras entero sin prorratear.")
+        MsgBox("Selecciona el fichero de extras entero sin prorratear." & vbCrLf & "JUNIO->13 EXTRA REAL 13YY" & vbCrLf & "DICIEMBRE->14 EXTRA REAL 14YY", vbInformation)
         CD.Title = "Seleccionar archivos"
         CD.Filter = "Archivos Excel(*.xls;*.xlsx)|*.xls;*xlsx|Todos los archivos(*.*)|*.*"
         CD.ShowDialog()
@@ -4908,7 +4907,7 @@ Public Class CargaHorasJPSTAFF
         dtFicheroExtra = ObtenerDatosExcel(ruta, hoja, rango)
 
 
-        MsgBox("Selecciona el fichero de extras a normalizar.")
+        MsgBox("Selecciona el fichero de extras a normalizar. JUNIO -> 06 EXTRA 06YY Y DICIEMBRE -> 12 EXTRA 12YY", vbInformation)
         CD.Title = "Seleccionar archivos"
         CD.Filter = "Archivos Excel(*.xls;*.xlsx)|*.xls;*xlsx|Todos los archivos(*.*)|*.*"
         CD.ShowDialog()
@@ -6895,7 +6894,7 @@ Public Class CargaHorasJPSTAFF
     End Sub
 
 
-    Private Sub bDobleCotizacion_Click_1(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bDobleCotizacion.Click
+    Private Sub bDobleCotizacion_Click_1(ByVal sender As System.Object, ByVal e As System.EventArgs)
         Dim frmCrea As New frmCreaHorasDobleCotizacion
         frmCrea.ShowDialog()
 
@@ -7113,6 +7112,5 @@ Public Class CargaHorasJPSTAFF
             Return 0 ' Puedes cambiar esto a cualquier valor predeterminado que desees cuando la celda sea vacía o no numérica
         End If
     End Function
-
 
 End Class

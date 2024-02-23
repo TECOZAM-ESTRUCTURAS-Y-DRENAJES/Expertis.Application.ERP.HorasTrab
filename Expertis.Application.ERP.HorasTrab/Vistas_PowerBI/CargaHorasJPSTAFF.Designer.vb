@@ -131,8 +131,6 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage1 = New Janus.Windows.UI.Tab.UITabPage
         Me.Tab2 = New Solmicro.Expertis.Engine.UI.Tab
         Me.UiTabPage6 = New Janus.Windows.UI.Tab.UITabPage
-        Me.Frame16 = New Solmicro.Expertis.Engine.UI.Frame
-        Me.bDobleCotizacion = New Solmicro.Expertis.Engine.UI.Button
         Me.UiTabPage7 = New Janus.Windows.UI.Tab.UITabPage
         Me.Frame18 = New Solmicro.Expertis.Engine.UI.Frame
         Me.Button2 = New Solmicro.Expertis.Engine.UI.Button
@@ -143,6 +141,7 @@ Partial Class CargaHorasJPSTAFF
         Me.Tab3 = New Solmicro.Expertis.Engine.UI.Tab
         Me.UiTabPage9 = New Janus.Windows.UI.Tab.UITabPage
         Me.Frame15 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bUKNuevo = New Solmicro.Expertis.Engine.UI.Button
         Me.bNO = New Solmicro.Expertis.Engine.UI.Button
         Me.bDCZ = New Solmicro.Expertis.Engine.UI.Button
         Me.bUk = New Solmicro.Expertis.Engine.UI.Button
@@ -159,7 +158,7 @@ Partial Class CargaHorasJPSTAFF
         Me.Tab4 = New Solmicro.Expertis.Engine.UI.Tab
         Me.UiTabPage12 = New Janus.Windows.UI.Tab.UITabPage
         Me.UiTabPage13 = New Janus.Windows.UI.Tab.UITabPage
-        Me.bUKNuevo = New Solmicro.Expertis.Engine.UI.Button
+        Me.Button6 = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame1.SuspendLayout()
         Me.Frame2.SuspendLayout()
         Me.Frame3.SuspendLayout()
@@ -183,7 +182,6 @@ Partial Class CargaHorasJPSTAFF
         CType(Me.Tab2, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Tab2.SuspendLayout()
         Me.UiTabPage6.SuspendLayout()
-        Me.Frame16.SuspendLayout()
         Me.UiTabPage7.SuspendLayout()
         Me.Frame18.SuspendLayout()
         Me.Frame19.SuspendLayout()
@@ -1212,7 +1210,6 @@ Partial Class CargaHorasJPSTAFF
         '
         'UiTabPage6
         '
-        Me.UiTabPage6.Controls.Add(Me.Frame16)
         Me.UiTabPage6.Controls.Add(Me.Frame9)
         Me.UiTabPage6.Controls.Add(Me.Frame3)
         Me.UiTabPage6.Controls.Add(Me.Frame1)
@@ -1222,27 +1219,6 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage6.Size = New System.Drawing.Size(1093, 221)
         Me.UiTabPage6.TabStop = True
         Me.UiTabPage6.Text = "INSERCION HORAS"
-        '
-        'Frame16
-        '
-        Me.Frame16.Controls.Add(Me.bDobleCotizacion)
-        Me.Frame16.Location = New System.Drawing.Point(873, 32)
-        Me.Frame16.Name = "Frame16"
-        Me.Frame16.Size = New System.Drawing.Size(189, 105)
-        Me.Frame16.TabIndex = 33
-        Me.Frame16.TabStop = False
-        Me.Frame16.Text = "5. Doble cotización"
-        Me.Frame16.Visible = False
-        '
-        'bDobleCotizacion
-        '
-        Me.bDobleCotizacion.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.bDobleCotizacion.Icon = CType(resources.GetObject("bDobleCotizacion.Icon"), System.Drawing.Icon)
-        Me.bDobleCotizacion.Location = New System.Drawing.Point(19, 43)
-        Me.bDobleCotizacion.Name = "bDobleCotizacion"
-        Me.bDobleCotizacion.Size = New System.Drawing.Size(144, 38)
-        Me.bDobleCotizacion.TabIndex = 19
-        Me.bDobleCotizacion.Text = "Crear horas doble cotizacion"
         '
         'UiTabPage7
         '
@@ -1344,6 +1320,16 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame15.TabStop = False
         Me.Frame15.Text = "1. Pasar ficheros de PDF a EXCEL"
         '
+        'bUKNuevo
+        '
+        Me.bUKNuevo.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bUKNuevo.Icon = CType(resources.GetObject("bUKNuevo.Icon"), System.Drawing.Icon)
+        Me.bUKNuevo.Location = New System.Drawing.Point(21, 34)
+        Me.bUKNuevo.Name = "bUKNuevo"
+        Me.bUKNuevo.Size = New System.Drawing.Size(164, 38)
+        Me.bUKNuevo.TabIndex = 33
+        Me.bUKNuevo.Text = "Pasar fichero UK Nuevo"
+        '
         'bNO
         '
         Me.bNO.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
@@ -1416,10 +1402,11 @@ Partial Class CargaHorasJPSTAFF
         '
         'Frame13
         '
+        Me.Frame13.Controls.Add(Me.Button6)
         Me.Frame13.Controls.Add(Me.bPisarFicheroExtra)
         Me.Frame13.Location = New System.Drawing.Point(267, 41)
         Me.Frame13.Name = "Frame13"
-        Me.Frame13.Size = New System.Drawing.Size(201, 100)
+        Me.Frame13.Size = New System.Drawing.Size(437, 100)
         Me.Frame13.TabIndex = 34
         Me.Frame13.TabStop = False
         Me.Frame13.Text = "2. Pisar fichero extra con A3 original"
@@ -1432,7 +1419,7 @@ Partial Class CargaHorasJPSTAFF
         Me.bPisarFicheroExtra.Name = "bPisarFicheroExtra"
         Me.bPisarFicheroExtra.Size = New System.Drawing.Size(144, 38)
         Me.bPisarFicheroExtra.TabIndex = 19
-        Me.bPisarFicheroExtra.Text = "Regularizar previsión extras"
+        Me.bPisarFicheroExtra.Text = "Generar 6º mes extra"
         '
         'UiTabPage4
         '
@@ -1500,15 +1487,15 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage13.TabStop = True
         Me.UiTabPage13.Text = "BORRAR HORAS"
         '
-        'bUKNuevo
+        'Button6
         '
-        Me.bUKNuevo.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.bUKNuevo.Icon = CType(resources.GetObject("bUKNuevo.Icon"), System.Drawing.Icon)
-        Me.bUKNuevo.Location = New System.Drawing.Point(21, 34)
-        Me.bUKNuevo.Name = "bUKNuevo"
-        Me.bUKNuevo.Size = New System.Drawing.Size(164, 38)
-        Me.bUKNuevo.TabIndex = 33
-        Me.bUKNuevo.Text = "Pasar fichero UK Nuevo"
+        Me.Button6.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button6.Icon = CType(resources.GetObject("Button6.Icon"), System.Drawing.Icon)
+        Me.Button6.Location = New System.Drawing.Point(255, 37)
+        Me.Button6.Name = "Button6"
+        Me.Button6.Size = New System.Drawing.Size(144, 38)
+        Me.Button6.TabIndex = 20
+        Me.Button6.Text = "Generar 12º mes extra"
         '
         'CargaHorasJPSTAFF
         '
@@ -1552,7 +1539,6 @@ Partial Class CargaHorasJPSTAFF
         CType(Me.Tab2, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Tab2.ResumeLayout(False)
         Me.UiTabPage6.ResumeLayout(False)
-        Me.Frame16.ResumeLayout(False)
         Me.UiTabPage7.ResumeLayout(False)
         Me.Frame18.ResumeLayout(False)
         Me.Frame19.ResumeLayout(False)
@@ -1707,7 +1693,6 @@ Partial Class CargaHorasJPSTAFF
     Friend WithEvents Tab4 As Solmicro.Expertis.Engine.UI.Tab
     Friend WithEvents UiTabPage12 As Janus.Windows.UI.Tab.UITabPage
     Friend WithEvents UiTabPage13 As Janus.Windows.UI.Tab.UITabPage
-    Friend WithEvents Frame16 As Solmicro.Expertis.Engine.UI.Frame
-    Friend WithEvents bDobleCotizacion As Solmicro.Expertis.Engine.UI.Button
     Friend WithEvents bUKNuevo As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents Button6 As Solmicro.Expertis.Engine.UI.Button
 End Class
