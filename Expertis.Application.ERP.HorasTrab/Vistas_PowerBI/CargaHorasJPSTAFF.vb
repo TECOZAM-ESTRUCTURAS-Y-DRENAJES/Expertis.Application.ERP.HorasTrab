@@ -1632,10 +1632,11 @@ Public Class CargaHorasJPSTAFF
         If dtCheckRegistro.Rows.Count = 0 Then
             If IDCategoriaProfesionalSCCP = 2 Or IDCategoriaProfesionalSCCP = 3 Then
                 'CHECK SI value es numerico va a HorasRealMod
-                ' SI value es ACC o CC inserta 8 en horas baja.
-                If IsNumeric(value) Then
+                ' SI value es ACC o CC O SSP O B inserta 8 en horas baja.
+                ' CORREGIDO DAVID V 11/3/24. SI HORAS ES DISTINTO DE 0 QUE NO INSERTE
+                If IsNumeric(value) And value > 0 Then
                     Dim horas As Double = value
-                    IDOficio = DevuelveIDOficio(basededatos, idoperario)
+                    idoficio = DevuelveIDOficio(basededatos, idoperario)
                     'idobra = DevuelveIDObra(basededatos, obra)
                     IDTrabajo = ObtieneIDTrabajo(basededatos, idobra, "PT1")
                     IDAutonumerico = auto.Autonumerico()
@@ -3519,6 +3520,13 @@ Public Class CargaHorasJPSTAFF
 
         dt = New BE.DataEngine().Filter(DB_TECOZAM & "..vUnionSistLabListadoTrabajadoresObraMes", f, "Empresa, IDGET, IDOperario, DescOperario, IDOficio," _
         & "IDCategoriaProfesionalSCCP, NObra, FechaInicio, MesNatural, AñoNatural, Horas, IDHora, HorasAdministrativas, HorasBaja, Turno", "FechaInicio")
+
+        For i As Integer = dt.Rows.Count - 1 To 0 Step -1
+            Dim dr As DataRow = dt.Rows(i)
+            If (dr("IDHora") = "HO" Or dr("IDHora") = "HN" Or dr("IDHora") = "HX") And dr("horas") = 0 Then
+                dt.Rows.RemoveAt(i)
+            End If
+        Next
         Return dt
     End Function
     Public Sub GeneraExcelHoras(ByVal mes As String, ByVal anio As String, ByVal dtFinal As DataTable)
@@ -6085,7 +6093,10 @@ Public Class CargaHorasJPSTAFF
             nuevaFila("Diccionario") = devuelveDiccionarioNO(texto)
             nuevaFila("Operario") = devuelveOperarioNO(texto)
             tax = devuelveTAX(texto)
-
+            'Si es 0 es que ha dado error y continua el for
+            If tax = 0 Then
+                Continue For
+            End If
             paymentinkind = Nz(devuelvePaymentInKind(texto), 0)
             deductions = Nz(devuelveDeductions(texto), 0)
             cashBenefit = devuelveCashBenefit(texto)
@@ -6148,7 +6159,7 @@ Public Class CargaHorasJPSTAFF
             contribucion = (cashBenefit + paymentinkind) * 0.141
             nuevaFila("Employer's Contribution") = contribucion
             nuevaFila("Withholding taxes") = impuestos
-            nuevaFila("COSTE EMPRESA") = cashBenefit + accruedholidaypay + viejos + accruedEC + contribucion
+            nuevaFila("COSTE EMPRESA") = cashBenefit + paymentinkind + accruedholidaypay + viejos + accruedEC + contribucion
 
             ' Agregar la nueva fila a la nueva tabla
             dataTable.Rows.Add(nuevaFila)
@@ -6238,8 +6249,14 @@ Public Class CargaHorasJPSTAFF
         ' Buscar la posición del primer "%" después de "Percentage deduction" a partir del índice donde se encuentra "Percentage deduction"
         Dim porcentajeIndex As Integer = texto.IndexOf("%", startIndex + startString.Length)
         ' Obtener la subcadena deseada
-        Dim porcentaje As String = texto.Substring(startIndex + startString.Length, porcentajeIndex - (startIndex + startString.Length) + 1)
+        Dim porcentaje As String = ""
+        Try
+            porcentaje = texto.Substring(startIndex + startString.Length, porcentajeIndex - (startIndex + startString.Length) + 1)
 
+        Catch ex As Exception
+            Return 0
+        End Try
+  
         Return porcentaje.Trim.Replace(" %", "")
     End Function
 
@@ -6604,7 +6621,7 @@ Public Class CargaHorasJPSTAFF
         '---
         nuevaFil = dtExplicacionNoruega.NewRow()
         nuevaFil("VALOR") = "COSTE EMPRESA ="
-        nuevaFil("EXPLICACION") = "(BRUTO + ACCRUED HOLIDAY PAY + ACCRUED HOLIDAY > 60 OLD + ACCRUED EC + EMPLOYER'S CONTIBUTION)"
+        nuevaFil("EXPLICACION") = "(GROSS OVER TAX + ACCRUED HOLIDAY PAY + ACCRUED HOLIDAY > 60 OLD + ACCRUED EC + EMPLOYER'S CONTIBUTION)"
         dtExplicacionNoruega.Rows.Add(nuevaFil)
 
         nuevaFil = dtExplicacionNoruega.NewRow()
@@ -6617,10 +6634,10 @@ Public Class CargaHorasJPSTAFF
         nuevaFil("EXPLICACION") = "NET TO PAY = NET TO PAY - DEDUCTIONS"
         dtExplicacionNoruega.Rows.Add(nuevaFil)
 
-        nuevaFil = dtExplicacionNoruega.NewRow()
-        nuevaFil("VALOR") = "IF DEDUCTIONS <0"
-        nuevaFil("EXPLICACION") = "NET TO PAY = NET TO PAY + DEDUCTIONS"
-        dtExplicacionNoruega.Rows.Add(nuevaFil)
+        'nuevaFil = dtExplicacionNoruega.NewRow()
+        'nuevaFil("VALOR") = "IF DEDUCTIONS <0"
+        'nuevaFil("EXPLICACION") = "NET TO PAY = NET TO PAY + DEDUCTIONS"
+        'dtExplicacionNoruega.Rows.Add(nuevaFil)
         Return dtExplicacionNoruega
     End Function
 
