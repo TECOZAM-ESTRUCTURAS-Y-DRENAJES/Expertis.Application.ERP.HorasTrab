@@ -938,6 +938,21 @@ Public Class CargaHorasJPSTAFF
         Return dt
 
     End Function
+    Public Function ObtenerDatosExcelCabecera(ByVal ruta As String, ByVal hoja As String, ByVal rango As String) As DataTable
+        Dim MyConnection As System.Data.OleDb.OleDbConnection
+        Dim DtSet As System.Data.DataSet
+        Dim MyCommand As System.Data.OleDb.OleDbDataAdapter
+        MyConnection = New System.Data.OleDb.OleDbConnection("Provider=Microsoft.ACE.OLEDB.12.0;Data Source='" & ruta & "';Extended Properties='Excel 8.0;HDR=YES'")
+        MyCommand = New System.Data.OleDb.OleDbDataAdapter("select * from [" & hoja & "$" & rango & "]", MyConnection)
+        'MyCommand.TableMappings.Add("Table", "Net-informations.com")
+        DtSet = New System.Data.DataSet
+        MyCommand.Fill(DtSet)
+        Dim dt As DataTable = DtSet.Tables(0)
+        MyConnection.Close()
+
+        Return dt
+
+    End Function
 
     Private Sub bHorasOficina_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bHorasOficina.Click
         '0. Saber que mes y año productivo hay que insertar las horas en la oficina
@@ -1634,7 +1649,7 @@ Public Class CargaHorasJPSTAFF
                 'CHECK SI value es numerico va a HorasRealMod
                 ' SI value es ACC o CC O SSP O B inserta 8 en horas baja.
                 ' CORREGIDO DAVID V 11/3/24. SI HORAS ES DISTINTO DE 0 QUE NO INSERTE
-                If IsNumeric(value) And value > 0 Then
+                If IsNumeric(value) Then
                     Dim horas As Double = value
                     idoficio = DevuelveIDOficio(basededatos, idoperario)
                     'idobra = DevuelveIDObra(basededatos, obra)
@@ -3527,6 +3542,18 @@ Public Class CargaHorasJPSTAFF
                 dt.Rows.RemoveAt(i)
             End If
         Next
+
+        For Each row As DataRow In dt.Rows
+            Dim IDHora As String = row("IDHora").ToString().ToUpper()
+            Dim HorasBaja As Integer = Nz(Convert.ToInt32(row("HorasBaja")), 0)
+
+            ' Verificar si el IDHora es ACC o CC y HorasBaja es igual a 0
+            If (IDHora = "ACC" OrElse IDHora = "CC") AndAlso HorasBaja = 0 Then
+                ' Actualizar HorasBaja a 8
+                row("HorasBaja") = 8
+            End If
+        Next
+
         Return dt
     End Function
     Public Sub GeneraExcelHoras(ByVal mes As String, ByVal anio As String, ByVal dtFinal As DataTable)
@@ -3721,11 +3748,10 @@ Public Class CargaHorasJPSTAFF
         anio = Year(Fecha1)
 
         If frm.blEstado = True Then
-            'Horas Baja por Accidentes en España
+            'Horas Baja por Accidentes y CC en España
             HorasBajaEspaña(Fecha1, Fecha2)
         End If
     End Sub
-
     Public Sub HorasBajaEspaña(ByVal Fecha1 As String, ByVal Fecha2 As String)
         'David Velasco 17/10/23
 
@@ -3746,6 +3772,8 @@ Public Class CargaHorasJPSTAFF
             Exit Sub
         End If
         CrearHorasBaja(dtPersonasDeBaja, Fecha1, Fecha2)
+
+        'ACTUALIZAR PARA LOS REGISTROS QUE SON CC Y ACC Horas Baja a 8
 
         MsgBox("Horas de baja creadas correctamente.")
         'MsgBox("Accidente: " & dtPersonasBajaPorAccidente.Rows.Count & " Enfermedad:" & dtPersonasBajaPorEnfermedad.Rows.Count)
@@ -4042,7 +4070,6 @@ Public Class CargaHorasJPSTAFF
         dtResumenCategoriaProfesional = getResumenCategoria(dtRatiosGente)
 
 
-
         'GENERACION EXCEL CON LAS 5 PESTAÑAS
         GeneraExcelHorasA3(dtGenteSiHorasNoEuros, dtGenteSiEurosNoHoras, dtRatiosGente, dtPersonasDobleCoti, dtResumenCategoriaProfesional, mes, anio)
     End Sub
@@ -4173,14 +4200,6 @@ Public Class CargaHorasJPSTAFF
             worksheet3.Column(3).Width = 30
             worksheet3.Column(5).Width = 15
 
-
-            ' HOJA 4
-            Dim worksheet4 = package.Workbook.Worksheets.Add(mes & " DOBLE COTIZACION " & anio)
-            worksheet4.Cells("A1").LoadFromDataTable(dtPersonasDobleCoti, True)
-            Dim fila14 As ExcelRange = worksheet4.Cells(1, 1, 1, worksheet4.Dimension.End.Column)
-            fila14.Style.Font.Bold = True
-            worksheet4.Cells("A1:" & GetExcelColumnName(worksheet4.Dimension.End.Column) & "1").AutoFilter = True
-            worksheet4.Column(2).Width = 30
             ' HOJA 5
             Dim worksheet5 = package.Workbook.Worksheets.Add(mes & " RESUMEN POR CATEGORIA " & anio)
             worksheet5.Cells("A1").LoadFromDataTable(dtResumenCategoriaProfesional, True)
@@ -4213,6 +4232,7 @@ Public Class CargaHorasJPSTAFF
         dtResultado.Columns.Add("HorasTotales", GetType(Double))
         dtResultado.Columns.Add("EurosTotales", GetType(Double))
         dtResultado.Columns.Add("Ratio", GetType(Double))
+        dtResultado.Columns.Add("DOBLECOTIZACION", GetType(String))
 
         'DAVID VELASCO 21/12/2023
         'Este for lo que hace es unir las nominas de las personas que tengan mas de una linea
@@ -4251,12 +4271,12 @@ Public Class CargaHorasJPSTAFF
         Dim uniqueRows As New List(Of DataRow)()
         For Each row As DataRow In dtResult.Rows
             ' Buscar las filas originales que coinciden con el IDOperario
-            Dim originalRows As DataRow() = dtA3.Select("IDOperario = '" & row("IDOperario") & "'")
+            Dim originalRows As DataRow() = dtA3.Select("IDOperario = '" & row("IDOperario").ToString.ToUpper & "'")
 
             ' Agregar solo una fila única a la tabla original
             If originalRows.Length = 0 Then
                 Dim newRow As DataRow = dtA3.NewRow()
-                newRow("IDOperario") = row("IDOperario")
+                newRow("IDOperario") = row("IDOperario").ToString.ToUpper
                 newRow("IDGet") = row("IDGet")
                 newRow("DescOperario") = row("DescOperario")
                 newRow("CosteEmpresa") = row("TotalCosteEmpresa")
@@ -4282,7 +4302,7 @@ Public Class CargaHorasJPSTAFF
             End If
 
             ' Buscar una fila correspondiente en dtA3s
-            Dim rowA3 As DataRow = dtA3.Rows.Cast(Of DataRow)().FirstOrDefault(Function(row) row.Field(Of String)("IDGET") = idGet)
+            Dim rowA3 As DataRow = dtA3.Rows.Cast(Of DataRow)().FirstOrDefault(Function(row) row.Field(Of String)("IDOperario") = idOperario)
 
             If rowA3 IsNot Nothing Then
                 Dim costeEmpresa As Double = rowA3.Field(Of String)("CosteEmpresa")
@@ -4337,8 +4357,8 @@ Public Class CargaHorasJPSTAFF
                 newRow("IDOperario") = idOperarioA3
                 newRow("DescOperario") = descOperario
                 newRow("IDCategoriaProfesionalSCCP") = DevuelveIDCategoriaProfesionalSCCPTodasBasesDeDatos(idOperarioA3)
-                newRow("Fecha_Alta") = devuelveFechaAlta(idGet)
-                newRow("Fecha_Baja") = devuelveFechaBaja(idGet)
+                newRow("Fecha_Alta") = devuelveFechaAltaIDOperario(idOperarioA3)
+                newRow("Fecha_Baja") = devuelveFechaBajaIDOperario(idOperarioA3)
                 newRow("HorasProductivas") = 0
                 newRow("HorasAdministrativas") = 0
                 newRow("HorasBaja") = 0
@@ -4350,6 +4370,15 @@ Public Class CargaHorasJPSTAFF
             End If
         Next
 
+        For Each rowResultado As DataRow In dtResultado.Rows
+            Dim idGetResultado As String = rowResultado.Field(Of String)("IDGET")
+            ' Verificar si hay duplicados de IDGET en dtA3
+            Dim duplicateIDGET As Boolean = dtA3.AsEnumerable().Count(Function(x) x.Field(Of String)("IDGET") = idGetResultado) > 1
+            If duplicateIDGET Then
+                ' Si hay duplicados, establecer "SI" en la columna "DuplicadoIDGET"
+                rowResultado("DOBLECOTIZACION") = "SI"
+            End If
+        Next
 
         Return dtResultado
     End Function
@@ -4416,16 +4445,17 @@ Public Class CargaHorasJPSTAFF
         FormarTablaHoras(dtHorasFinal)
 
         '1º LA ordeno por IDGET
-        Dim expresion As String = "F2 asc"
+        Dim expresion As String = "F3 asc"
         Dim rows As DataRow() = dtHorasExpertis.Select("", expresion)
         Dim dtOrdenado As DataTable = dtHorasExpertis.Clone()
         For Each row As DataRow In rows
             dtOrdenado.ImportRow(row)
         Next
+
         '2 º RECORRO LA TABLA Y VOY SUMANDO POR IDGET LAS HORAS, LAS HORAS ADMINISTRATIVAS Y LAS HORAS DE BAJA
-        'MsgBox(dtOrdenado.Rows.Count)
 
         ' Variables para rastrear el IDGet actual y las sumas de Horas y HorasAdministrativas y de baja
+        Dim currentIDOperario As String = -1
         Dim currentIDGET As String = -1
         Dim currentDescOperario As String = -1
         Dim currentCategoriaP As String = -1
@@ -4435,8 +4465,9 @@ Public Class CargaHorasJPSTAFF
 
         ' Iterar a través de las filas de dtOrdenado
         For Each row As DataRow In dtOrdenado.Rows
-            Dim rowIDGET As String = row("F2")
-            Dim rowDescOperario As String = row("F4")
+            Dim rowIDGET As String = row("F2").ToString.ToUpper
+            Dim rowIDOperario As String = row("F3").ToString.ToUpper
+            Dim rowDescOperario As String = row("F4").ToString.ToUpper
             Dim rowCategoriaProfesional As String = Nz(row("F6"), "")
             If rowCategoriaProfesional.ToString.Length = 0 Then
                 ExpertisApp.GenerateMessage("El operario con IDGET no tiene categoria profesional: " & rowIDGET)
@@ -4446,15 +4477,15 @@ Public Class CargaHorasJPSTAFF
             Dim rowHorasBaja As Double = Convert.ToDouble(row("F14"))
 
             ' Verificar si el IDGet ha cambiado
-            If rowIDGET <> currentIDGET Then
+            If rowIDOperario <> currentIDOperario Or dtOrdenado.Rows.IndexOf(row) = dtOrdenado.Rows.Count - 1 Then
                 ' Agregar las sumas a dtHorasFinal para el IDGet anterior
-                If currentIDGET <> "-1" Then
+                If currentIDOperario <> "-1" Then
                     Dim newRow As DataRow = dtHorasFinal.NewRow()
                     newRow("IDGet") = currentIDGET
                     'Calcula IDOperario por el IDGET
-                    newRow("IDOperario") = DevuelveIDOperario(currentIDGET)
-                    newRow("Fecha_Alta") = devuelveFechaAlta(currentIDGET)
-                    newRow("Fecha_Baja") = devuelveFechaBaja(currentIDGET)
+                    newRow("IDOperario") = currentIDOperario
+                    newRow("Fecha_Alta") = devuelveFechaAltaIDOperario(currentIDOperario)
+                    newRow("Fecha_Baja") = devuelveFechaBajaIDOperario(currentIDOperario)
                     newRow("DescOperario") = currentDescOperario
                     newRow("IDCategoriaProfesionalSCCP") = currentCategoriaP
                     newRow("Horas") = sumaHoras
@@ -4465,6 +4496,7 @@ Public Class CargaHorasJPSTAFF
                 End If
 
                 ' Reiniciar las sumas para el nuevo IDGet
+                currentIDOperario = rowIDOperario
                 currentIDGET = rowIDGET
                 currentDescOperario = rowDescOperario
                 currentCategoriaP = rowCategoriaProfesional
@@ -4480,27 +4512,46 @@ Public Class CargaHorasJPSTAFF
         Next
 
         ' Agregar la última suma a dtHorasFinal
-        If currentIDGET <> "-1" Then
-            Dim newRow As DataRow = dtHorasFinal.NewRow()
-            newRow("IDGet") = currentIDGET
-            newRow("IDOperario") = DevuelveIDOperario(currentIDGET)
-            newRow("Fecha_Alta") = devuelveFechaAlta(currentIDGET)
-            newRow("Fecha_Baja") = devuelveFechaBaja(currentIDGET)
-            newRow("DescOperario") = currentDescOperario
-            newRow("IDCategoriaProfesionalSCCP") = currentCategoriaP
-            newRow("Horas") = sumaHoras
-            newRow("HorasAdministrativas") = sumaHorasAdmin
-            newRow("HorasBaja") = sumaHorasBaja
-            newRow("HorasTotales") = sumaHoras + sumaHorasAdmin + sumaHorasBaja
-            dtHorasFinal.Rows.Add(newRow)
-        End If
+        'If currentIDOperario <> "-1" Then
+        '    Dim newRow As DataRow = dtHorasFinal.NewRow()
+        '    newRow("IDGet") = currentIDGET
+        '    newRow("IDOperario") = currentIDOperario
+        '    newRow("Fecha_Alta") = devuelveFechaAltaIDOperario(currentIDOperario)
+        '    newRow("Fecha_Baja") = devuelveFechaBajaIDOperario(currentIDOperario)
+        '    newRow("DescOperario") = currentDescOperario
+        '    newRow("IDCategoriaProfesionalSCCP") = currentCategoriaP
+        '    newRow("Horas") = sumaHoras
+        '    newRow("HorasAdministrativas") = sumaHorasAdmin
+        '    newRow("HorasBaja") = sumaHorasBaja
+        '    newRow("HorasTotales") = sumaHoras + sumaHorasAdmin + sumaHorasBaja
+        '    dtHorasFinal.Rows.Add(newRow)
+        'End If
 
-        'Dim totalHoras As Double = 0
-        'For Each row As DataRow In dtHorasFinal.Rows
-        '    Dim horas As Double = Convert.ToDouble(row("Horas"))
-        '    totalHoras += horas
-        'Next
-        'MsgBox(totalHoras)
+        If currentIDOperario <> "-1" Then
+            Dim foundRows() As DataRow = dtHorasFinal.Select("IDOperario = '" & currentIDOperario & "'")
+            If foundRows.Length > 0 Then
+                ' Si el IDOperario ya existe, sumar las horas
+                foundRows(0)("Horas") = Convert.ToDouble(foundRows(0)("Horas")) + sumaHoras
+                foundRows(0)("HorasAdministrativas") = Convert.ToDouble(foundRows(0)("HorasAdministrativas")) + sumaHorasAdmin
+                foundRows(0)("HorasBaja") = Convert.ToDouble(foundRows(0)("HorasBaja")) + sumaHorasBaja
+                foundRows(0)("HorasTotales") = Convert.ToDouble(foundRows(0)("HorasTotales")) + sumaHoras + sumaHorasAdmin + sumaHorasBaja
+            Else
+                ' Si el IDOperario no existe, agregar una nueva fila a dtHorasFinal
+                Dim newRow As DataRow = dtHorasFinal.NewRow()
+                newRow("IDGet") = currentIDGET
+                ' Calcula IDOperario por el IDGET
+                newRow("IDOperario") = currentIDOperario
+                newRow("Fecha_Alta") = devuelveFechaAltaIDOperario(currentIDOperario)
+                newRow("Fecha_Baja") = devuelveFechaBajaIDOperario(currentIDOperario)
+                newRow("DescOperario") = currentDescOperario
+                newRow("IDCategoriaProfesionalSCCP") = currentCategoriaP
+                newRow("Horas") = sumaHoras
+                newRow("HorasAdministrativas") = sumaHorasAdmin
+                newRow("HorasBaja") = sumaHorasBaja
+                newRow("HorasTotales") = sumaHoras + sumaHorasAdmin + sumaHorasBaja
+                dtHorasFinal.Rows.Add(newRow)
+            End If
+        End If
 
         Return dtHorasFinal
     End Function
@@ -4520,11 +4571,26 @@ Public Class CargaHorasJPSTAFF
         dt = New BE.DataEngine().Filter("vUnionOperariosCategoriaProfesional", f)
         Return Nz(dt.Rows(0)("FechaAlta").ToString, "")
     End Function
+    Public Function devuelveFechaAltaIDOperario(ByVal IDOperario As String) As String
+        Dim dt As New DataTable
+        Dim f As New Filter
+        f.Add("IDOperario", FilterOperator.Equal, IDOperario)
+        dt = New BE.DataEngine().Filter("vUnionOperariosCategoriaProfesional", f)
+        Return Nz(dt.Rows(0)("FechaAlta").ToString, "")
+    End Function
 
     Public Function devuelveFechaBaja(ByVal IDGET As String) As String
         Dim dt As New DataTable
         Dim f As New Filter
         f.Add("IDGET", FilterOperator.Equal, IDGET)
+        dt = New BE.DataEngine().Filter("vUnionOperariosCategoriaProfesional", f)
+        Return dt.Rows(0)("Fecha_Baja").ToString
+    End Function
+
+    Public Function devuelveFechaBajaIDOperario(ByVal IDOperario As String) As String
+        Dim dt As New DataTable
+        Dim f As New Filter
+        f.Add("IDOperario", FilterOperator.Equal, IDOperario)
         dt = New BE.DataEngine().Filter("vUnionOperariosCategoriaProfesional", f)
         Return dt.Rows(0)("Fecha_Baja").ToString
     End Function
