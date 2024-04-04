@@ -4963,7 +4963,7 @@ Public Class CargaHorasJPSTAFF
         '------
         'EN JUNIO NORMALIZO EL FICHERO 6 GENERADO AL METER EL 12 RESTANDO DEL A3 DE JUNIO PRORRATEADO
         Dim CD As New OpenFileDialog()
-        MsgBox("Selecciona el fichero de extras entero sin prorratear." & vbCrLf & "JUNIO->13 EXTRA REAL 13YY" & vbCrLf & "DICIEMBRE->14 EXTRA REAL 14YY", vbInformation)
+        MsgBox("Selecciona el fichero de extras entero sin prorratear." & vbCrLf & "JUNIO->13 EXTRA REAL 13YY", vbInformation)
         CD.Title = "Seleccionar archivos"
         CD.Filter = "Archivos Excel(*.xls;*.xlsx)|*.xls;*xlsx|Todos los archivos(*.*)|*.*"
         CD.ShowDialog()
@@ -4981,7 +4981,7 @@ Public Class CargaHorasJPSTAFF
         dtFicheroExtra = ObtenerDatosExcel(ruta, hoja, rango)
 
 
-        MsgBox("Selecciona el fichero de extras a normalizar. JUNIO -> 06 EXTRA 06YY Y DICIEMBRE -> 12 EXTRA 12YY", vbInformation)
+        MsgBox("Selecciona el fichero de extras a normalizar. JUNIO -> 06 EXTRA 06YY", vbInformation)
         CD.Title = "Seleccionar archivos"
         CD.Filter = "Archivos Excel(*.xls;*.xlsx)|*.xls;*xlsx|Todos los archivos(*.*)|*.*"
         CD.ShowDialog()
@@ -6088,8 +6088,8 @@ Public Class CargaHorasJPSTAFF
     End Sub
 
     Private Sub bNO_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bNO.Click
-        Dim dtPersonasPortugal As DataTable = SeleccionarPDFyLeerDataTableNO()
-        GeneraExcel(dtPersonasPortugal)
+        Dim dtPersonasNoruega As DataTable = SeleccionarPDFyLeerDataTableNO()
+        GeneraExcel(dtPersonasNoruega)
     End Sub
 
     Function SeleccionarPDFyLeerDataTableNO() As DataTable
@@ -7173,6 +7173,25 @@ Public Class CargaHorasJPSTAFF
                 rangoMonedaResumen.Style.Numberformat.Format = "#,##0.00£"
 
 
+                'Aplicar formato a las 4 columnas que son las que suman coste empresa
+                'Establecer el color de fondo de la columna I,J,O,P de las 3 hojas
+                Dim rangoColumnaI As ExcelRange = worksheetFinal.Cells(2, 9, worksheetFinal.Dimension.End.Row, 9) ' Columna I es la 9
+                rangoColumnaI.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                rangoColumnaI.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+
+                Dim rangoColumnaJ As ExcelRange = worksheetFinal.Cells(2, 10, worksheetFinal.Dimension.End.Row, 10) ' Columna J es la 10
+                rangoColumnaJ.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                rangoColumnaJ.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+
+                Dim rangoColumnaO As ExcelRange = worksheetFinal.Cells(2, 15, worksheetFinal.Dimension.End.Row, 15) ' Columna O es la 15
+                rangoColumnaO.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                rangoColumnaO.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+
+                Dim rangoColumnaP As ExcelRange = worksheetFinal.Cells(2, 16, worksheetFinal.Dimension.End.Row, 16) ' Columna P es la 16
+                rangoColumnaP.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                rangoColumnaP.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+
+                'Dimensiones columnas
                 worksheetResumen.Column(1).Width = 14 : worksheetResumen.Column(2).Width = 14 : worksheetResumen.Column(3).Width = 14 : worksheetResumen.Column(4).Width = 14 : worksheetResumen.Column(5).Width = 14
 
                 ' Guardar el archivo de Excel.
@@ -7196,4 +7215,193 @@ Public Class CargaHorasJPSTAFF
         End If
     End Function
 
+    Private Sub bGenerarMes12_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
+        'EN DICIEMBRE ME GENERA DEL 1 AL 6
+        'EN JUNIO ME GENERA DEL 7 AL 12
+        '------
+        'EN JUNIO NORMALIZO EL FICHERO 6 GENERADO AL METER EL 12 RESTANDO DEL A3 DE JUNIO PRORRATEADO
+        Dim CD As New OpenFileDialog()
+        MsgBox("Selecciona el fichero de extras entero sin prorratear." & vbCrLf & "DICIEMBRE->14 EXTRA REAL 14YY", vbInformation)
+        CD.Title = "Seleccionar archivos"
+        CD.Filter = "Archivos Excel(*.xls;*.xlsx)|*.xls;*xlsx|Todos los archivos(*.*)|*.*"
+        CD.ShowDialog()
+
+        If CD.FileName <> "" Then
+            lblRuta.Text = CD.FileName
+        End If
+
+        Dim hoja As String = "EXTRAS POR CATEGORIA PROF"
+        Dim dtFicheroExtra As New DataTable
+        Dim ruta As String = lblRuta.Text
+
+        Dim rango As String = ""
+        rango = "A2:C19"
+        dtFicheroExtra = ObtenerDatosExcel(ruta, hoja, rango)
+
+
+        MsgBox("Selecciona el fichero de extras a normalizar.DICIEMBRE -> 12 EXTRA 12YY", vbInformation)
+        CD.Title = "Seleccionar archivos"
+        CD.Filter = "Archivos Excel(*.xls;*.xlsx)|*.xls;*xlsx|Todos los archivos(*.*)|*.*"
+        CD.ShowDialog()
+
+        Dim cadena As String = ""
+
+        If CD.FileName <> "" Then
+            lblRuta.Text = CD.FileName
+            cadena = CD.FileName
+        End If
+
+        hoja = "EXTRAS POR CATEGORIA PROF"
+        Dim dtNormalizar As New DataTable
+        ruta = lblRuta.Text
+        rango = "A2:C19"
+        dtNormalizar = ObtenerDatosExcel(ruta, hoja, rango)
+
+        Dim dtGenerar As New DataTable
+        dtGenerar = generarTablaFicheroExtra(dtFicheroExtra, dtNormalizar)
+        dtGenerar.Columns(0).ColumnName = "Empresa"
+        dtGenerar.Columns(1).ColumnName = "IDCategoriaProfesionalSCCP"
+        dtGenerar.Columns(2).ColumnName = "Total"
+
+        GuardarExcel(dtGenerar, cadena)
+    End Sub
+
+    Private Sub bGenerarMes6_12_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bGenerarMes6_12.Click
+
+        Dim mes As String
+        Dim anio As String
+
+        ObtenerMesYAnio(mes, anio)
+
+        'LO PRIMERO QUE VOY A HACER ES DE LA RUTA N:\03. PAGAS EXTRA\AAAA
+        'ES SELECCIONAR SI ES JUNIO, LOS FICHEROS DESDE EL 1 AL 5 
+        'Y SI ES DICIEMBRE, LOS FICHEROS DESDE EL 1 AL 11. Y SUMARLOS POR CATEGORIAS Y EMPRESA
+        Dim dtSumaFicheros As DataTable
+        dtSumaFicheros = devuelveFicherosEnTablaYSumados(mes, anio)
+
+        'LO SEGUNDO QUE VOY A HACER ES SELECCIONAR EL FICHERO SEMESTRAL O ANUAL DE EXTRAS Y HACER UN RESUMEN POR CATEGORIA Y EMPRESA
+        'EL FICHERO QUE HAY QUE SELECCIONAR TIENE ESTA FORMA: 14 EXTRA REAL 1423.xlsx
+        'ES EL PASADO DE A3 DE LABORAL A RESUMEN AGRUPADO POR CATEGORIA
+        Dim dtFicheroResumidoPorExtras As DataTable
+
+        dtFicheroResumidoPorExtras = devuelveFicheroIntroducido()
+
+        'LO TERCERO ES HACER LA DIFERENCIA Y ESE FICHERO SERÁ EL DE JUNIO O EL DE DICIEMBRE ¡¡BUENO!! YA REGULARIZADO.
+        Dim dtFicheroFinal As DataTable
+        dtFicheroFinal = calculaDiferencia(dtSumaFicheros, dtFicheroResumidoPorExtras)
+
+        Dim cadena As String = "\\STOR01\DG\COSTE LABORAL\10. AUXILIARES\00. EXPERTIS\03. PAGAS EXTRA\" & mes & " EXTRA REGULARIZADO " & mes & anio.Substring(anio.Length - 2) & ".xlsx"
+
+        GuardarExcel(dtFicheroFinal, cadena)
+
+        MsgBox("Fichero creado correctamente en N:\10. AUXILIARES\00. EXPERTIS\03. PAGAS EXTRA\")
+    End Sub
+    Public Function calculaDiferencia(ByVal dtSumaFicheros As DataTable, ByVal dtFicheroResumidoPorExtras As DataTable) As DataTable
+        ' Realizar la resta de las tablas
+        For i As Integer = 0 To dtFicheroResumidoPorExtras.Rows.Count - 1
+            dtSumaFicheros.Rows(i)("Total") = CDbl(dtFicheroResumidoPorExtras.Rows(i)("Total")) - CDbl(dtSumaFicheros.Rows(i)("Total"))
+        Next
+
+        Return dtSumaFicheros
+    End Function
+    Public Function devuelveFicheroIntroducido() As DataTable
+        Dim CD As New OpenFileDialog()
+        MsgBox("Selecciona el fichero de extras(semestral o anual) resumido." & vbCrLf & "Por ejemplo: JUNIO->13 EXTRA REAL 1324.xlsx", vbInformation)
+        CD.Title = "Seleccionar archivos"
+        CD.Filter = "Archivos Excel(*.xls;*.xlsx)|*.xls;*xlsx|Todos los archivos(*.*)|*.*"
+        CD.ShowDialog()
+
+        If CD.FileName <> "" Then
+            lblRuta.Text = CD.FileName
+        End If
+
+        Dim hoja As String = "EXTRAS POR CATEGORIA PROF"
+        Dim dtFicheroExtra As New DataTable
+        Dim ruta As String = lblRuta.Text
+
+        Dim rango As String = ""
+        rango = "A1:C19"
+        dtFicheroExtra = ObtenerDatosExcelCabecera(ruta, hoja, rango)
+
+        Return dtFicheroExtra
+    End Function
+    Public Function devuelveFicherosEnTablaYSumados(ByVal mes As String, ByVal anio As String)
+        'Dentro de esta ruta estan los ficheros que tengo que sumar en funcion del mes
+        Dim ruta As String = "\\STOR01\DG\COSTE LABORAL\03. PAGAS EXTRA\" & anio & "\"
+        Dim archivos As New List(Of String)
+        archivos = devuelveNombreArchivos(ruta, mes)
+
+        Dim dtAcumulados As DataTable
+        dtAcumulados = sumaTablasFicheros(archivos)
+
+        Return dtAcumulados
+    End Function
+    Public Function sumaTablasFicheros(ByVal archivos As List(Of String)) As DataTable
+        Dim hoja As String = "EXTRAS POR CATEGORIA PROF"
+        Dim rango As String = "A1:C19"
+        Dim dtFicheroExtra As New DataTable
+        ' Crear las columnas en la tabla
+        dtFicheroExtra.Columns.Add("Empresa", GetType(String))
+        dtFicheroExtra.Columns.Add("IDCategoriaProfesionalSCCP", GetType(String))
+        dtFicheroExtra.Columns.Add("Total", GetType(Double))
+
+        For Each archivo As String In archivos
+            Dim datosExcel As DataTable = ObtenerDatosExcelCabecera(archivo, hoja, rango)
+
+            ' Iterar sobre los datos y agregarlos o sumarlos a la tabla resultante
+            For Each fila As DataRow In datosExcel.Rows
+                Dim valorA As String = fila("Empresa").ToString()
+                Dim valorB As String = fila("IDCategoriaProfesionalSCCP").ToString()
+                Dim valorC As Double = 0
+
+                ' Verificar si el valor de la columna C es numérico antes de sumarlo
+                If Double.TryParse(fila("Total").ToString(), valorC) Then
+                    ' Verificar si ya existe una fila con los mismos valores en las columnas A y B
+                    Dim filaExistente As DataRow = dtFicheroExtra.AsEnumerable().FirstOrDefault(Function(row) row.Field(Of String)("Empresa") = valorA AndAlso row.Field(Of String)("IDCategoriaProfesionalSCCP") = valorB)
+
+                    If filaExistente IsNot Nothing Then
+                        ' Si la fila existe, sumar el valor de la columna C a la fila existente
+                        filaExistente("Total") = CDbl(filaExistente("Total")) + valorC
+                    Else
+                        ' Si la fila no existe, agregar una nueva fila
+                        dtFicheroExtra.Rows.Add(valorA, valorB, valorC)
+                    End If
+                End If
+            Next
+        Next
+
+        Return dtFicheroExtra
+    End Function
+    Public Function devuelveNombreArchivos(ByVal ruta As String, ByVal mes As String) As List(Of String)
+        Dim archivos As New List(Of String)
+
+        ' Obtener todos los archivos en la ruta especificada
+        Dim archivosEnRuta As String() = Directory.GetFiles(ruta, "*.xlsx")
+
+        ' Filtrar archivos según el mes
+        For Each archivo As String In archivosEnRuta
+            Dim nombreArchivo As String = Path.GetFileName(archivo)
+            Dim numeroMes As Integer
+
+            If Integer.TryParse(nombreArchivo.Substring(0, 2), numeroMes) Then
+                If mes = 6 AndAlso numeroMes < 6 Then
+                    archivos.Add(archivo)
+                ElseIf mes = 12 AndAlso numeroMes < 12 Then
+                    archivos.Add(archivo)
+                End If
+            End If
+        Next
+
+        Return archivos
+    End Function
+    Private Sub ObtenerMesYAnio(ByRef mes As String, ByRef anio As String)
+        Dim frmFechasExtras As New frmFechasExtras
+
+        ' Mostramos el formulario para que el usuario seleccione el mes y el año
+        frmFechasExtras.ShowDialog()
+
+        ' Obtenemos el mes y el año seleccionados del formulario
+        mes = frmFechasExtras.mes
+        anio = frmFechasExtras.anio
+    End Sub
 End Class

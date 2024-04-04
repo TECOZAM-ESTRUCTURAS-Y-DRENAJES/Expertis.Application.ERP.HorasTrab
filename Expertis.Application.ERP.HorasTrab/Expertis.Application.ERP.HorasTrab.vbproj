@@ -253,6 +253,12 @@
     <Compile Include="Vistas_PowerBI\frmCreaHorasOperarioObraFecha.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Vistas_PowerBI\frmFechasExtras.Designer.vb">
+      <DependentUpon>frmFechasExtras.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Vistas_PowerBI\frmFechasExtras.vb">
+      <SubType>Form</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CIMntoBusqHorasAPP.resx">
@@ -320,6 +326,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Vistas_PowerBI\frmCreaHorasOperarioObraFecha.resx">
       <DependentUpon>frmCreaHorasOperarioObraFecha.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Vistas_PowerBI\frmFechasExtras.resx">
+      <DependentUpon>frmFechasExtras.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
