@@ -3517,6 +3517,11 @@ Public Class CargaHorasJPSTAFF
         If frm.blEstado = False Then
             Exit Sub
         End If
+
+        If getDuplicados(Fecha1, Fecha2) = False Then
+            MsgBox("Corrige las categorias de las personas anteriores para poder exportar las horas")
+            Exit Sub
+        End If
         Dim mes As String : mes = Month(Fecha1)
         If Length(mes) = 1 Then
             mes = "0" & mes
@@ -3527,6 +3532,27 @@ Public Class CargaHorasJPSTAFF
         GeneraExcelHoras(mes, anio, dt)
         MsgBox("Fichero generado correctamente en N:\10. AUXILIARES\00. EXPERTIS\01. HORAS.")
     End Sub
+    Public Function getDuplicados(ByVal Fecha1 As String, ByVal Fecha2 As String) As Boolean
+        Dim sql As String
+        Dim dtPersonasDuplicadas As DataTable
+        sql = "SELECT IDOPERARIO FROM TBOBRAMODCONTROL WHERE FECHAINICIO BETWEEN '" & Fecha1 & "' AND '" & Fecha2 & "'"
+        sql &= " GROUP BY IDOPERARIO HAVING COUNT(DISTINCT IDCATEGORIAPROFESIONALSCCP) > 1"
+
+        dtPersonasDuplicadas = aux.EjecutarSqlSelect(sql)
+        Dim duplicados As New StringBuilder
+
+        For Each dr As DataRow In dtPersonasDuplicadas.Rows
+            duplicados.AppendLine(dr("IDOperario").ToString())
+        Next
+
+        If duplicados.Length <> 0 Then
+            MsgBox(duplicados.ToString)
+            Return False
+        Else
+            Return True
+        End If
+
+    End Function
     Public Function ObtenerTabla(ByVal Fecha1 As String, ByVal Fecha2 As String) As DataTable
         Dim dt As New DataTable
         Dim f As New Filter
