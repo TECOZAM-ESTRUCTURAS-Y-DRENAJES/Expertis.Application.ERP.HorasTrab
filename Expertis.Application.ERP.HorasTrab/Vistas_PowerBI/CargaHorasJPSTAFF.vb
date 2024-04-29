@@ -5934,13 +5934,19 @@ Public Class CargaHorasJPSTAFF
     Public Sub FormaTablaFinalNuevo(ByVal lineas As String(), ByVal dtUKPersonas As DataTable, ByVal fichero As Integer)
 
         For Each fila As String In lineas
+            'Diego Fernandez 29/04/24 Limpieza de doble espacios en lineas
+            While fila.Contains("  ")
+                fila = fila.Replace("  ", " ")
+            End While
+            '---
+
             ' Añadir una nueva fila a la nueva tabla
             Dim nuevaFila As DataRow = dtUKPersonas.NewRow()
 
             nuevaFila("Diccionario") = fila.Substring(0, fila.IndexOf(" "))
             nuevaFila("Fichero") = fichero
             ' Buscar la letra "A" o "M" y extraer el segundo valor (columna "Operario")
-            Dim letras() As String = {" A ", ")A ", " M ", ")M"}
+            Dim letras() As String = {" A ", ")A ", " M ", ")M", " C ", ")C"}
             Dim indiceEspacio1 As Integer = fila.IndexOf(" ")
 
             ' Encontrar la posición de la letra después del primer espacio
@@ -5993,7 +5999,7 @@ Public Class CargaHorasJPSTAFF
                 End If
             Else
                 ' Manejar el caso donde no se encuentra ninguna letra del array
-                MessageBox.Show("No se encontró ninguna letra 'A' o 'M' en la fila.")
+                MessageBox.Show("No se encontró ninguna letra 'A' o 'M' o 'C' en la fila.")
             End If
 
 
@@ -7110,7 +7116,7 @@ Public Class CargaHorasJPSTAFF
                 Next
 
                 ' Aplicar formato de moneda a la hoja "FINAL"
-                Dim rangoMonedaFinal As ExcelRange = worksheetFinal.Cells("B2:" & GetExcelColumnName(worksheetFinal.Dimension.End.Column) & worksheetFinal.Dimension.End.Row)
+                Dim rangoMonedaFinal As ExcelRange = worksheetFinal.Cells("B2:" & GetExcelColumnName(worksheetFinal.Dimension.End.Column - 1) & worksheetFinal.Dimension.End.Row)
                 rangoMonedaFinal.Style.Numberformat.Format = "#,##0.00£"
 
                 ' Congelar la primera fila y la primera columna en la hoja "FINAL"
@@ -7130,16 +7136,17 @@ Public Class CargaHorasJPSTAFF
                 ' Iterar sobre los valores únicos de "Fichero" para crear el resumen
                 For Each fichero As Integer In ficherosUnicos
                     ' Filtrar el DataTable por el valor actual de "Fichero"
+
                     Dim dtFiltrado = dtUkPersonasOrdenado.AsEnumerable().Where(Function(row) Convert.ToInt32(row("Fichero")) = fichero).CopyToDataTable()
 
                     ' Sumar las cantidades de las columnas 9, 10, 15 y 16
-                    Dim sumaColumna9 As Double = dtFiltrado.AsEnumerable().Sum(Function(row) GetDoubleValue(row, "Tax"))
-                    Dim sumaColumna10 As Double = dtFiltrado.AsEnumerable().Sum(Function(row) GetDoubleValue(row, "Net NI"))
-                    Dim sumaColumna15 As Double = dtFiltrado.AsEnumerable().Sum(Function(row) GetDoubleValue(row, "Net Pay"))
-                    Dim sumaColumna16 As Double = dtFiltrado.AsEnumerable().Sum(Function(row) GetDoubleValue(row, "Net Er NI"))
+                    'Dim sumaColumna9 As Double = dtFiltrado.AsEnumerable().Sum(Function(row) GetDoubleValue(row, "Tax"))
+                    'Dim sumaColumna10 As Double = dtFiltrado.AsEnumerable().Sum(Function(row) GetDoubleValue(row, "Net NI"))
+                    'Dim sumaColumna15 As Double = dtFiltrado.AsEnumerable().Sum(Function(row) GetDoubleValue(row, "Net Pay"))
+                    'Dim sumaColumna16 As Double = dtFiltrado.AsEnumerable().Sum(Function(row) GetDoubleValue(row, "Net Er NI"))
 
                     ' Agregar fila al DataTable de resumen
-                    resumenDataTable.Rows.Add(fichero, sumaColumna9, sumaColumna10, sumaColumna15, sumaColumna16)
+                    'resumenDataTable.Rows.Add(fichero, sumaColumna9, sumaColumna10, sumaColumna15, sumaColumna16)
 
                     ' Crear una hoja de cálculo para el valor actual de "Fichero"
                     Dim worksheetFichero = package.Workbook.Worksheets.Add("F" & fichero.ToString())
@@ -7167,6 +7174,8 @@ Public Class CargaHorasJPSTAFF
                             End If
                         Next
                     Next
+
+                    sumaColumnas(package, fichero)
                 Next
 
                 ' Crear hoja "RESUMEN" y cargar los datos del DataTable de resumen
@@ -7195,7 +7204,7 @@ Public Class CargaHorasJPSTAFF
                 Next
 
                 ' Aplicar formato de moneda a la hoja "RESUMEN"
-                Dim rangoMonedaResumen As ExcelRange = worksheetResumen.Cells("B2:E" & worksheetResumen.Dimension.End.Row)
+                Dim rangoMonedaResumen As ExcelRange = worksheetResumen.Cells("B2:E" & worksheetResumen.Dimension.End.Row + 2)
                 rangoMonedaResumen.Style.Numberformat.Format = "#,##0.00£"
 
 
@@ -7220,14 +7229,14 @@ Public Class CargaHorasJPSTAFF
                 'Dimensiones columnas
                 worksheetResumen.Column(1).Width = 14 : worksheetResumen.Column(2).Width = 14 : worksheetResumen.Column(3).Width = 14 : worksheetResumen.Column(4).Width = 14 : worksheetResumen.Column(5).Width = 14
 
+                sumaColumnas(package, 0)
+                sumasHojaResumen(package, ficherosUnicos)
+
                 ' Guardar el archivo de Excel.
                 package.Save()
             End Using
         End If
-
-
-
-        MsgBox("Fichero creado correctamente en N:\10. AUXILIARES\00. EXPERTIS\02. A3\")
+        'MsgBox("Fichero creado correctamente en N:\10. AUXILIARES\00. EXPERTIS\02. A3\")
     End Sub
 
     Function GetDoubleValue(ByVal row As DataRow, ByVal columnName As String) As Double
@@ -7429,5 +7438,60 @@ Public Class CargaHorasJPSTAFF
         ' Obtenemos el mes y el año seleccionados del formulario
         mes = frmFechasExtras.mes
         anio = frmFechasExtras.anio
+    End Sub
+
+    ' dfernandez - 29/04/2024 : Suma de las columnas TAX, NET NI, NET PAY, NET ER NI
+    Public Sub sumaColumnas(ByVal package As ExcelPackage, ByVal hoja As Integer)
+
+        Dim worksheet = package.Workbook.Worksheets(hoja)
+        Dim ultimaFila = worksheet.Dimension.End.Row + 3
+        Dim fila = ultimaFila - 3
+
+        ' Insercción de formulas Excel
+        worksheet.Cells(ultimaFila, 9).Formula = "=SUM(I2:I" & fila.ToString() & ")"
+        worksheet.Cells(ultimaFila, 10).Formula = "=SUM(J2:J" & fila.ToString() & ")"
+        worksheet.Cells(ultimaFila, 15).Formula = "=SUM(O2:O" & fila.ToString() & ")"
+        worksheet.Cells(ultimaFila, 16).Formula = "=SUM(P2:P" & fila.ToString() & ")"
+
+        ' Cambiar formato de celdas
+        For Each indice In New Integer() {9, 10, 15, 16}
+            Dim estilo As ExcelRange = worksheet.Cells(ultimaFila, indice)
+            estilo.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+            estilo.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+            estilo.Style.Numberformat.Format = "#,##0.00£"
+            worksheet.Column(indice).Width = 14
+        Next
+
+    End Sub
+
+    ' dfernandez - 29/04/2024 : Referencias a los valores de las sumas en hoja RESUMEN
+    Public Sub sumasHojaResumen(ByVal package As ExcelPackage, ByVal ficheros As IEnumerable(Of Integer))
+
+        Dim contador As Integer = 2
+        Dim hojaResumen = package.Workbook.Worksheets(package.Workbook.Worksheets.Count - 1)
+        For Each hoja In package.Workbook.Worksheets
+            If hoja.Name = "1" Or hoja.Name = "RESUMEN" Then
+                Continue For
+            End If
+
+            Dim ultimaFila = hoja.Dimension.End.Row
+            hojaResumen.Cells(contador, 1).Value = contador - 1
+            hojaResumen.Cells(contador, 2).Formula = "=" & hoja.Name & "!I" & ultimaFila
+            hojaResumen.Cells(contador, 3).Formula = "=" & hoja.Name & "!J" & ultimaFila
+            hojaResumen.Cells(contador, 4).Formula = "=" & hoja.Name & "!O" & ultimaFila
+            hojaResumen.Cells(contador, 5).Formula = "=" & hoja.Name & "!P" & ultimaFila
+            contador += 1
+        Next
+
+        ' Estilo de celdas
+        For Each fichero In ficheros
+            For Each indice In New Integer() {2, 3, 4, 5}
+                Dim estilo As ExcelRange = hojaResumen.Cells(fichero + 1, indice)
+                estilo.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                estilo.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+                estilo.Style.Numberformat.Format = "#,##0.00£"
+                hojaResumen.Column(indice).Width = 14
+            Next
+        Next
     End Sub
 End Class
