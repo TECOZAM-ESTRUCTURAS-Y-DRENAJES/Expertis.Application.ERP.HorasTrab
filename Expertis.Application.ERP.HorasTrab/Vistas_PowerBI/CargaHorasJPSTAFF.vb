@@ -2781,6 +2781,22 @@ Public Class CargaHorasJPSTAFF
         Dim dtCambioMoneda As New DataTable
         dtCambioMoneda = ObtenerDatosExcel(ruta, hoja, rango)
 
+        ' dfernandez 29/04/2024 : Check de diccionario existente
+        Dim cadena_error As New StringBuilder
+        Dim lineaError As String = ""
+        For Each filacheck As DataRow In dt.Rows
+            If Len(filacheck("F1").ToString) = 0 Then
+
+                Exit For ' Salir del bucle si la celda está vacía
+            End If
+            lineaError = DevuelveIDOperarioDiccionario2(bbdd, filacheck("F1"))
+            cadena_error.Append(lineaError)
+        Next
+        If cadena_error.ToString().Length > 0 Then
+            MsgBox(cadena_error.ToString)
+            Exit Function
+        End If
+        ' ---
 
         ' Copiar los datos de las columnas seleccionadas al nuevo DataTable
         For Each row As DataRow In dt.Rows
@@ -7494,4 +7510,17 @@ Public Class CargaHorasJPSTAFF
             Next
         Next
     End Sub
+
+    ' dfernandez 29/04/2024 : Corrección DevuelveIDOperarioDiccionario
+    Public Function DevuelveIDOperarioDiccionario2(ByVal bbdd As String, ByVal Diccionario As String) As String
+        Dim f As New Filter
+        f.Add("Diccionario", FilterOperator.Equal, Diccionario)
+        Dim dt As DataTable
+        dt = New BE.DataEngine().Filter(bbdd & "..frmMntoOperario", f)
+
+        If dt.Rows.Count = 0 Then
+            Return ("ERROR. No existe este Diccionario " & Diccionario & " en " & bbdd & vbCrLf)
+        End If
+        Return ""
+    End Function
 End Class
