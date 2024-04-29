@@ -1607,7 +1607,7 @@ Public Class CargaHorasJPSTAFF
             Windows.Forms.Application.DoEvents()
 
             ' Recorrer las columnas a partir de la tercera
-            For i As Integer = 3 To dtHoras.Columns.Count - 1
+            For i As Integer = 2 To dtHoras.Columns.Count - 1
                 Dim value As Object = dr(i)
                 Dim fecha As String
                 ' Verificar si la cabecera de la columna es numérica
@@ -1923,7 +1923,7 @@ Public Class CargaHorasJPSTAFF
         'David V 12/12/23
         Dim fecha As DateTime = fecha1
         fecha = fecha.AddDays(-1)
-        For i As Integer = 3 To dtFinal.Columns.Count - 1
+        For i As Integer = 2 To dtFinal.Columns.Count - 1
             If TypeOf dtFinal.Columns(i) Is DataColumn Then
                 Dim fechaColumna As DataColumn = CType(dtFinal.Columns(i), DataColumn)
                 ' Formatea la fecha y establece el nuevo formato en el nombre de la columna
@@ -3519,7 +3519,7 @@ Public Class CargaHorasJPSTAFF
         End If
 
         If getDuplicados(Fecha1, Fecha2) = False Then
-            MsgBox("Corrige las categorias de las personas anteriores para poder exportar las horas")
+            MsgBox("Corrige las categorias de las personas anteriores para poder exportar las horas.")
             Exit Sub
         End If
         Dim mes As String : mes = Month(Fecha1)
