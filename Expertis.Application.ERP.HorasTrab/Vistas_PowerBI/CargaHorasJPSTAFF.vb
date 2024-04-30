@@ -2793,7 +2793,7 @@ Public Class CargaHorasJPSTAFF
             cadena_error.Append(lineaError)
         Next
         If cadena_error.ToString().Length > 0 Then
-            MsgBox(cadena_error.ToString)
+            MessageBox.Show(cadena_error.ToString, "Error en los Diccionarios", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Exit Function
         End If
         ' ---
@@ -6898,7 +6898,7 @@ Public Class CargaHorasJPSTAFF
     End Sub
 
 
-    Private Sub Button5_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button5.Click
+    Private Sub bDuplicadosEmpresas_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bDuplicadosEmpresas.Click
         Dim dt As New DataTable
         Dim f As New Filter
 
@@ -6911,23 +6911,52 @@ Public Class CargaHorasJPSTAFF
         f.Add("FechaInicio", FilterOperator.LessThanOrEqual, Fecha2)
 
         dt = New BE.DataEngine().Filter("vUniontbObraMod", f)
-        Dim cont As Integer = 0
-        If dt.Rows.Count > 0 Then
-            For Each dr As DataRow In dt.Rows
-                If dr("IDGET") = "GET03540" Or dr("IDGET") = "GET03605" Then
-                    cont = 1
-                Else
-                    MsgBox("El operario " & dt.Rows(0)("IDGET").ToString & " tiene horas en mas de una empresa.")
-                End If
-            Next
 
+        ' dfernandez 30/04/2024 : Búsqueda de IDOperario
+        Dim dtIdOperario As New DataTable
+        If dt.Rows.Count > 0 Then
+            For Each operario In dt.Rows
+                Dim fId As New Filter
+                fId.Add("IDGET", FilterOperator.Equal, operario("IDGET").ToString)
+                dtIdOperario = New BE.DataEngine().Filter("vUnionOperariosCategoriaProfesional", fId)
+
+                Dim builderIDs As New StringBuilder
+                Dim builderEmpresas As New StringBuilder
+
+                For Each idOperario In dtIdOperario.Rows
+                    builderIDs.Append(idOperario("IDOperario") & ", ")
+                    builderEmpresas.Append(idOperario("Empresa") & ", ")
+                Next
+                ' Elimina la última coma y el espacio de cada StringBuilder
+                If builderIDs.Length > 0 Then builderIDs.Remove(builderIDs.Length - 2, 2)
+                If builderEmpresas.Length > 0 Then builderEmpresas.Remove(builderEmpresas.Length - 2, 2)
+
+                Dim mensaje As String = "El operario " & operario("IDGET") & " con IDs " & builderIDs.ToString & " a fecha de " & operario("FechaInicio") & " tiene horas en las empresas " & builderEmpresas.ToString
+                MessageBox.Show(mensaje, "Horas duplicadas", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Next
         Else
-            MsgBox("No hay registros duplicados con misma fecha en distintas empresas.", MsgBoxStyle.Information, "Check duplicidad horas")
-            Exit Sub
+            MessageBox.Show("No hay registros duplicados con misma fecha en distintas empresas.", "Check duplicidad horas", MessageBoxButtons.OK, MessageBoxIcon.Information)
         End If
-        If cont = 1 Then
-            MsgBox("No hay registros duplicados con misma fecha en distintas empresas.")
-        End If
+
+        ' ---
+
+        'Dim cont As Integer = 0
+        'If dt.Rows.Count > 0 Then
+        '    For Each dr As DataRow In dt.Rows
+        '        If dr("IDGET") = "GET03540" Or dr("IDGET") = "GET03605" Then
+        '            cont = 1
+        '        Else
+        '            MsgBox("El operario " & dt.Rows(0)("IDGET").ToString & " tiene horas en mas de una empresa.")
+        '        End If
+        '    Next
+
+        'Else
+        '    MsgBox("No hay registros duplicados con misma fecha en distintas empresas.", MsgBoxStyle.Information, "Check duplicidad horas")
+        '    Exit Sub
+        'End If
+        'If cont = 1 Then
+        '    MsgBox("No hay registros duplicados con misma fecha en distintas empresas.")
+        'End If
 
     End Sub
 
@@ -7519,8 +7548,9 @@ Public Class CargaHorasJPSTAFF
         dt = New BE.DataEngine().Filter(bbdd & "..frmMntoOperario", f)
 
         If dt.Rows.Count = 0 Then
-            Return ("ERROR. No existe este Diccionario " & Diccionario & " en " & bbdd & vbCrLf)
+            Return ("ERROR. No existe ref. Diccionario " & Diccionario & vbCrLf)
         End If
         Return ""
     End Function
+
 End Class

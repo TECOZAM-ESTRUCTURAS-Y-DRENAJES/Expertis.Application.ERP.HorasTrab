@@ -135,7 +135,7 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame18 = New Solmicro.Expertis.Engine.UI.Frame
         Me.Button2 = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame19 = New Solmicro.Expertis.Engine.UI.Frame
-        Me.Button5 = New Solmicro.Expertis.Engine.UI.Button
+        Me.bDuplicadosEmpresas = New Solmicro.Expertis.Engine.UI.Button
         Me.UiTabPage8 = New Janus.Windows.UI.Tab.UITabPage
         Me.UiTabPage2 = New Janus.Windows.UI.Tab.UITabPage
         Me.Tab3 = New Solmicro.Expertis.Engine.UI.Tab
@@ -150,12 +150,12 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame12 = New Solmicro.Expertis.Engine.UI.Frame
         Me.UiTabPage3 = New Janus.Windows.UI.Tab.UITabPage
         Me.Label28 = New Solmicro.Expertis.Engine.UI.Label
+        Me.bPisarFicheroExtra = New Solmicro.Expertis.Engine.UI.Button
         Me.Label27 = New Solmicro.Expertis.Engine.UI.Label
         Me.Label26 = New Solmicro.Expertis.Engine.UI.Label
         Me.Label25 = New Solmicro.Expertis.Engine.UI.Label
         Me.Frame13 = New Solmicro.Expertis.Engine.UI.Frame
         Me.bGenerarMes6_12 = New Solmicro.Expertis.Engine.UI.Button
-        Me.bPisarFicheroExtra = New Solmicro.Expertis.Engine.UI.Button
         Me.UiTabPage4 = New Janus.Windows.UI.Tab.UITabPage
         Me.Frame14 = New Solmicro.Expertis.Engine.UI.Frame
         Me.bRegularizarSemestral = New Solmicro.Expertis.Engine.UI.Button
@@ -1256,7 +1256,7 @@ Partial Class CargaHorasJPSTAFF
         '
         'Frame19
         '
-        Me.Frame19.Controls.Add(Me.Button5)
+        Me.Frame19.Controls.Add(Me.bDuplicadosEmpresas)
         Me.Frame19.Location = New System.Drawing.Point(39, 29)
         Me.Frame19.Name = "Frame19"
         Me.Frame19.Size = New System.Drawing.Size(184, 111)
@@ -1264,15 +1264,15 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame19.TabStop = False
         Me.Frame19.Text = "1. Duplicidad de horas en distintas empresas"
         '
-        'Button5
+        'bDuplicadosEmpresas
         '
-        Me.Button5.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Button5.Icon = CType(resources.GetObject("Button5.Icon"), System.Drawing.Icon)
-        Me.Button5.Location = New System.Drawing.Point(22, 43)
-        Me.Button5.Name = "Button5"
-        Me.Button5.Size = New System.Drawing.Size(144, 38)
-        Me.Button5.TabIndex = 20
-        Me.Button5.Text = "¿Duplicados?"
+        Me.bDuplicadosEmpresas.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bDuplicadosEmpresas.Icon = CType(resources.GetObject("bDuplicadosEmpresas.Icon"), System.Drawing.Icon)
+        Me.bDuplicadosEmpresas.Location = New System.Drawing.Point(22, 43)
+        Me.bDuplicadosEmpresas.Name = "bDuplicadosEmpresas"
+        Me.bDuplicadosEmpresas.Size = New System.Drawing.Size(144, 38)
+        Me.bDuplicadosEmpresas.TabIndex = 20
+        Me.bDuplicadosEmpresas.Text = "¿Duplicados?"
         '
         'UiTabPage8
         '
@@ -1417,6 +1417,17 @@ Partial Class CargaHorasJPSTAFF
         Me.Label28.TabIndex = 38
         Me.Label28.Text = "DIC - COMPARO ANUAL RESUMEN CON FICHEROS HASTA NOVIEMBRE"
         '
+        'bPisarFicheroExtra
+        '
+        Me.bPisarFicheroExtra.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bPisarFicheroExtra.Icon = CType(resources.GetObject("bPisarFicheroExtra.Icon"), System.Drawing.Icon)
+        Me.bPisarFicheroExtra.Location = New System.Drawing.Point(943, 212)
+        Me.bPisarFicheroExtra.Name = "bPisarFicheroExtra"
+        Me.bPisarFicheroExtra.Size = New System.Drawing.Size(144, 38)
+        Me.bPisarFicheroExtra.TabIndex = 19
+        Me.bPisarFicheroExtra.Text = "Generar 6º mes extra"
+        Me.bPisarFicheroExtra.Visible = False
+        '
         'Label27
         '
         Me.Label27.Location = New System.Drawing.Point(716, 117)
@@ -1460,17 +1471,6 @@ Partial Class CargaHorasJPSTAFF
         Me.bGenerarMes6_12.Size = New System.Drawing.Size(358, 38)
         Me.bGenerarMes6_12.TabIndex = 21
         Me.bGenerarMes6_12.Text = "Generar fichero 6º o 12º de extras regularizado"
-        '
-        'bPisarFicheroExtra
-        '
-        Me.bPisarFicheroExtra.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.bPisarFicheroExtra.Icon = CType(resources.GetObject("bPisarFicheroExtra.Icon"), System.Drawing.Icon)
-        Me.bPisarFicheroExtra.Location = New System.Drawing.Point(943, 212)
-        Me.bPisarFicheroExtra.Name = "bPisarFicheroExtra"
-        Me.bPisarFicheroExtra.Size = New System.Drawing.Size(144, 38)
-        Me.bPisarFicheroExtra.TabIndex = 19
-        Me.bPisarFicheroExtra.Text = "Generar 6º mes extra"
-        Me.bPisarFicheroExtra.Visible = False
         '
         'UiTabPage4
         '
@@ -1723,7 +1723,7 @@ Partial Class CargaHorasJPSTAFF
     Friend WithEvents Frame18 As Solmicro.Expertis.Engine.UI.Frame
     Friend WithEvents Button2 As Solmicro.Expertis.Engine.UI.Button
     Friend WithEvents Frame19 As Solmicro.Expertis.Engine.UI.Frame
-    Friend WithEvents Button5 As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents bDuplicadosEmpresas As Solmicro.Expertis.Engine.UI.Button
     Friend WithEvents Tab2 As Solmicro.Expertis.Engine.UI.Tab
     Friend WithEvents UiTabPage6 As Janus.Windows.UI.Tab.UITabPage
     Friend WithEvents UiTabPage7 As Janus.Windows.UI.Tab.UITabPage
