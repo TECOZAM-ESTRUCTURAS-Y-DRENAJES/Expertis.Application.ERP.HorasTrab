@@ -6232,7 +6232,7 @@ Public Class CargaHorasJPSTAFF
             Dim grossOverTAX As Double
             grossOverTAX = cashBenefit + paymentinkind
             nuevaFila("GROSS OVER TAX") = grossOverTAX
-            
+
             If deductions >= 0 Then
                 'deductions = deductions * -1
                 deductions = deductions * -1
@@ -6431,8 +6431,18 @@ Public Class CargaHorasJPSTAFF
         ' Encontrar la posición de la primera coma después de "Fixed salary"
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
-        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
-        Return resultado.Trim.Replace(" ", "")
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
+        ' Return resultado.Trim.Replace(" ", "")
+
+        ' dfernandez 30/04/2000 : Corrección de Other Payouts
+        Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
+        If Char.IsDigit(ultimoCaracter) Then
+            resultado.Substring(0, resultado.Length - 1)
+            Return resultado.Trim.Replace(" ", "")
+        Else
+            Return "0"
+        End If
+        ' ---
     End Function
 
     Public Function devuelveFoodAllowance(ByVal texto As String) As String
@@ -6446,8 +6456,18 @@ Public Class CargaHorasJPSTAFF
         ' Encontrar la posición de la primera coma después de "Fixed salary"
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
-        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
-        Return resultado.Trim.Replace(" ", "")
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
+        ' Return resultado.Trim.Replace(" ", "")
+
+        ' dfernandez 30/04/2000 : Corrección de Montly Food Allowance
+        Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
+        If Char.IsDigit(ultimoCaracter) Then
+            resultado.Substring(0, resultado.Length - 1)
+            Return resultado.Trim.Replace(" ", "")
+        Else
+            Return "0"
+        End If
+        ' ---
     End Function
 
     Public Function devuelvePaymentInKind(ByVal texto As String) As String
@@ -6635,6 +6655,18 @@ Public Class CargaHorasJPSTAFF
                     Next
                 Next
 
+                ' dfernandez 30/04/2024 : Añadida formulación Excel 
+                For fila As Integer = 2 To worksheet.Dimension.End.Row
+                    worksheet.Cells(fila, 9).Formula = "=D" & fila & "+F" & fila
+                    worksheet.Cells(fila, 10).Formula = "=IF(G" & fila & ">0,(D" & fila & "-(D" & fila & "*(C" & fila & "/100))+G" & fila & "-H" & fila & "),(D" & fila & "-(D" & fila & "*(C" & fila & "/100))+G" & fila & "))"
+                    worksheet.Cells(fila, 11).Formula = "=(D" & fila & "-E" & fila & ")*0.102"
+                    worksheet.Cells(fila, 13).Formula = "=(K" & fila & "+L" & fila & ")*0.141"
+                    worksheet.Cells(fila, 14).Formula = "=(D" & fila & "+F" & fila & ")*0.141"
+                    worksheet.Cells(fila, 15).Formula = "=(D" & fila & "+F" & fila & ")*(C" & fila & "/100)"
+                    worksheet.Cells(fila, 16).Formula = "=(I" & fila & "+K" & fila & "+L" & fila & "+M" & fila & "+N" & fila & ")"
+                Next
+                ' ---
+
                 ' Establecer el formato de moneda para la columna N
                 worksheet.Column(16).Width = 18
 
@@ -6674,7 +6706,7 @@ Public Class CargaHorasJPSTAFF
                 package.Save()
             End Using
 
-            MsgBox("Excel generado correctamente")
+            MessageBox.Show("Excel generado correctamente", "PDF a Excel Noruega", MessageBoxButtons.OK, MessageBoxIcon.Information)
         End If
 
 
