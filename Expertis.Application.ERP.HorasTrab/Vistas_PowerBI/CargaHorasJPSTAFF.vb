@@ -525,7 +525,13 @@ Public Class CargaHorasJPSTAFF
         'Inserta horas en NO
         insertaHorasJPStaffNO(mes, año, Fecha1, Fecha2, dtNO)
 
-        MsgBox("Horas desde Excel cargadas correctamente")
+        MessageBox.Show("Horas desde Excel cargadas correctamente", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        PvProgreso.Value = 0
+        Windows.Forms.Application.DoEvents()
+        LProgreso.Text = "Progreso actual"
+        Windows.Forms.Application.DoEvents()
+
     End Sub
     Public Function ChecksPrevios(ByVal dt As DataTable) As DataTable
         'CHECK 1.SI ES =0 PORCENTAJE SE BORRA
@@ -1000,6 +1006,12 @@ Public Class CargaHorasJPSTAFF
             '-----------NORUEGA------------
         End If
 
+        MessageBox.Show("Horas creadas correctamente", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        PvProgreso.Value = 0
+        Windows.Forms.Application.DoEvents()
+        LProgreso.Text = "Progreso actual"
+        Windows.Forms.Application.DoEvents()
     End Sub
     Public Function getListadoPersonasOfiFerrallas(ByVal Fecha1 As String, ByVal Fecha2 As String) As DataTable
         Dim dt As New DataTable
@@ -2400,7 +2412,9 @@ Public Class CargaHorasJPSTAFF
                 ExpertisApp.GenerateMessage("Proceso cancelado correctamente.")
                 Exit Sub
             End If
+
             For Each row As DataRow In dtAuxiliar.Rows
+                
                 dtFinal.ImportRow(row)
             Next
             ' Preguntar al usuario si desea continuar
@@ -2426,7 +2440,13 @@ Public Class CargaHorasJPSTAFF
         Anio = "20" & Anio
         'GENERA EXCEL
         GeneraExcel(mes, Anio, dtFinal)
-        MsgBox("Fichero generado correctamente en N:\10. AUXILIARES\00. EXPERTIS\02. A3.")
+        MessageBox.Show("Fichero generado correctamente en N:\10. AUXILIARES\00. EXPERTIS\02. A3.","Información", MessageBoxButtons.OK,MessageBoxIcon.Information)
+
+        PvProgreso.Value = 0
+        Windows.Forms.Application.DoEvents()
+        LProgreso.Text = "Progreso actual"
+        Windows.Forms.Application.DoEvents()
+
     End Sub
     Public Function CargaExtrasTabla(ByVal dtUnion As DataTable) As DataTable
         Dim CD As New OpenFileDialog()
@@ -2698,6 +2718,11 @@ Public Class CargaHorasJPSTAFF
         Dim diccionario As String = ""
         Dim descOperario As String = ""
 
+        ' dfernandez 30/04/2024 : Progress Bar
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dt.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
+
         ' Copiar los datos de las columnas seleccionadas al nuevo DataTable
         For Each row As DataRow In dt.Rows
             'Verificar si la celda está vacía
@@ -2705,6 +2730,9 @@ Public Class CargaHorasJPSTAFF
                 'Return newDataTable
                 Exit For ' Salir del bucle si la celda está vacía
             End If
+
+            filas += 1
+            PvProgreso.Value = filas
 
             Dim newRow As DataRow = newDataTable.NewRow()
 
@@ -2773,6 +2801,10 @@ Public Class CargaHorasJPSTAFF
         Dim totaleuros As Double = 0
         Dim totallibras As Double = 0
 
+        ' dfernandez 30/04/2024 : Progress Bar
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dt.Rows.Count - 3 : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
         'TABLA DE CAMBIO DE MONEDA LIBRAS
         Dim ruta As String
         ruta = "\\stor01\dg\SCCP_Prueba\03. COSTES\TIPO DE CAMBIO MONEDA.xlsx"
@@ -2805,6 +2837,9 @@ Public Class CargaHorasJPSTAFF
                 'Return newDataTable
                 Exit For ' Salir del bucle si la celda está vacía
             End If
+
+            filas += 1
+            PvProgreso.Value = filas
 
             Dim newRow As DataRow = newDataTable.NewRow()
 
@@ -2866,6 +2901,10 @@ Public Class CargaHorasJPSTAFF
         Dim totaleuros As Double = 0
         Dim totalcoronas As Double = 0
 
+        ' dfernandez 30/04/2024 : Progress Bar
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dt.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
         'TABLA DE CAMBIO DE MONEDA LIBRAS
         Dim ruta As String
         ruta = "\\stor01\dg\SCCP_Prueba\03. COSTES\TIPO DE CAMBIO MONEDA.xlsx"
@@ -2882,6 +2921,9 @@ Public Class CargaHorasJPSTAFF
                 'Return newDataTable
                 Exit For ' Salir del bucle si la celda está vacía
             End If
+
+            filas += 1
+            PvProgreso.Value = filas
 
             Dim newRow As DataRow = newDataTable.NewRow()
 
@@ -2919,7 +2961,7 @@ Public Class CargaHorasJPSTAFF
             CosteEFinal = CosteEFinal + dr("CosteEmpresa")
         Next
         Dim result As DialogResult = MessageBox.Show("El coste del excel introducido es " & CosteE1.ToString("N2") & _
-        " NOK =" & CambioCoronaAEuro(dtCambioMoneda, CosteE1, mes, anio).ToString("N2") & " €. El del excel resultante es " & CosteEFinal.ToString("N2") & _
+        " NOK = " & CambioCoronaAEuro(dtCambioMoneda, CosteE1, mes, anio).ToString("N2") & " €. El del excel resultante es " & CosteEFinal.ToString("N2") & _
         "€." & vbCrLf & "El cambio usado es: " & DevuelveCambioMonedaCorona(dtCambioMoneda, mes, anio), "¿Desea Continuar?", MessageBoxButtons.YesNo)
         If result = DialogResult.No Then
             Return Nothing
@@ -3057,6 +3099,11 @@ Public Class CargaHorasJPSTAFF
     Public Function FormaTablaEspaña(ByVal dt As DataTable, ByVal newDataTable As DataTable, ByVal bbdd As String, ByVal mes As String, ByVal anio As String, ByVal empresa As String)
 
         Dim IDOperario As String = ""
+
+        ' dfernandez 30/04/2024 : Progress Bar
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dt.Rows.Count - 3 : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
         ' Copiar los datos de las columnas seleccionadas al nuevo DataTable
         For Each row As DataRow In dt.Rows
             'Verificar si la celda está vacía
@@ -3064,6 +3111,10 @@ Public Class CargaHorasJPSTAFF
                 'Return newDataTable
                 Exit For ' Salir del bucle si la celda está vacía
             End If
+
+            filas += 1
+            PvProgreso.Value = filas
+            ' ---
 
             Dim newRow As DataRow = newDataTable.NewRow()
             IDOperario = DevuelveIDOperario(bbdd, row("F3"))
@@ -3817,7 +3868,13 @@ Public Class CargaHorasJPSTAFF
 
         'ACTUALIZAR PARA LOS REGISTROS QUE SON CC Y ACC Horas Baja a 8
 
-        MsgBox("Horas de baja creadas correctamente.")
+        MessageBox.Show("Horas de baja creadas correctamente.", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        PvProgreso.Value = 0
+        Windows.Forms.Application.DoEvents()
+        LProgreso.Text = "Progreso actual"
+        Windows.Forms.Application.DoEvents()
+
         'MsgBox("Accidente: " & dtPersonasBajaPorAccidente.Rows.Count & " Enfermedad:" & dtPersonasBajaPorEnfermedad.Rows.Count)
         'MsgBox(dtPersonasDeBaja.Rows.Count)
     End Sub
@@ -4082,38 +4139,77 @@ Public Class CargaHorasJPSTAFF
         mes = frmFechas.mes
         anio = frmFechas.anio
 
+        '-------
+        Windows.Forms.Application.DoEvents()
+        LProgreso.Text = "Generando tabla de Excel de Personas - Horas"
+        Windows.Forms.Application.DoEvents()
+        '-------
+
         'Tabla de las personas con horas
         Dim dtHorasExpertis As New DataTable
         dtHorasExpertis = getHorasPersonas(mes, anio)
+
+        '-------
+        Windows.Forms.Application.DoEvents()
+        LProgreso.Text = "Generando tabla de Excel de Personas - Euros"
+        Windows.Forms.Application.DoEvents()
+        '-------
 
         'Tabla de las personas con €
         Dim dtA3 As New DataTable
         dtA3 = getEurosPersonas(mes, anio)
 
+        '-------
+        Windows.Forms.Application.DoEvents()
+        LProgreso.Text = "Generando tabla de Excel de personas con horas y no euros"
+        Windows.Forms.Application.DoEvents()
+        '-------
+
         '1. TABLA DE GENTE QUE TIENE HORAS TRABAJADAS Y NO TIENE EUROS
         Dim dtGenteSiHorasNoEuros As New DataTable
         dtGenteSiHorasNoEuros = getGenteSiHorasNoEuros(dtHorasExpertis, dtA3)
+
+        '-------
+        Windows.Forms.Application.DoEvents()
+        LProgreso.Text = "Generando tabla de Excel de personas con euros y no horas"
+        Windows.Forms.Application.DoEvents()
+        '-------
 
         '2. TABLA DE GENTE QUE TIENE € Y NO TIENE HORAS
         Dim dtGenteSiEurosNoHoras As New DataTable
         dtGenteSiEurosNoHoras = getGenteSiEurosNoHoras(dtHorasExpertis, dtA3)
 
+        '-------
+        Windows.Forms.Application.DoEvents()
+        LProgreso.Text = "Generando tabla de Excel de ratios de las personas"
+        Windows.Forms.Application.DoEvents()
+        '-------
+
         '3. TABLA DE RATIOS DE LA GENTE
         Dim dtRatiosGente As New DataTable
         dtRatiosGente = getRatiosGente(dtHorasExpertis, dtA3)
 
+
         '4. TABLA DE PERSONAS CON DOBLE COTIZACION
         Dim dtPersonasDobleCoti As New DataTable
         Dim filter As New Filter
-        dtPersonasDobleCoti = New BE.DataEngine().Filter(DB_TECOZAM & "..vunionOperariodoblecotizacion", filter, , "IDGET")
+        dtPersonasDobleCoti = New BE.DataEngine().Filter(DB_TECOZAM & "..vunionOperariodoblecotizacion", Filter, , "IDGET")
+
+        Windows.Forms.Application.DoEvents()
+        LProgreso.Text = "Generando tabla de Excel de resumen"
+        Windows.Forms.Application.DoEvents()
 
         '5. TABLA DE RESUMEN
         Dim dtResumenCategoriaProfesional As New DataTable
         dtResumenCategoriaProfesional = getResumenCategoria(dtRatiosGente)
 
-
         'GENERACION EXCEL CON LAS 5 PESTAÑAS
         GeneraExcelHorasA3(dtGenteSiHorasNoEuros, dtGenteSiEurosNoHoras, dtRatiosGente, dtPersonasDobleCoti, dtResumenCategoriaProfesional, mes, anio)
+        PvProgreso.Value = 0
+        Windows.Forms.Application.DoEvents()
+        LProgreso.Text = "Progreso actual"
+        Windows.Forms.Application.DoEvents()
+
     End Sub
     Public Function getResumenCategoria(ByVal dtRatiosGente As DataTable) As DataTable
         Dim dtResultado As New DataTable()
@@ -4127,7 +4223,15 @@ Public Class CargaHorasJPSTAFF
         Dim staff As Double = 0
         Dim otros As Double = 0
 
+        ' dfernandez 30/04/2024 : Progress Bar
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dtRatiosGente.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
+
         For Each dr As DataRow In dtRatiosGente.Rows
+            filas += 1
+            PvProgreso.Value = filas
+
             Dim categoria As Double = Convert.ToDouble(dr("IDCategoriaProfesionalSCCP"))
             Dim coste As Double = Convert.ToDouble(dr("EurosTotales"))
             Select Case categoria
@@ -4255,7 +4359,7 @@ Public Class CargaHorasJPSTAFF
             ' Guardar el archivo de Excel.
             package.Save()
 
-            MsgBox("Fichero guardado en N:\10. AUXILIARES\00. EXPERTIS\05. CHECK HORAS-A3\")
+            MessageBox.Show("Fichero guardado en N:\10. AUXILIARES\00. EXPERTIS\05. CHECK HORAS-A3\", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information)
         End Using
     End Sub
 
@@ -4285,9 +4389,16 @@ Public Class CargaHorasJPSTAFF
         dtResult.Columns.Add("DescOperario", GetType(String))
         dtResult.Columns.Add("TotalCosteEmpresa", GetType(Double))
 
+        ' dfernandez 30/04/2024 : Progress Bar
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dtA3.Rows.Count + dtHorasExpertis.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
         ' Iterar sobre las filas de la tabla original
         For Each row As DataRow In dtA3.Rows
             Dim currentIDOperario As String = CStr(row("IDOperario"))
+
+            filas += 1
+            PvProgreso.Value = filas
 
             ' Buscar si ya existe una fila con el mismo IDOperario en la tabla de resultados
             Dim foundRow As DataRow = dtResult.Select("IDOperario = '" & currentIDOperario & "'").FirstOrDefault()
@@ -4327,6 +4438,9 @@ Public Class CargaHorasJPSTAFF
         Next
         ' Recorrer las filas de dtHorasExpertis
         For Each rowHorasExpertis As DataRow In dtHorasExpertis.Rows
+
+            filas += 1
+            PvProgreso.Value = filas
 
             Dim idGet As String = rowHorasExpertis.Field(Of String)("IDGET")
             Dim idOperario As String = rowHorasExpertis.Field(Of String)("IDOperario")
@@ -4439,8 +4553,15 @@ Public Class CargaHorasJPSTAFF
         dtFaltantes.Columns.Add("IDOperario", GetType(String))
         dtFaltantes.Columns.Add("IDCategoriaProfesionalSCCP", GetType(String))
 
+        ' dfernandez 30/04/2024 : Progress Bar
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = filasFaltantes.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
         ' Agrega las filas faltantes a la nueva tabla
         For Each fila In filasFaltantes
+            filas += 1
+            PvProgreso.Value = filas
+
             Dim newRow As DataRow = dtFaltantes.NewRow()
             newRow("IDGet") = fila.Field(Of String)("IDGet")
             newRow("DescOperario") = fila.Field(Of String)("DescOperario")
@@ -4463,8 +4584,14 @@ Public Class CargaHorasJPSTAFF
         dtFaltantes.Columns.Add("IDGet", GetType(String))
         dtFaltantes.Columns.Add("DescOperario", GetType(String))
 
+        ' dfernandez 30/04/2024 : Progress Bar
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = filasFaltantes.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
         ' Agrega las filas faltantes a la nueva tabla
         For Each fila In filasFaltantes
+            filas += 1
+            PvProgreso.Value = filas
             Dim newRow As DataRow = dtFaltantes.NewRow()
             newRow("IDGet") = fila.Field(Of String)("IDGet")
             newRow("DescOperario") = fila.Field(Of String)("DescOperario")
@@ -4505,6 +4632,10 @@ Public Class CargaHorasJPSTAFF
         Dim sumaHorasAdmin As Double = 0
         Dim sumaHorasBaja As Double = 0
 
+        ' dfernandez 30/04/2024 : Progress Bar
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dtOrdenado.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
         ' Iterar a través de las filas de dtOrdenado
         For Each row As DataRow In dtOrdenado.Rows
             Dim rowIDGET As String = row("F2").ToString.ToUpper
@@ -4517,6 +4648,9 @@ Public Class CargaHorasJPSTAFF
             Dim rowHoras As Double = Convert.ToDouble(row("F11"))
             Dim rowHorasAdmin As Double = Convert.ToDouble(row("F13"))
             Dim rowHorasBaja As Double = Convert.ToDouble(row("F14"))
+
+            filas += 1
+            PvProgreso.Value = filas
 
             ' Verificar si el IDGet ha cambiado
             If rowIDOperario <> currentIDOperario Or dtOrdenado.Rows.IndexOf(row) = dtOrdenado.Rows.Count - 1 Then
@@ -4649,7 +4783,14 @@ Public Class CargaHorasJPSTAFF
         Dim dtEurosFinal As New DataTable
         FormarTablaEuros(dtEurosFinal)
 
+        ' dfernandez 30/04/2024 : Progress Bar
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dtEurosA3.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
         For Each dr As DataRow In dtEurosA3.Rows
+            filas += 1
+            PvProgreso.Value = filas
+
             Dim newRow As DataRow = dtEurosFinal.NewRow()
             newRow("IDGet") = dr("F2")
             newRow("IDOperario") = dr("F3")
@@ -6969,7 +7110,6 @@ Public Class CargaHorasJPSTAFF
         Else
             MessageBox.Show("No hay registros duplicados con misma fecha en distintas empresas.", "Check duplicidad horas", MessageBoxButtons.OK, MessageBoxIcon.Information)
         End If
-
         ' ---
 
         'Dim cont As Integer = 0
