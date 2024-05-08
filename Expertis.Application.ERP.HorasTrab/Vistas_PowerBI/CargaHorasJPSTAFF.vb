@@ -1608,8 +1608,14 @@ Public Class CargaHorasJPSTAFF
         '----------------------
         Dim filas As Integer = 0
         PvProgreso.Value = 0 : PvProgreso.Maximum = dtHoras.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
+        'David Velasco 08/05/2024 Mejora de optimizacion de codigo para no sacar el IDObra por cada persona/dia del excel.
+        setValoresParteTrabajo(basededatos, obra)
+
         For Each dr As DataRow In dtHoras.Rows
             idoperario = dr("IDOperario").ToString
+            setValoresPersona(basededatos, idoperario)
+
             If idoperario.Length = 0 Then
                 filas = filas + 1
                 Continue For
@@ -1637,93 +1643,100 @@ Public Class CargaHorasJPSTAFF
 
         MsgBox("Proceso finalizado correctamente", MsgBoxStyle.Information)
     End Sub
+
+    Dim IDObraHorasInternacional As String = ""
+    Dim IDTrabajoHorasInternacional As String = ""
+    Dim CodTrabajoHorasInternacional As String = ""
+    Dim DescTrabajoInternacional As String = ""
+    Dim IdTipoTrabajoInternacional As String = ""
+    Dim IdSubTipoTrabajoInternacional As String = ""
+
+    Dim IDCategoriaProfesionalSCCPHorasInternacional As String = ""
+    Dim IDOficioSCCPHorasInternacional As String = ""
+
+    Sub setValoresPersona(ByVal basededatos As String, ByVal idoperario As String)
+        IDCategoriaProfesionalSCCPHorasInternacional = DevuelveIDCategoriaProfesionalSCCP(basededatos, idoperario)
+        IDOficioSCCPHorasInternacional = DevuelveIDOficio(basededatos, idoperario)
+    End Sub
+    Sub setValoresParteTrabajo(ByVal basededatos As String, ByVal obra As String)
+        IDObraHorasInternacional = DevuelveIDObra(basededatos, obra)
+        IDTrabajoHorasInternacional = ObtieneIDTrabajo(basededatos, IDObraHorasInternacional, "PT1")
+
+        Dim filtro As New Filter
+        filtro.Add("IDObra", FilterOperator.Equal, IDObraHorasInternacional)
+        filtro.Add("IdTrabajo", FilterOperator.Equal, IDTrabajoHorasInternacional)
+
+        Dim dtTabla As DataTable = New BE.DataEngine().Filter(basededatos & "..tbObraTrabajo", filtro)
+
+        CodTrabajoHorasInternacional = dtTabla.Rows(0)("CodTrabajo")
+        DescTrabajoInternacional = dtTabla.Rows(0)("DescTrabajo")
+        IdTipoTrabajoInternacional = dtTabla.Rows(0)("IdTipoTrabajo")
+        IdSubTipoTrabajoInternacional = Nz(dtTabla.Rows(0)("IdSubtipotrabajo"), "")
+    End Sub
+
+
     Public Sub InsertaHorasBaseDeDatos(ByVal basededatos As String, ByVal obra As String, ByVal idoperario As String, ByVal fecha As String, ByVal value As Object)
         'CHECK SI EL OPERARIO ES CATEGORIA 2 O 3 ENTONCES INSERTA HORAS
-        Dim IDCategoriaProfesionalSCCP As String
-        IDCategoriaProfesionalSCCP = DevuelveIDCategoriaProfesionalSCCP(basededatos, idoperario)
+
         'CHECK SI existe registro de esta persona este dia en la base de datos
         Dim dtCheckRegistro As DataTable
         Dim f As New Filter
         Dim idobra As String
+        idobra = IDObraHorasInternacional
+
         f.Add("FechaInicio", FilterOperator.Equal, fecha)
         f.Add("IDOperario", FilterOperator.Equal, idoperario)
-        idobra = DevuelveIDObra(basededatos, obra)
         f.Add("IDObra", FilterOperator.Equal, idobra)
         dtCheckRegistro = New BE.DataEngine().Filter(basededatos & "..tbObraModControl", f)
+
         Dim txtSQL As String
-        Dim idoficio As String
-        Dim IDTrabajo As String
         Dim CodTrabajo As String
         Dim IDAutonumerico As String
 
         If dtCheckRegistro.Rows.Count = 0 Then
-            If IDCategoriaProfesionalSCCP = 2 Or IDCategoriaProfesionalSCCP = 3 Then
+            If IDCategoriaProfesionalSCCPHorasInternacional = 2 Or IDCategoriaProfesionalSCCPHorasInternacional = 3 Then
                 'CHECK SI value es numerico va a HorasRealMod
                 ' SI value es ACC o CC O SSP O B inserta 8 en horas baja.
                 ' CORREGIDO DAVID V 11/3/24. SI HORAS ES DISTINTO DE 0 QUE NO INSERTE
                 If IsNumeric(value) Then
                     Dim horas As Double = value
-                    idoficio = DevuelveIDOficio(basededatos, idoperario)
-                    'idobra = DevuelveIDObra(basededatos, obra)
-                    IDTrabajo = ObtieneIDTrabajo(basededatos, idobra, "PT1")
                     IDAutonumerico = auto.Autonumerico()
 
-                    Dim rsTrabajo As New DataTable
-                    Dim filtro2 As New Filter
-                    filtro2.Add("IDObra", FilterOperator.Equal, idobra)
-                    filtro2.Add("IdTrabajo", FilterOperator.Equal, IDTrabajo)
-
-                    rsTrabajo = New BE.DataEngine().Filter(basededatos & "..tbObraTrabajo", filtro2)
-                    'rsTrabajo = obraTrabajo.Filter(filtro2, , "IdTrabajo, CodTrabajo, DescTrabajo, IdTipoTrabajo, IdSubtipoTrabajo")
-                    IDTrabajo = rsTrabajo.Rows(0)("IdTrabajo")
-                    CodTrabajo = rsTrabajo.Rows(0)("CodTrabajo")
+                    CodTrabajo = CodTrabajoHorasInternacional
                     Dim DescTrabajo As String = "" : Dim IdTipoTrabajo As String = "" : Dim IdSubTipoTrabajo As String = ""
-                    DescTrabajo = rsTrabajo.Rows(0)("DescTrabajo") : IdTipoTrabajo = rsTrabajo.Rows(0)("IdTipoTrabajo") : IdSubTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdSubtipotrabajo"), "")
-
+                    DescTrabajo = DescTrabajoInternacional : IdTipoTrabajo = IdTipoTrabajoInternacional : IdSubTipoTrabajo = Nz(IdSubTipoTrabajoInternacional, "")
 
                     Dim DescParte As String : DescParte = "INTERNACIONAL PRODUCTIVAS"
                     txtSQL = "Insert into " & basededatos & "..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
                             "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
                              "ImpRealModA, HorasFactMod, ImpFactModA, DescParte, Facturable, FechaCreacionAudi, FechaModificacionAudi, Usuarioaudi, IDOficio, IdTipoTurno, HorasAdministrativas, IDCategoriaProfesionalSCCP) " & _
-                             "Values(" & IDAutonumerico & ", " & IDTrabajo & ", " & idobra & ", '" & _
+                             "Values(" & IDAutonumerico & ", " & IDTrabajoHorasInternacional & ", " & idobra & ", '" & _
                              CodTrabajo & "', '" & DescTrabajo & "', '" & IdTipoTrabajo & "', '" & _
                              IdSubTipoTrabajo & "', '" & idoperario & "', 'PREDET', '" & _
                              "HO" & "', '" & fecha & "',  " & horas.ToString.Replace(",", ".") & "  , " & 0 & ", " & 0 & _
                              ", 0 , " & 0 & _
-                             ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & idoficio & "', 4,0 ," & Nz(IDCategoriaProfesionalSCCP, "") & ")"
+                             ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & IDOficioSCCPHorasInternacional & "', 4,0 ," & Nz(IDCategoriaProfesionalSCCPHorasInternacional, "") & ")"
 
                     auto.Ejecutar(txtSQL)
 
                 ElseIf value IsNot Nothing AndAlso TypeOf value Is String Then
                     If value = "ACC" Or value.ToString = "CC" Or value.ToString = "acc" Or value.ToString = "cc" Or value.ToString = "SSP" Or value.ToString = "B" Then
-                        idoficio = DevuelveIDOficio(basededatos, idoperario)
-                        idobra = DevuelveIDObra(basededatos, obra)
-                        IDTrabajo = ObtieneIDTrabajo(basededatos, idobra, "PT1")
                         IDAutonumerico = auto.Autonumerico()
 
-                        Dim rsTrabajo As New DataTable
-                        Dim filtro2 As New Filter
-                        filtro2.Add("IDObra", FilterOperator.Equal, idobra)
-                        filtro2.Add("IdTrabajo", FilterOperator.Equal, IDTrabajo)
-
-                        rsTrabajo = New BE.DataEngine().Filter(basededatos & "..tbObraTrabajo", filtro2)
-                        'rsTrabajo = obraTrabajo.Filter(filtro2, , "IdTrabajo, CodTrabajo, DescTrabajo, IdTipoTrabajo, IdSubtipoTrabajo")
-                        IDTrabajo = rsTrabajo.Rows(0)("IdTrabajo")
-                        CodTrabajo = rsTrabajo.Rows(0)("CodTrabajo")
+                        CodTrabajo = CodTrabajoHorasInternacional
                         Dim DescTrabajo As String = "" : Dim IdTipoTrabajo As String = "" : Dim IdSubTipoTrabajo As String = ""
-                        DescTrabajo = rsTrabajo.Rows(0)("DescTrabajo") : IdTipoTrabajo = rsTrabajo.Rows(0)("IdTipoTrabajo") : IdSubTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdSubtipotrabajo"), "")
-
+                        DescTrabajo = DescTrabajoInternacional : IdTipoTrabajo = IdTipoTrabajoInternacional : IdSubTipoTrabajo = Nz(IdSubTipoTrabajoInternacional, "")
 
                         Dim DescParte As String : DescParte = "INTERNACIONAL BAJA"
                         txtSQL = "Insert into " & basededatos & "..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
                                 "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
                                  "ImpRealModA, HorasFactMod, ImpFactModA, DescParte, Facturable, FechaCreacionAudi, FechaModificacionAudi, Usuarioaudi, IDOficio, IdTipoTurno, HorasBaja, IDCategoriaProfesionalSCCP) " & _
-                                 "Values(" & IDAutonumerico & ", " & IDTrabajo & ", " & idobra & ", '" & _
+                                 "Values(" & IDAutonumerico & ", " & IDTrabajoHorasInternacional & ", " & idobra & ", '" & _
                                  CodTrabajo & "', '" & DescTrabajo & "', '" & IdTipoTrabajo & "', '" & _
                                  IdSubTipoTrabajo & "', '" & idoperario & "', 'PREDET', '" & _
                                  value & "', '" & fecha & "',  0 , " & 0 & ", " & 0 & _
                                  ", 0 , " & 0 & _
-                                 ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & idoficio & "', 4,8," & Nz(IDCategoriaProfesionalSCCP, "") & ")"
+                                 ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & IDOficioSCCPHorasInternacional & "', 4,8," & Nz(IDCategoriaProfesionalSCCPHorasInternacional, "") & ")"
 
                         auto.Ejecutar(txtSQL)
 
@@ -1735,72 +1748,48 @@ Public Class CargaHorasJPSTAFF
             IDLineaModControl = dtCheckRegistro(0)("IDLineaModControl").ToString
 
             BorraRegistro(basededatos, IDLineaModControl)
-            If IDCategoriaProfesionalSCCP = 2 Or IDCategoriaProfesionalSCCP = 3 Then
+            If IDCategoriaProfesionalSCCPHorasInternacional = 2 Or IDCategoriaProfesionalSCCPHorasInternacional = 3 Then
                 'CHECK SI value es numerico va a HorasRealMod
                 ' SI value es ACC o CC inserta 8 en horas baja.
                 If IsNumeric(value) Then
                     Dim horas As Double = value
-                    idoficio = DevuelveIDOficio(basededatos, idoperario)
-                    'idobra = DevuelveIDObra(basededatos, obra)
-                    IDTrabajo = ObtieneIDTrabajo(basededatos, idobra, "PT1")
                     IDAutonumerico = auto.Autonumerico()
 
-                    Dim rsTrabajo As New DataTable
-                    Dim filtro2 As New Filter
-                    filtro2.Add("IDObra", FilterOperator.Equal, idobra)
-                    filtro2.Add("IdTrabajo", FilterOperator.Equal, IDTrabajo)
-
-                    rsTrabajo = New BE.DataEngine().Filter(basededatos & "..tbObraTrabajo", filtro2)
-                    'rsTrabajo = obraTrabajo.Filter(filtro2, , "IdTrabajo, CodTrabajo, DescTrabajo, IdTipoTrabajo, IdSubtipoTrabajo")
-                    IDTrabajo = rsTrabajo.Rows(0)("IdTrabajo")
-                    CodTrabajo = rsTrabajo.Rows(0)("CodTrabajo")
+                    CodTrabajo = CodTrabajoHorasInternacional
                     Dim DescTrabajo As String = "" : Dim IdTipoTrabajo As String = "" : Dim IdSubTipoTrabajo As String = ""
-                    DescTrabajo = rsTrabajo.Rows(0)("DescTrabajo") : IdTipoTrabajo = rsTrabajo.Rows(0)("IdTipoTrabajo") : IdSubTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdSubtipotrabajo"), "")
-
+                    DescTrabajo = DescTrabajoInternacional : IdTipoTrabajo = IdTipoTrabajoInternacional : IdSubTipoTrabajo = Nz(IdSubTipoTrabajoInternacional, "")
 
                     Dim DescParte As String : DescParte = "INTERNACIONAL PRODUCTIVAS"
                     txtSQL = "Insert into " & basededatos & "..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
                             "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
                              "ImpRealModA, HorasFactMod, ImpFactModA, DescParte, Facturable, FechaCreacionAudi, FechaModificacionAudi, Usuarioaudi, IDOficio, IdTipoTurno, HorasAdministrativas, IDCategoriaProfesionalSCCP) " & _
-                             "Values(" & IDAutonumerico & ", " & IDTrabajo & ", " & idobra & ", '" & _
+                             "Values(" & IDAutonumerico & ", " & IDTrabajoHorasInternacional & ", " & idobra & ", '" & _
                              CodTrabajo & "', '" & DescTrabajo & "', '" & IdTipoTrabajo & "', '" & _
                              IdSubTipoTrabajo & "', '" & idoperario & "', 'PREDET', '" & _
                              "HO" & "', '" & fecha & "',  " & horas.ToString.Replace(",", ".") & "  , " & 0 & ", " & 0 & _
                              ", 0 , " & 0 & _
-                             ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & idoficio & "', 4,0 ," & Nz(IDCategoriaProfesionalSCCP, "") & ")"
+                             ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & IDOficioSCCPHorasInternacional & "', 4,0 ," & Nz(IDCategoriaProfesionalSCCPHorasInternacional, "") & ")"
 
                     auto.Ejecutar(txtSQL)
 
                 ElseIf value IsNot Nothing AndAlso TypeOf value Is String Then
                     If value = "ACC" Or value.ToString = "CC" Or value.ToString = "acc" Or value.ToString = "cc" Or value.ToString = "SSP" Or value.ToString = "B" Then
-                        idoficio = DevuelveIDOficio(basededatos, idoperario)
-                        idobra = DevuelveIDObra(basededatos, obra)
-                        IDTrabajo = ObtieneIDTrabajo(basededatos, idobra, "PT1")
                         IDAutonumerico = auto.Autonumerico()
 
-                        Dim rsTrabajo As New DataTable
-                        Dim filtro2 As New Filter
-                        filtro2.Add("IDObra", FilterOperator.Equal, idobra)
-                        filtro2.Add("IdTrabajo", FilterOperator.Equal, IDTrabajo)
-
-                        rsTrabajo = New BE.DataEngine().Filter(basededatos & "..tbObraTrabajo", filtro2)
-                        'rsTrabajo = obraTrabajo.Filter(filtro2, , "IdTrabajo, CodTrabajo, DescTrabajo, IdTipoTrabajo, IdSubtipoTrabajo")
-                        IDTrabajo = rsTrabajo.Rows(0)("IdTrabajo")
-                        CodTrabajo = rsTrabajo.Rows(0)("CodTrabajo")
+                        CodTrabajo = CodTrabajoHorasInternacional
                         Dim DescTrabajo As String = "" : Dim IdTipoTrabajo As String = "" : Dim IdSubTipoTrabajo As String = ""
-                        DescTrabajo = rsTrabajo.Rows(0)("DescTrabajo") : IdTipoTrabajo = rsTrabajo.Rows(0)("IdTipoTrabajo") : IdSubTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdSubtipotrabajo"), "")
-
+                        DescTrabajo = DescTrabajoInternacional : IdTipoTrabajo = IdTipoTrabajoInternacional : IdSubTipoTrabajo = Nz(IdSubTipoTrabajoInternacional, "")
 
                         Dim DescParte As String : DescParte = "INTERNACIONAL BAJA"
                         txtSQL = "Insert into " & basededatos & "..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
                                 "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
                                  "ImpRealModA, HorasFactMod, ImpFactModA, DescParte, Facturable, FechaCreacionAudi, FechaModificacionAudi, Usuarioaudi, IDOficio, IdTipoTurno, HorasBaja, IDCategoriaProfesionalSCCP) " & _
-                                 "Values(" & IDAutonumerico & ", " & IDTrabajo & ", " & idobra & ", '" & _
+                                 "Values(" & IDAutonumerico & ", " & IDTrabajoHorasInternacional & ", " & idobra & ", '" & _
                                  CodTrabajo & "', '" & DescTrabajo & "', '" & IdTipoTrabajo & "', '" & _
                                  IdSubTipoTrabajo & "', '" & idoperario & "', 'PREDET', '" & _
                                  value & "', '" & fecha & "',  0 , " & 0 & ", " & 0 & _
                                  ", 0 , " & 0 & _
-                                 ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & idoficio & "', 4,8," & Nz(IDCategoriaProfesionalSCCP, "") & ")"
+                                 ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & IDOficioSCCPHorasInternacional & "', 4,8," & Nz(IDCategoriaProfesionalSCCPHorasInternacional, "") & ")"
 
                         auto.Ejecutar(txtSQL)
 
@@ -1853,6 +1842,7 @@ Public Class CargaHorasJPSTAFF
     End Function
 
     Public Function dtFormaInternacional(ByRef dtHoras As DataTable, ByVal fecha1 As String) As DataTable
+        dtHoras.Columns.Remove("F2")
         dtHoras.Columns.Remove("F4")
         dtHoras.Columns.Remove("F5")
         dtHoras.Columns.Remove("F6")
