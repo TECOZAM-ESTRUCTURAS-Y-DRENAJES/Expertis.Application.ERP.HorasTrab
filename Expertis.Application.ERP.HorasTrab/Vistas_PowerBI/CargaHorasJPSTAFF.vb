@@ -6371,6 +6371,7 @@ Public Class CargaHorasJPSTAFF
         dataTable.Columns.Add("Food Allowance")
         dataTable.Columns.Add("Payment in kind (gross)")
         dataTable.Columns.Add("Other payouts")
+        dataTable.Columns.Add("BONUS OR DEDUCTION")
         dataTable.Columns.Add("Other deductions")
         dataTable.Columns.Add("GROSS OVER TAX")
         dataTable.Columns.Add("NET TO PAY")
@@ -6426,6 +6427,11 @@ Public Class CargaHorasJPSTAFF
             nuevaFila("Food Allowance") = foodAllowance
             nuevaFila("Other payouts") = other_payouts
             nuevaFila("Payment in kind (gross)") = paymentinkind
+
+            ' dfernandez - 9/5/2024 : Añadida columna BONUS OR DEDUCTION
+            Dim bonusOrDeduction As Double
+            bonusOrDeduction = devuelveBonusOrDeduction(texto)
+            nuevaFila("BONUS OR DEDUCTION") = bonusOrDeduction
 
             impuestos = (cashBenefit + paymentinkind) * (tax / 100)
 
@@ -6857,34 +6863,34 @@ Public Class CargaHorasJPSTAFF
 
                 ' dfernandez 30/04/2024 : Añadida formulación Excel 
                 For fila As Integer = 2 To worksheet.Dimension.End.Row
-                    worksheet.Cells(fila, 9).Formula = "=D" & fila & "+F" & fila
-                    worksheet.Cells(fila, 10).Formula = "=IF(G" & fila & ">0,(D" & fila & "-(D" & fila & "*(C" & fila & "/100))+G" & fila & "-H" & fila & "),(D" & fila & "-(D" & fila & "*(C" & fila & "/100))+G" & fila & "))"
-                    worksheet.Cells(fila, 11).Formula = "=(D" & fila & "-E" & fila & ")*0.102"
-                    worksheet.Cells(fila, 13).Formula = "=(K" & fila & "+L" & fila & ")*0.141"
-                    worksheet.Cells(fila, 14).Formula = "=(D" & fila & "+F" & fila & ")*0.141"
-                    worksheet.Cells(fila, 15).Formula = "=(D" & fila & "+F" & fila & ")*(C" & fila & "/100)"
-                    worksheet.Cells(fila, 16).Formula = "=(I" & fila & "+K" & fila & "+L" & fila & "+M" & fila & "+N" & fila & ")"
+                    worksheet.Cells(fila, 10).Formula = "=D" & fila & ""
+                    worksheet.Cells(fila, 11).Formula = "=IF(G" & fila & ">0,(D" & fila & "-(D" & fila & "*(C" & fila & "/100))+G" & fila & "-I" & fila & "),(D" & fila & "-(D" & fila & "*(C" & fila & "/100))+G" & fila & "))"
+                    worksheet.Cells(fila, 12).Formula = "=(D" & fila & "-E" & fila & ")*0.102"
+                    worksheet.Cells(fila, 14).Formula = "=(L" & fila & "+M" & fila & ")*0.141"
+                    worksheet.Cells(fila, 15).Formula = "=D" & fila & "*0.141"
+                    worksheet.Cells(fila, 16).Formula = "=(D" & fila & "+F" & fila & ")*(C" & fila & "/100)"
+                    worksheet.Cells(fila, 17).Formula = "=(J" & fila & "+L" & fila & "+M" & fila & "+N" & fila & "+O" & fila & ")"
                 Next
                 ' ---
 
                 ' Establecer el formato de moneda para la columna N
-                worksheet.Column(16).Width = 18
+                worksheet.Column(17).Width = 18
 
-                Dim rangoMoneda As ExcelRange = worksheet.Cells("P2:P" & worksheet.Dimension.End.Row)
+                Dim rangoMoneda As ExcelRange = worksheet.Cells("Q2:Q" & worksheet.Dimension.End.Row)
                 rangoMoneda.Style.Numberformat.Format = "_-[$NOK] * #,##0.00_-;_-[$NOK] * -#,##0.00_-;_-[$NOK] * ""-""??_-;_-@_-"
 
                 ' Establecer el color de fondo de la columna H a un amarillo claro
-                Dim rangoColumnaH As ExcelRange = worksheet.Cells(2, 9, worksheet.Dimension.End.Row, 9) ' Columna H es la 8
+                Dim rangoColumnaH As ExcelRange = worksheet.Cells(2, 10, worksheet.Dimension.End.Row, 10) ' Columna H es la 8
                 rangoColumnaH.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
                 rangoColumnaH.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
 
                 ' Establecer el color de fondo de la columna H a un amarillo claro
-                Dim rangoColumnaI As ExcelRange = worksheet.Cells(2, 10, worksheet.Dimension.End.Row, 10) ' Columna I es la 9
+                Dim rangoColumnaI As ExcelRange = worksheet.Cells(2, 11, worksheet.Dimension.End.Row, 11) ' Columna I es la 9
                 rangoColumnaI.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
                 rangoColumnaI.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 181, 82)) ' Amarillo claro
 
                 ' Establecer el color de fondo de la columna N a verde
-                Dim rangoColumnaN As ExcelRange = worksheet.Cells(2, 16, worksheet.Dimension.End.Row, 16) ' Columna O es la 15
+                Dim rangoColumnaN As ExcelRange = worksheet.Cells(2, 17, worksheet.Dimension.End.Row, 17) ' Columna O es la 15
                 rangoColumnaN.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
                 rangoColumnaN.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(144, 238, 144)) ' Utilizando un tono de verde claro
 
@@ -7783,5 +7789,56 @@ Public Class CargaHorasJPSTAFF
         End If
         Return ""
     End Function
+
+    ' dfernandez - 9/5/2024 : Obtiene los campos deduction y bonus y los suma
+    Public Function devuelveBonusOrDeduction(ByVal texto As String) As Double
+
+        Dim final As Double
+
+        ' BONUS
+        Dim searchString As String = "Bonus "
+        Dim bonus As String
+
+        Dim startIndex As Integer = texto.IndexOf(searchString)
+        If startIndex = "-1" Then
+            bonus = "0"
+        Else
+            Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
+            Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
+            Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
+            If Char.IsDigit(ultimoCaracter) Then
+                resultado.Substring(0, resultado.Length - 1)
+                bonus = resultado.Trim.Replace(" ", "")
+            Else
+                bonus = "0"
+            End If
+        End If
+
+        ' DEDUCTION
+        Dim searchStringDed As String = "Salary deduction due to absent "
+        Dim deduction As String
+
+        Dim startIndexDed As Integer = texto.IndexOf(searchStringDed)
+        If startIndexDed = "-1" Then
+            deduction = "0"
+        Else
+            Dim menosIndexDed As Integer = texto.IndexOf("-", startIndexDed)
+            Dim espacioIndexDed As Integer = texto.IndexOf(" ", menosIndexDed)
+            Dim segundoEspacioIndexDed As Integer = texto.IndexOf(" ", espacioIndexDed + 1)
+            Dim resultadoDed As String = texto.Substring(menosIndexDed, segundoEspacioIndexDed - menosIndexDed)
+            Dim ultimoCaracterDed As Char = resultadoDed(resultadoDed.Length - 1)
+            If Char.IsDigit(ultimoCaracterDed) Then
+                resultadoDed.Substring(0, resultadoDed.Length - 1)
+                deduction = resultadoDed.Trim.Replace(" ", "")
+            Else
+                deduction = "0"
+            End If
+        End If
+
+        final = Convert.ToDouble(bonus) + Convert.ToDouble(deduction)
+
+        Return final
+    End Function
+
 
 End Class
