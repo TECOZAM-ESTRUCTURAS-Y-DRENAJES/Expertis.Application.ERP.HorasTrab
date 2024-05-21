@@ -2829,7 +2829,7 @@ Public Class CargaHorasJPSTAFF
             End If
 
             filas += 1
-            PvProgreso.Value = filas
+            'PvProgreso.Value = filas
 
             Dim newRow As DataRow = newDataTable.NewRow()
 
@@ -2837,7 +2837,7 @@ Public Class CargaHorasJPSTAFF
             newRow("IDOperario") = IDOperario
             newRow("DescOperario") = row("F2")
             newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
-            totallibras = Nz(row("F9"), 0) + Nz(row("F10"), 0) + Nz(row("F15"), 0) + Nz(row("F16"), 0)
+            totallibras = Nz(row("F8"), 0) + Nz(row("F11"), 0) + Nz(row("F16"), 0) + Nz(row("F17"), 0)
             totaleuros = CambioLibraAEuro(dtCambioMoneda, totallibras, mes, anio)
             newRow("CosteEmpresa") = totaleuros
             newRow("Mes") = mes
@@ -2860,7 +2860,7 @@ Public Class CargaHorasJPSTAFF
                 'Return newDataTable
                 Exit For ' Salir del bucle si la celda está vacía
             End If
-            CosteE1 = CosteE1 + Nz(dr("F9"), 0) + Nz(dr("F10"), 0) + Nz(dr("F15"), 0) + Nz(dr("F16"), 0)
+            CosteE1 = CosteE1 + Nz(dr("F8"), 0) + Nz(dr("F11"), 0) + Nz(dr("F16"), 0) + Nz(dr("F17"), 0)
         Next
 
         For Each dr As DataRow In dtOrdenada.Rows
@@ -2921,7 +2921,7 @@ Public Class CargaHorasJPSTAFF
             newRow("IDOperario") = IDOperario
             newRow("DescOperario") = row("F2")
             newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
-            totalcoronas = Nz(row("F16"), 0)
+            totalcoronas = Nz(row("F17"), 0)
             totaleuros = CambioCoronaAEuro(dtCambioMoneda, totalcoronas, mes, anio)
             newRow("CosteEmpresa") = totaleuros
             newRow("Mes") = mes
@@ -2944,7 +2944,7 @@ Public Class CargaHorasJPSTAFF
                 'Return newDataTable
                 Exit For ' Salir del bucle si la celda está vacía
             End If
-            CosteE1 = CosteE1 + Nz(dr("F16"), 0)
+            CosteE1 = CosteE1 + Nz(dr("F17"), 0)
         Next
 
         For Each dr As DataRow In dtOrdenada.Rows
@@ -6867,7 +6867,7 @@ Public Class CargaHorasJPSTAFF
                     worksheet.Cells(fila, 11).Formula = "=IF(G" & fila & ">0,(D" & fila & "-(D" & fila & "*(C" & fila & "/100))+G" & fila & "-I" & fila & "),(D" & fila & "-(D" & fila & "*(C" & fila & "/100))+G" & fila & "))"
                     worksheet.Cells(fila, 12).Formula = "=(D" & fila & "-E" & fila & ")*0.102"
                     worksheet.Cells(fila, 14).Formula = "=(L" & fila & "+M" & fila & ")*0.141"
-                    worksheet.Cells(fila, 15).Formula = "=D" & fila & "*0.141"
+                    worksheet.Cells(fila, 15).Formula = "=(D" & fila & "+F" & fila & ")*0.141"
                     worksheet.Cells(fila, 16).Formula = "=(D" & fila & "+F" & fila & ")*(C" & fila & "/100)"
                     worksheet.Cells(fila, 17).Formula = "=(J" & fila & "+L" & fila & "+M" & fila & "+N" & fila & "+O" & fila & ")"
                 Next
@@ -7407,10 +7407,10 @@ Public Class CargaHorasJPSTAFF
                 ' Crear DataTable de resumen
                 Dim resumenDataTable As New DataTable("RESUMEN")
                 resumenDataTable.Columns.Add("Fichero", GetType(Integer))
-                resumenDataTable.Columns.Add("Tax", GetType(Double))
-                resumenDataTable.Columns.Add("Net NI", GetType(Double))
-                resumenDataTable.Columns.Add("Net Pay", GetType(Double))
+                resumenDataTable.Columns.Add("Taxable Pay", GetType(Double))
+                resumenDataTable.Columns.Add("Post Tax Add", GetType(Double))
                 resumenDataTable.Columns.Add("Net Er NI", GetType(Double))
+                resumenDataTable.Columns.Add("Er Pension", GetType(Double))
 
                 ' Obtener valores únicos de la columna "Fichero"
                 Dim ficherosUnicos = dtUkPersonasOrdenado.AsEnumerable().Select(Function(row) Convert.ToInt32(row("Fichero"))).Distinct()
@@ -7489,20 +7489,19 @@ Public Class CargaHorasJPSTAFF
                 Dim rangoMonedaResumen As ExcelRange = worksheetResumen.Cells("B2:E" & worksheetResumen.Dimension.End.Row + 2)
                 rangoMonedaResumen.Style.Numberformat.Format = "#,##0.00£"
 
-
                 'Aplicar formato a las 4 columnas que son las que suman coste empresa
                 'Establecer el color de fondo de la columna I,J,O,P de las 3 hojas
-                Dim rangoColumnaI As ExcelRange = worksheetFinal.Cells(2, 9, worksheetFinal.Dimension.End.Row, 9) ' Columna I es la 9
-                rangoColumnaI.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
-                rangoColumnaI.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+                Dim rangoColumnaH As ExcelRange = worksheetFinal.Cells(2, 8, worksheetFinal.Dimension.End.Row, 8) ' Columna I es la 9
+                rangoColumnaH.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                rangoColumnaH.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
 
-                Dim rangoColumnaJ As ExcelRange = worksheetFinal.Cells(2, 10, worksheetFinal.Dimension.End.Row, 10) ' Columna J es la 10
-                rangoColumnaJ.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
-                rangoColumnaJ.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+                Dim rangoColumnaK As ExcelRange = worksheetFinal.Cells(2, 11, worksheetFinal.Dimension.End.Row, 11) ' Columna J es la 10
+                rangoColumnaK.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                rangoColumnaK.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
 
-                Dim rangoColumnaO As ExcelRange = worksheetFinal.Cells(2, 15, worksheetFinal.Dimension.End.Row, 15) ' Columna O es la 15
-                rangoColumnaO.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
-                rangoColumnaO.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+                Dim rangoColumnaQ As ExcelRange = worksheetFinal.Cells(2, 17, worksheetFinal.Dimension.End.Row, 17) ' Columna O es la 15
+                rangoColumnaQ.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                rangoColumnaQ.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
 
                 Dim rangoColumnaP As ExcelRange = worksheetFinal.Cells(2, 16, worksheetFinal.Dimension.End.Row, 16) ' Columna P es la 16
                 rangoColumnaP.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
@@ -7723,6 +7722,7 @@ Public Class CargaHorasJPSTAFF
     End Sub
 
     ' dfernandez - 29/04/2024 : Suma de las columnas TAX, NET NI, NET PAY, NET ER NI
+    ' dvelasco - 15/05/24: Corrección Error Angel. Se suman TAXABLE PAY + POST TAX Pay + NET ER NI + ER PENSION
     Public Sub sumaColumnas(ByVal package As ExcelPackage, ByVal hoja As Integer)
 
         Dim worksheet = package.Workbook.Worksheets(hoja)
@@ -7730,13 +7730,13 @@ Public Class CargaHorasJPSTAFF
         Dim fila = ultimaFila - 3
 
         ' Insercción de formulas Excel
-        worksheet.Cells(ultimaFila, 9).Formula = "=SUM(I2:I" & fila.ToString() & ")"
-        worksheet.Cells(ultimaFila, 10).Formula = "=SUM(J2:J" & fila.ToString() & ")"
-        worksheet.Cells(ultimaFila, 15).Formula = "=SUM(O2:O" & fila.ToString() & ")"
+        worksheet.Cells(ultimaFila, 8).Formula = "=SUM(H2:H" & fila.ToString() & ")"
+        worksheet.Cells(ultimaFila, 11).Formula = "=SUM(K2:K" & fila.ToString() & ")"
         worksheet.Cells(ultimaFila, 16).Formula = "=SUM(P2:P" & fila.ToString() & ")"
+        worksheet.Cells(ultimaFila, 17).Formula = "=SUM(Q2:Q" & fila.ToString() & ")"
 
         ' Cambiar formato de celdas
-        For Each indice In New Integer() {9, 10, 15, 16}
+        For Each indice In New Integer() {8, 11, 16, 17}
             Dim estilo As ExcelRange = worksheet.Cells(ultimaFila, indice)
             estilo.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
             estilo.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
@@ -7758,10 +7758,10 @@ Public Class CargaHorasJPSTAFF
 
             Dim ultimaFila = hoja.Dimension.End.Row
             hojaResumen.Cells(contador, 1).Value = contador - 1
-            hojaResumen.Cells(contador, 2).Formula = "=" & hoja.Name & "!I" & ultimaFila
-            hojaResumen.Cells(contador, 3).Formula = "=" & hoja.Name & "!J" & ultimaFila
-            hojaResumen.Cells(contador, 4).Formula = "=" & hoja.Name & "!O" & ultimaFila
-            hojaResumen.Cells(contador, 5).Formula = "=" & hoja.Name & "!P" & ultimaFila
+            hojaResumen.Cells(contador, 2).Formula = "=" & hoja.Name & "!H" & ultimaFila
+            hojaResumen.Cells(contador, 3).Formula = "=" & hoja.Name & "!K" & ultimaFila
+            hojaResumen.Cells(contador, 4).Formula = "=" & hoja.Name & "!P" & ultimaFila
+            hojaResumen.Cells(contador, 5).Formula = "=" & hoja.Name & "!Q" & ultimaFila
             contador += 1
         Next
 
