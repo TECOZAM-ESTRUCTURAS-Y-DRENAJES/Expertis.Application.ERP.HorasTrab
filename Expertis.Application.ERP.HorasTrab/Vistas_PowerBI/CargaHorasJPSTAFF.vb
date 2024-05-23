@@ -154,9 +154,7 @@ Public Class CargaHorasJPSTAFF
             dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivosJP(DB_TECOZAM, DB_TECOZAM, IDOperario, Fecha1, Fecha2)
             dtDiasInsertar = ObtieneFechasInsertar(DB_TECOZAM, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
-            Windows.Forms.Application.DoEvents()
-            LProgreso.Text = "Importando : " & IDOperario & " - TECOZAM JP"
-            Windows.Forms.Application.DoEvents()
+            ActualizarLProgreso("Importando : " & IDOperario & " - TECOZAM JP")
 
             For Each row As DataRow In dtDiasInsertar.Rows
                 Dim fecha As Date = row.Field(Of Date)("Fecha")
@@ -231,9 +229,7 @@ Public Class CargaHorasJPSTAFF
             dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivosJP(DB_TECOZAM, DB_DCZ, IDOperario, Fecha1, Fecha2)
             dtDiasInsertar = ObtieneFechasInsertar(DB_DCZ, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
-            Windows.Forms.Application.DoEvents()
-            LProgreso.Text = "Importando : " & IDOperario & " - DCZ JP"
-            Windows.Forms.Application.DoEvents()
+            ActualizarLProgreso("Importando : " & IDOperario & " - DCZ JP")
 
             For Each row As DataRow In dtDiasInsertar.Rows
                 Dim fecha As Date = row.Field(Of Date)("Fecha")
@@ -308,9 +304,7 @@ Public Class CargaHorasJPSTAFF
             dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivosJP(DB_TECOZAM, DB_UK, IDOperario, Fecha1, Fecha2)
             dtDiasInsertar = ObtieneFechasInsertarUK(DB_UK, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
-            Windows.Forms.Application.DoEvents()
-            LProgreso.Text = "Importando : " & IDOperario & " - UK JP"
-            Windows.Forms.Application.DoEvents()
+            ActualizarLProgreso("Importando : " & IDOperario & " - UK JP")
 
             For Each row As DataRow In dtDiasInsertar.Rows
                 Dim fecha As Date = row.Field(Of Date)("Fecha")
@@ -385,9 +379,7 @@ Public Class CargaHorasJPSTAFF
             dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivosJP(DB_TECOZAM, DB_NO, IDOperario, Fecha1, Fecha2)
             dtDiasInsertar = ObtieneFechasInsertarUK(DB_NO, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
-            Windows.Forms.Application.DoEvents()
-            LProgreso.Text = "Importando : " & IDOperario & " - NO JP"
-            Windows.Forms.Application.DoEvents()
+            ActualizarLProgreso("Importando : " & IDOperario & " - NO JP")
 
             For Each row As DataRow In dtDiasInsertar.Rows
                 Dim fecha As Date = row.Field(Of Date)("Fecha")
@@ -528,9 +520,7 @@ Public Class CargaHorasJPSTAFF
         MessageBox.Show("Horas desde Excel cargadas correctamente", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information)
 
         PvProgreso.Value = 0
-        Windows.Forms.Application.DoEvents()
-        LProgreso.Text = "Progreso actual"
-        Windows.Forms.Application.DoEvents()
+        ActualizarLProgreso("Progreso actual")
 
     End Sub
     Public Function ChecksPrevios(ByVal dt As DataTable) As DataTable
@@ -1009,9 +999,8 @@ Public Class CargaHorasJPSTAFF
         MessageBox.Show("Horas creadas correctamente", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information)
 
         PvProgreso.Value = 0
-        Windows.Forms.Application.DoEvents()
-        LProgreso.Text = "Progreso actual"
-        Windows.Forms.Application.DoEvents()
+        ActualizarLProgreso("Progreso actual")
+
     End Sub
     Public Function getListadoPersonasOfiFerrallas(ByVal Fecha1 As String, ByVal Fecha2 As String) As DataTable
         Dim dt As New DataTable
@@ -1138,9 +1127,7 @@ Public Class CargaHorasJPSTAFF
             dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos(DB_TECOZAM, DB_TECOZAM, IDOperario, Fecha1, Fecha2, dtCalendario)
             dtDiasInsertar = ObtieneFechasInsertar(DB_TECOZAM, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
-            Windows.Forms.Application.DoEvents()
-            LProgreso.Text = "Importando : " & IDOperario & " - TECOZAM OFICINA"
-            Windows.Forms.Application.DoEvents()
+            ActualizarLProgreso("Importando : " & IDOperario & " - TECOZAM OFICINA")
 
             For Each row As DataRow In dtDiasInsertar.Rows
                 Dim fecha As Date = row.Field(Of Date)("Fecha")
@@ -1250,9 +1237,8 @@ Public Class CargaHorasJPSTAFF
             dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos(DB_TECOZAM, DB_FERRALLAS, IDOperario, Fecha1, Fecha2, dtCalendario)
             dtDiasInsertar = ObtieneFechasInsertar(DB_FERRALLAS, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
-            Windows.Forms.Application.DoEvents()
-            LProgreso.Text = "Importando : " & IDOperario & " - FERRALLAS OFICINA"
-            Windows.Forms.Application.DoEvents()
+            ActualizarLProgreso("Importando : " & IDOperario & " - FERRALLAS OFICINA")
+
 
             For Each row As DataRow In dtDiasInsertar.Rows
 
@@ -1350,9 +1336,7 @@ Public Class CargaHorasJPSTAFF
             dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos(DB_TECOZAM, DB_SECOZAM, IDOperario, Fecha1, Fecha2, dtCalendario)
             dtDiasInsertar = ObtieneFechasInsertar(DB_SECOZAM, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
-            Windows.Forms.Application.DoEvents()
-            LProgreso.Text = "Importando : " & IDOperario & " - SECOZAM OFICINA"
-            Windows.Forms.Application.DoEvents()
+            ActualizarLProgreso("Importando : " & IDOperario & " - SECOZAM OFICINA")
 
             For Each row As DataRow In dtDiasInsertar.Rows
                 Dim fecha As Date = row.Field(Of Date)("Fecha")
@@ -1448,9 +1432,8 @@ Public Class CargaHorasJPSTAFF
             dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos(DB_TECOZAM, DB_DCZ, IDOperario, Fecha1, Fecha2, dtCalendario)
             dtDiasInsertar = ObtieneFechasInsertar(DB_DCZ, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
-            Windows.Forms.Application.DoEvents()
-            LProgreso.Text = "Importando : " & IDOperario & " - DCZ OFICINA"
-            Windows.Forms.Application.DoEvents()
+            ActualizarLProgreso("Importando : " & IDOperario & " - DCZ OFICINA")
+
 
             For Each row As DataRow In dtDiasInsertar.Rows
                 Dim fecha As Date = row.Field(Of Date)("Fecha")
@@ -1620,9 +1603,8 @@ Public Class CargaHorasJPSTAFF
                 filas = filas + 1
                 Continue For
             End If
-            Windows.Forms.Application.DoEvents()
-            LProgreso.Text = "Importando : " & idoperario
-            Windows.Forms.Application.DoEvents()
+
+            ActualizarLProgreso("Importando : " & idoperario)
 
             ' Recorrer las columnas a partir de la tercera
             For i As Integer = 2 To dtHoras.Columns.Count - 1
@@ -1634,12 +1616,17 @@ Public Class CargaHorasJPSTAFF
                 Else
                     fecha = DevuelveFechaConFormato(dtHoras.Columns(i).ColumnName)
                 End If
-
-                InsertaHorasBaseDeDatos(basededatos, obra, idoperario, fecha, value)
+                If Not IsDBNull(value) Then
+                    InsertaHorasBaseDeDatos(basededatos, obra, idoperario, fecha, value)
+                End If
             Next
             filas = filas + 1
             PvProgreso.Value = filas
+
+            AjusteProgressBar(filas, dtHoras)
         Next
+
+
 
         MsgBox("Proceso finalizado correctamente", MsgBoxStyle.Information)
     End Sub
@@ -2090,9 +2077,8 @@ Public Class CargaHorasJPSTAFF
 
                     If Length(drHora(0)) > 0 Then
                         idOperario = drHora(0)
-                        Windows.Forms.Application.DoEvents()
-                        LProgreso.Text = "Importando : " & idOperario & " - " & fecha
-                        Windows.Forms.Application.DoEvents()
+
+                        ActualizarLProgreso("Importando : " & idOperario & " - " & fecha)
 
                         If Length(drHora(columna)) > 0 Then
 
@@ -2433,9 +2419,7 @@ Public Class CargaHorasJPSTAFF
         MessageBox.Show("Fichero generado correctamente en N:\10. AUXILIARES\00. EXPERTIS\02. A3.","Información", MessageBoxButtons.OK,MessageBoxIcon.Information)
 
         PvProgreso.Value = 0
-        Windows.Forms.Application.DoEvents()
-        LProgreso.Text = "Progreso actual"
-        Windows.Forms.Application.DoEvents()
+        ActualizarLProgreso("Progreso actual")
 
     End Sub
     Public Function CargaExtrasTabla(ByVal dtUnion As DataTable) As DataTable
@@ -2512,7 +2496,7 @@ Public Class CargaHorasJPSTAFF
         End Select
 
         dt = ObtenerDatosExcel(ruta, hoja, rango)
-
+        
         Dim mes As String
         Dim anio As String
 
@@ -2746,6 +2730,8 @@ Public Class CargaHorasJPSTAFF
             newDataTable.Rows.Add(newRow)
         Next
 
+        AjusteProgressBar(filas, dt)
+
         Dim dtOrdenada As New DataTable
         newDataTable.DefaultView.Sort = "IDOperario asc"
         dtOrdenada = newDataTable.DefaultView.ToTable
@@ -2793,7 +2779,7 @@ Public Class CargaHorasJPSTAFF
 
         ' dfernandez 30/04/2024 : Progress Bar
         Dim filas As Integer = 0
-        PvProgreso.Value = 0 : PvProgreso.Maximum = dt.Rows.Count - 3 : PvProgreso.Step = 1 : PvProgreso.Visible = True
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dt.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
 
         'TABLA DE CAMBIO DE MONEDA LIBRAS
         Dim ruta As String
@@ -2804,6 +2790,8 @@ Public Class CargaHorasJPSTAFF
         dtCambioMoneda = ObtenerDatosExcel(ruta, hoja, rango)
 
         ' dfernandez 29/04/2024 : Check de diccionario existente
+        ActualizarLProgreso("Comprobando datos...")
+
         Dim cadena_error As New StringBuilder
         Dim lineaError As String = ""
         For Each filacheck As DataRow In dt.Rows
@@ -2820,6 +2808,8 @@ Public Class CargaHorasJPSTAFF
         End If
         ' ---
 
+        ActualizarLProgreso("Progreso actual")
+
         ' Copiar los datos de las columnas seleccionadas al nuevo DataTable
         For Each row As DataRow In dt.Rows
             'Verificar si la celda está vacía
@@ -2829,7 +2819,7 @@ Public Class CargaHorasJPSTAFF
             End If
 
             filas += 1
-            'PvProgreso.Value = filas
+            PvProgreso.Value = filas
 
             Dim newRow As DataRow = newDataTable.NewRow()
 
@@ -2846,6 +2836,8 @@ Public Class CargaHorasJPSTAFF
 
             newDataTable.Rows.Add(newRow)
         Next
+
+        AjusteProgressBar(filas, dt)
 
         Dim dtOrdenada As New DataTable
         newDataTable.DefaultView.Sort = "IDOperario asc"
@@ -2930,6 +2922,8 @@ Public Class CargaHorasJPSTAFF
 
             newDataTable.Rows.Add(newRow)
         Next
+
+        AjusteProgressBar(filas, dt)
 
         Dim dtOrdenada As New DataTable
         newDataTable.DefaultView.Sort = "IDOperario asc"
@@ -3092,18 +3086,20 @@ Public Class CargaHorasJPSTAFF
 
         ' dfernandez 30/04/2024 : Progress Bar
         Dim filas As Integer = 0
-        PvProgreso.Value = 0 : PvProgreso.Maximum = dt.Rows.Count - 3 : PvProgreso.Step = 1 : PvProgreso.Visible = True
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dt.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
 
         ' Copiar los datos de las columnas seleccionadas al nuevo DataTable
         For Each row As DataRow In dt.Rows
+
+            filas += 1
+            PvProgreso.Value = filas
+            
             'Verificar si la celda está vacía
             If Len(row("F1").ToString) = 0 Then
                 'Return newDataTable
                 Exit For ' Salir del bucle si la celda está vacía
             End If
 
-            filas += 1
-            PvProgreso.Value = filas
             ' ---
 
             Dim newRow As DataRow = newDataTable.NewRow()
@@ -3118,6 +3114,8 @@ Public Class CargaHorasJPSTAFF
 
             newDataTable.Rows.Add(newRow)
         Next
+
+        AjusteProgressBar(filas, dt)
 
         Dim dtOrdenada As New DataTable
         newDataTable.DefaultView.Sort = "IDOperario asc"
@@ -3273,6 +3271,10 @@ Public Class CargaHorasJPSTAFF
         dtFinalOrdenado.Columns.Add("IDOficio", GetType(String))
         dtFinalOrdenado.Columns.Add("NObra", GetType(String))
 
+        ' dfernandez - 23/05/2024 
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dtFinal.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
         ' Copiar los datos del DataTable original al DataTable ordenado
         For Each dr As DataRow In dtFinal.Rows
             If dr("CosteEmpresa") > 0 Then
@@ -3289,8 +3291,14 @@ Public Class CargaHorasJPSTAFF
                 newRow("IDOficio") = DevuelveIDOficio(DevuelveBaseDeDatos(dr("Empresa")), dr("IDOperario"))
                 dtFinalOrdenado.Rows.Add(newRow)
             End If
-            
+            filas += 1
+            PvProgreso.Value = filas
+
         Next
+
+        AjusteProgressBar(filas, dtFinal)
+
+        ActualizarLProgreso("Guardando Excel... ")
 
         Dim ruta As New FileInfo("N:\10. AUXILIARES\00. EXPERTIS\02. A3\" & mes & " A3 " & mes & anio.Substring(anio.Length - 2) & ".xlsx")
         'Dim ruta As New FileInfo("N:\01. A3\" & mes & " A3 " & mes & anio.Substring(anio.Length - 2) & ".xlsx")
@@ -3360,6 +3368,7 @@ Public Class CargaHorasJPSTAFF
 
             ' Guardar el archivo de Excel.
             package.Save()
+
         End Using
 
     End Sub
@@ -3861,9 +3870,7 @@ Public Class CargaHorasJPSTAFF
         MessageBox.Show("Horas de baja creadas correctamente.", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information)
 
         PvProgreso.Value = 0
-        Windows.Forms.Application.DoEvents()
-        LProgreso.Text = "Progreso actual"
-        Windows.Forms.Application.DoEvents()
+        ActualizarLProgreso("Progreso actual")
 
         'MsgBox("Accidente: " & dtPersonasBajaPorAccidente.Rows.Count & " Enfermedad:" & dtPersonasBajaPorEnfermedad.Rows.Count)
         'MsgBox(dtPersonasDeBaja.Rows.Count)
@@ -3902,9 +3909,8 @@ Public Class CargaHorasJPSTAFF
             bbdd = dr("Empresa") : idoperario = dr("idoperario") : fechabaja = dr("Fecha_Baja") : fechaalta = Nz(dr("Fecha_Alta"), Fecha2)
             fechaCalculos = Fecha1 : idobra = Nz(dr("IDObra").ToString, getObraBaja(bbdd, idoperario, fechabaja))
 
-            Windows.Forms.Application.DoEvents()
-            LProgreso.Text = "Importando : " & idoperario & " - HORAS DE BAJA"
-            Windows.Forms.Application.DoEvents()
+            ActualizarLProgreso("Importando : " & idoperario & " - HORAS DE BAJA")
+
             'Para los que están de baja en el intervalo de fechas, por ejemplo 15/09/23
             If fechabaja > Fecha1 Then
                 fechaCalculos = fechabaja
@@ -4129,51 +4135,31 @@ Public Class CargaHorasJPSTAFF
         mes = frmFechas.mes
         anio = frmFechas.anio
 
-        '-------
-        Windows.Forms.Application.DoEvents()
-        LProgreso.Text = "Generando tabla de Excel de Personas - Horas"
-        Windows.Forms.Application.DoEvents()
-        '-------
+        ActualizarLProgreso("Generando tabla de Excel de Personas - Horas")
 
         'Tabla de las personas con horas
         Dim dtHorasExpertis As New DataTable
         dtHorasExpertis = getHorasPersonas(mes, anio)
 
-        '-------
-        Windows.Forms.Application.DoEvents()
-        LProgreso.Text = "Generando tabla de Excel de Personas - Euros"
-        Windows.Forms.Application.DoEvents()
-        '-------
+        ActualizarLProgreso("Generando tabla de Excel de Personas - Euros")
 
         'Tabla de las personas con €
         Dim dtA3 As New DataTable
         dtA3 = getEurosPersonas(mes, anio)
 
-        '-------
-        Windows.Forms.Application.DoEvents()
-        LProgreso.Text = "Generando tabla de Excel de personas con horas y no euros"
-        Windows.Forms.Application.DoEvents()
-        '-------
+        ActualizarLProgreso("Generando tabla de Excel de personas con horas y no euros")
 
         '1. TABLA DE GENTE QUE TIENE HORAS TRABAJADAS Y NO TIENE EUROS
         Dim dtGenteSiHorasNoEuros As New DataTable
         dtGenteSiHorasNoEuros = getGenteSiHorasNoEuros(dtHorasExpertis, dtA3)
 
-        '-------
-        Windows.Forms.Application.DoEvents()
-        LProgreso.Text = "Generando tabla de Excel de personas con euros y no horas"
-        Windows.Forms.Application.DoEvents()
-        '-------
+        ActualizarLProgreso("Generando tabla de Excel de personas con euros y no horas")
 
         '2. TABLA DE GENTE QUE TIENE € Y NO TIENE HORAS
         Dim dtGenteSiEurosNoHoras As New DataTable
         dtGenteSiEurosNoHoras = getGenteSiEurosNoHoras(dtHorasExpertis, dtA3)
 
-        '-------
-        Windows.Forms.Application.DoEvents()
-        LProgreso.Text = "Generando tabla de Excel de ratios de las personas"
-        Windows.Forms.Application.DoEvents()
-        '-------
+        ActualizarLProgreso("Generando tabla de Excel de ratios de las personas")
 
         '3. TABLA DE RATIOS DE LA GENTE
         Dim dtRatiosGente As New DataTable
@@ -4185,9 +4171,7 @@ Public Class CargaHorasJPSTAFF
         Dim filter As New Filter
         dtPersonasDobleCoti = New BE.DataEngine().Filter(DB_TECOZAM & "..vunionOperariodoblecotizacion", Filter, , "IDGET")
 
-        Windows.Forms.Application.DoEvents()
-        LProgreso.Text = "Generando tabla de Excel de resumen"
-        Windows.Forms.Application.DoEvents()
+        ActualizarLProgreso("Generando tabla de Excel de resumen")
 
         '5. TABLA DE RESUMEN
         Dim dtResumenCategoriaProfesional As New DataTable
@@ -4196,9 +4180,7 @@ Public Class CargaHorasJPSTAFF
         'GENERACION EXCEL CON LAS 5 PESTAÑAS
         GeneraExcelHorasA3(dtGenteSiHorasNoEuros, dtGenteSiEurosNoHoras, dtRatiosGente, dtPersonasDobleCoti, dtResumenCategoriaProfesional, mes, anio)
         PvProgreso.Value = 0
-        Windows.Forms.Application.DoEvents()
-        LProgreso.Text = "Progreso actual"
-        Windows.Forms.Application.DoEvents()
+        ActualizarLProgreso("Progreso actual")
 
     End Sub
     Public Function getResumenCategoria(ByVal dtRatiosGente As DataTable) As DataTable
@@ -5603,11 +5585,9 @@ Public Class CargaHorasJPSTAFF
             IDOperario = filaEncontrada(0)("IDOperario").ToString
 
             Dim filaEncontradaCategoriaProf() As DataRow = dtTodasBasesDatos.Select("IDOperario = '" & IDOperario & "'")
-            '-------
-            Windows.Forms.Application.DoEvents()
-            LProgreso.Text = "OBTENIENDO DATOS DE : " & IDOperario
-            Windows.Forms.Application.DoEvents()
-            '-------
+
+            ActualizarLProgreso("OBTENIENDO DATOS DE : " & IDOperario)
+
             newRow("IDOperario") = IDOperario
             newRow("DescOperario") = row("F2")
             newRow("IDCategoriaProfesionalSCCP") = filaEncontradaCategoriaProf(0)("CategoriaProfesionalSCCP").ToString
@@ -7120,6 +7100,8 @@ Public Class CargaHorasJPSTAFF
     End Sub
 
     Private Sub CargaHorasJPSTAFF_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+        Me.UiTabPage1.Text = "HORAS"
+        Me.UiTabPage5.Text = "VARIOS"
         FormaTablaResumen()
     End Sub
 
@@ -7840,5 +7822,21 @@ Public Class CargaHorasJPSTAFF
         Return final
     End Function
 
+    ' dfernandez 23/05/2024 - Ajuste de métodos progress bar y label
+    Public Sub AjusteProgressBar(ByVal filas As Integer, ByVal dt As DataTable)
+        If (filas <> dt.Rows.Count) Then
+            PvProgreso.Value += dt.Rows.Count - filas
+        End If
+    End Sub
+
+    Public Sub ActualizarLProgreso(ByVal cadena As String)
+        Windows.Forms.Application.DoEvents()
+        LProgreso.Text = cadena
+        Windows.Forms.Application.DoEvents()
+    End Sub
+
+    Public Sub EstableceProgressBar()
+
+    End Sub
 
 End Class
