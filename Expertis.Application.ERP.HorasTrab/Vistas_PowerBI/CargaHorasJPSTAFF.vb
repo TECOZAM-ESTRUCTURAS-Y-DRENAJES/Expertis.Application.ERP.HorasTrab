@@ -242,7 +242,7 @@ Public Class CargaHorasJPSTAFF
 
                 IDTrabajo = rsTrabajo.Rows(0)("IdTrabajo") : CodTrabajo = rsTrabajo.Rows(0)("CodTrabajo")
                 Dim DescTrabajo As String = "" : Dim IdTipoTrabajo As String = "" : Dim IdSubTipoTrabajo As String = ""
-                DescTrabajo = rsTrabajo.Rows(0)("DescTrabajo") : IdTipoTrabajo = rsTrabajo.Rows(0)("IdTipoTrabajo") : IdSubTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdSubtipotrabajo"), "")
+                DescTrabajo = rsTrabajo.Rows(0)("DescTrabajo") : IdTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdTipoTrabajo"), "") : IdSubTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdSubtipotrabajo"), "")
                 Dim DescParte As String : DescParte = "JP STAFF " & mes & "-" & año & "-JP"
 
                 txtSQL = "Insert into " & DB_DCZ & "..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
@@ -569,7 +569,7 @@ Public Class CargaHorasJPSTAFF
                     Return 0
                 End If
             Catch ex As Exception
-                MsgBox("Existe error al asociar CategoriaSCCP en el operario " & IDOperario & " en " & basededatos & ".", vbOKCancel + vbCritical, "Aviso")
+                MsgBox("Existe error al asociar CategoriaSCCP en el operario " & IDOperario & " en " & basededatos & ".", vbOK + vbCritical, "Aviso")
                 Return 0
             End Try
 
@@ -579,8 +579,10 @@ Public Class CargaHorasJPSTAFF
                 filtro.Add("NObra", FilterOperator.Equal, NObra)
                 dtObra = New BE.DataEngine().Filter(basededatos & "..tbObraCabecera", filtro)
                 If dtObra.Rows.Count = 0 Then
-                    MsgBox("No existe la obra " & NObra & " en " & basededatos & ".", vbOKCancel + vbCritical, "Aviso")
-                    Return 0
+                    MsgBox("No existe la obra " & NObra & " en " & basededatos & ".Se procede a crearse automaticamente.", vbOKCancel + MsgBoxStyle.Information, "Aviso")
+                    'DAVID VELASCO 03/06/24 CREO OBRA EN LA BASE DE DATOS
+                    creaTablaYParteHoras(basededatos, NObra)
+                    Continue For
                 End If
                 IDObra = dtObra.Rows(0)("IDObra").ToString
 
@@ -602,6 +604,47 @@ Public Class CargaHorasJPSTAFF
         Return 1
     End Function
 
+    Public Sub creaTablaYParteHoras(ByVal basededatos As String, ByVal obra As String)
+        Dim IDObra As String = auto.Autonumerico()
+        Dim descObra As String = obra
+
+        'Campo NObra = obra
+        'Campos fechaCreacionAudi, fechaModificacionAudi, UsuarioAudi
+        creaObra(basededatos, IDObra, obra)
+        creaParteHoras(basededatos, IDObra)
+    End Sub
+    Public Sub creaObra(ByVal basededatos As String, ByVal IDObra As String, ByVal obra As String)
+        Dim txtSQL As String
+        txtSQL = "Insert into " & basededatos & "..tbObraCabecera(IDObra,DescObra, CambioA, CambioB, ImpPrevA, ImpPrevB,MargenPrevTrabajo,ImpPrevVentaA,ImpPrevVentaB,MargenRealTrabajo," & _
+        "ImpRealA,ImpRealB,ImpFactA,ImpFactB,ImpQPrevA,ImpQPrevB,ImpQPrevVentaA,ImpQPrevVentaB,ImpQRealA,ImpQRealB,ImpQFactA,ImpQFactB," & _
+        "TipoMnto,FacturarDiasMinimos,AlbaranValorado,ObraPedClteAbierto,FacturarPlusPorContadores,NoFacturaPortes,ClienteGenerico," & _
+        "FacturarTasaResiduos,NObra,Retencion,IDClase,PortesEspSalidas,PortesEspRetornos,ImprimibleCondPortes,GastosGenerales,BeneficioIndustrial," & _
+        "CoefBaja,TipoCertificacion,SeguroCambio)" & _
+        "Values('" & IDObra & "','" & obra & "', 1, 1, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'" & obra & "',0,0,0,0,0,0,0,0,0,0)"
+        auto.Ejecutar(txtSQL)
+    End Sub
+
+    Public Sub creaParteHoras(ByVal basededatos As String, ByVal IDObra As String)
+        Dim txtSQL As String
+        txtSQL = "Insert into " & basededatos & "..tbObraTrabajo(IDTrabajo, IDObra, CodTrabajo, DescTrabajo,Solape, Estado,ImpPrevMatA,ImpPrevModA,ImpPrevCentrosA,ImpPrevGastosA,ImpPrevVariosA,ImpPrevMatB,ImpPrevModB,ImpPrevCentrosB,ImpPrevGastosB,ImpPrevVariosB," & _
+        "ImpPrevTrabajoA,ImpPrevTrabajoB,ImpRealMatA,ImpRealModA,ImpRealCentrosA,ImpRealGastosA,ImpRealVariosA,ImpRealMatB,ImpRealModB,ImpRealCentrosB,ImpRealGastosB,ImpRealVariosB," & _
+        "ImpRealTrabajoA,ImpRealTrabajoB,DuracionPrev,EstadoFactura,AvanceCalculado,AvanceEstimado,ImpPrevMatVentaA,ImpPrevModVentaA,ImpPrevCentrosVentaA,ImpPrevGastosVentaA,ImpPrevVariosVentaA," & _
+        "ImpPrevMatVentaB,ImpPrevModVentaB,ImpPrevCentrosVentaB,ImpPrevGastosVentaB,ImpPrevVariosVentaB,MargenPrevTrabajo,ImpPrevTrabajoVentaA,ImpPrevTrabajoVentaB,MargenRealTrabajo,Facturable," & _
+        "ImpFactGastosB,ImpFactVariosB,ImpFactTrabajoB,ImpFactVariosA,ImpFactTrabajoA,MargenRealMat,MargenRealMod,MargenRealCentros,MargenRealGastos,MargenRealVarios,TipoFacturacion,ImpFactMatB,ImpFactModB,ImpFactCentrosB," & _
+        "MargenPrevMat,MargenPrevMod,MargenPrevCentros,MargenPrevGastos,MargenPrevVarios,ImpFactMatA,ImpFactModA,ImpFactCentrosA,ImpFactGastosA,QPrev,QReal,QFact,ImpPrevQTrabajoA,ImpPrevQTrabajoB,ImpPrevQTrabajoVentaA,ImpPrevQTrabajoVentaB," & _
+        "ImpRealQTrabajoA,ImpRealQTrabajoB,ImpFactQTrabajoA,ImpFactQTrabajoB,NoAcumular,ImpPrevQMatA,ImpPrevQModA,ImpPrevQCentrosA,ImpPrevQGastosA,ImpPrevQVariosA,ImpPrevQMatVentaA,ImpPrevQModVentaA,ImpPrevQCentrosVentaA,ImpPrevQGastosVentaA," & _
+        "ImpPrevQVariosVentaA,ImpPrevQMatB,ImpPrevQModB,ImpPrevQCentrosB,ImpPrevQGastosB,ImpPrevQVariosB,ImpPrevQMatVentaB,ImpPrevQModVentaB,ImpPrevQCentrosVentaB,ImpPrevQGastosVentaB,ImpPrevQVariosVentaB,QTotalCertificada,ListaMaterial," & _
+        "TipoFactAlquiler,QPrevResponsable,TipoCosteDI,QPedida,TipoLinea,Fianza,FianzaContabilizada,FianzaCompensada,Traspasada,PlanificarRecursosPorTareas,QUnidad,ImpTrabajoConceptoA,ImpTrabajoVentaConceptoA,ImpQTrabajoConceptoA," & _
+        "ImpQTrabajoVentaConceptoA,Inversion,Periodificable,AplicarSobreUltimo,PorcIncrDecrPerido)" & _
+        "Values('" & auto.Autonumerico() & "','" & IDObra & "','PT1', 'PARTES DE TRABAJO',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0)"
+        auto.Ejecutar(txtSQL)
+    End Sub
+    Function CambiarFormatoFechaHoy(ByVal fecha As String) As String
+        ' Dividir la cadena en partes: fecha y hora
+        Dim partesFechaHora() As String = fecha.Split(" "c)
+        ' Devolver la fecha en el nuevo formato
+        Return partesFechaHora(0)
+    End Function
     Public Sub BorrarDatos(ByVal mesP As String, ByVal anioP As String)
         Dim DescParte As String
         DescParte = "%" & mesP & "-" & anioP & "-JP"
@@ -2390,7 +2433,7 @@ Public Class CargaHorasJPSTAFF
             End If
 
             For Each row As DataRow In dtAuxiliar.Rows
-                
+
                 dtFinal.ImportRow(row)
             Next
             ' Preguntar al usuario si desea continuar
@@ -2416,7 +2459,7 @@ Public Class CargaHorasJPSTAFF
         Anio = "20" & Anio
         'GENERA EXCEL
         GeneraExcel(mes, Anio, dtFinal)
-        MessageBox.Show("Fichero generado correctamente en N:\10. AUXILIARES\00. EXPERTIS\02. A3.","Información", MessageBoxButtons.OK,MessageBoxIcon.Information)
+        MessageBox.Show("Fichero generado correctamente en N:\10. AUXILIARES\00. EXPERTIS\02. A3.", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information)
 
         PvProgreso.Value = 0
         ActualizarLProgreso("Progreso actual")
@@ -2496,7 +2539,7 @@ Public Class CargaHorasJPSTAFF
         End Select
 
         dt = ObtenerDatosExcel(ruta, hoja, rango)
-        
+
         Dim mes As String
         Dim anio As String
 
@@ -2722,7 +2765,7 @@ Public Class CargaHorasJPSTAFF
             newRow("IDOperario") = IDOperario
             newRow("DescOperario") = parts(1)
             newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
-            newRow("CosteEmpresa") = row("F3") + row("F4")
+            newRow("CosteEmpresa") = Nz(row("F3"), 0) + Nz(row("F4"), 0)
             newRow("Mes") = mes
             newRow("Anio") = anio
             newRow("Empresa") = empresa
@@ -2745,7 +2788,7 @@ Public Class CargaHorasJPSTAFF
                 'Return newDataTable
                 Exit For ' Salir del bucle si la celda está vacía
             End If
-            CosteE1 = CosteE1 + dr("F3") + dr("F4")
+            CosteE1 = CosteE1 + Nz(dr("F3"), 0) + Nz(dr("F4"), 0)
         Next
 
         For Each dr As DataRow In dtOrdenada.Rows
@@ -3093,7 +3136,7 @@ Public Class CargaHorasJPSTAFF
 
             filas += 1
             PvProgreso.Value = filas
-            
+
             'Verificar si la celda está vacía
             If Len(row("F1").ToString) = 0 Then
                 'Return newDataTable
@@ -3584,10 +3627,11 @@ Public Class CargaHorasJPSTAFF
             Exit Sub
         End If
 
-        If getDuplicados(Fecha1, Fecha2) = False Then
-            MsgBox("Corrige las categorias de las personas anteriores para poder exportar las horas.")
-            Exit Sub
-        End If
+        getDuplicados(Fecha1, Fecha2)
+        'If getDuplicados(Fecha1, Fecha2) = False Then
+        '    MsgBox("Corrige las categorias de las personas anteriores para poder exportar las horas.")
+        '    Exit Sub
+        'End If
         Dim mes As String : mes = Month(Fecha1)
         If Length(mes) = 1 Then
             mes = "0" & mes
@@ -3598,7 +3642,7 @@ Public Class CargaHorasJPSTAFF
         GeneraExcelHoras(mes, anio, dt)
         MsgBox("Fichero generado correctamente en N:\10. AUXILIARES\00. EXPERTIS\01. HORAS.")
     End Sub
-    Public Function getDuplicados(ByVal Fecha1 As String, ByVal Fecha2 As String) As Boolean
+    Public Sub getDuplicados(ByVal Fecha1 As String, ByVal Fecha2 As String)
         Dim sql As String
         Dim dtPersonasDuplicadas As DataTable
         sql = "SELECT IDOPERARIO FROM TBOBRAMODCONTROL WHERE FECHAINICIO BETWEEN '" & Fecha1 & "' AND '" & Fecha2 & "'"
@@ -3612,13 +3656,10 @@ Public Class CargaHorasJPSTAFF
         Next
 
         If duplicados.Length <> 0 Then
-            MsgBox(duplicados.ToString)
-            Return False
-        Else
-            Return True
+            MsgBox("Las siguientes personas tienen dos valores en IDCATEGORIAPROFESIONALSCCP e IDOFICIO el mismo mes. Modifiquelo para que no haya duplicidades en el modelo." & duplicados.ToString)
         End If
 
-    End Function
+    End Sub
     Public Function ObtenerTabla(ByVal Fecha1 As String, ByVal Fecha2 As String) As DataTable
         Dim dt As New DataTable
         Dim f As New Filter
@@ -4169,7 +4210,7 @@ Public Class CargaHorasJPSTAFF
         '4. TABLA DE PERSONAS CON DOBLE COTIZACION
         Dim dtPersonasDobleCoti As New DataTable
         Dim filter As New Filter
-        dtPersonasDobleCoti = New BE.DataEngine().Filter(DB_TECOZAM & "..vunionOperariodoblecotizacion", Filter, , "IDGET")
+        dtPersonasDobleCoti = New BE.DataEngine().Filter(DB_TECOZAM & "..vunionOperariodoblecotizacion", filter, , "IDGET")
 
         ActualizarLProgreso("Generando tabla de Excel de resumen")
 
@@ -6556,7 +6597,7 @@ Public Class CargaHorasJPSTAFF
         Catch ex As Exception
             Return 0
         End Try
-  
+
         Return porcentaje.Trim.Replace(" %", "")
     End Function
 
