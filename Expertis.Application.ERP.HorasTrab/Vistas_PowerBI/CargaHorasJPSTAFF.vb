@@ -32,6 +32,7 @@ Public Class CargaHorasJPSTAFF
     Dim obraTrabajo As New ObraTrabajo
     Dim auto As New OperarioCalendario
     Dim aux As New Solmicro.Expertis.Business.ClasesTecozam.MetodosAuxiliares
+    Dim checksHoras As Boolean = True
 
     Private Sub bBorrarExcel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bBorrarExcel.Click
         Dim DescParte As String
@@ -211,9 +212,7 @@ Public Class CargaHorasJPSTAFF
         Dim dtDiasInsertar As New DataTable
         dtDiasInsertar.Columns.Add("Fecha", GetType(Date))
 
-        Dim filas As Integer = 0
         PvProgreso.Value = 0 : PvProgreso.Maximum = dtTecozam.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
-
         For Each fila As DataRow In dtTecozam.Rows
             IDOperario = fila("IDOperario")
             IDOficio = DevuelveIDOficio(DB_DCZ, IDOperario)
@@ -231,6 +230,7 @@ Public Class CargaHorasJPSTAFF
 
             ActualizarLProgreso("Importando : " & IDOperario & " - DCZ JP")
 
+            Dim filas As Integer = 0
             For Each row As DataRow In dtDiasInsertar.Rows
                 Dim fecha As Date = row.Field(Of Date)("Fecha")
                 IDAutonumerico = auto.Autonumerico()
@@ -486,26 +486,15 @@ Public Class CargaHorasJPSTAFF
         '-------------------------------------------------------
 
         '--------------INICIO CHECKS---------------------------
-        Dim bandera As Integer
-        bandera = CheckRegistrosEmpresa(dtTecozam, DB_TECOZAM)
-        If bandera = 0 Then
-            Exit Sub
-        End If
+        If CheckAndExitIfTrue(Function() CheckDuplicidadHoras(dtTecozam, Fecha1, Fecha2, DB_TECOZAM), False) Then Exit Sub
+        If CheckAndExitIfTrue(Function() CheckDuplicidadHoras(dtPortugal, Fecha1, Fecha2, DB_DCZ), False) Then Exit Sub
+        If CheckAndExitIfTrue(Function() CheckDuplicidadHoras(dtUK, Fecha1, Fecha2, DB_UK), False) Then Exit Sub
+        If CheckAndExitIfTrue(Function() CheckDuplicidadHoras(dtNO, Fecha1, Fecha2, DB_NO), False) Then Exit Sub
+        If CheckAndExitIfTrue(Function() CheckRegistrosEmpresa(dtTecozam, DB_TECOZAM), False) Then Exit Sub
+        If CheckAndExitIfTrue(Function() CheckRegistrosEmpresa(dtPortugal, DB_DCZ), False) Then Exit Sub
+        If CheckAndExitIfTrue(Function() CheckRegistrosEmpresa(dtUK, DB_UK), False) Then Exit Sub
+        If CheckAndExitIfTrue(Function() CheckRegistrosEmpresa(dtNO, DB_NO), False) Then Exit Sub
 
-        bandera = CheckRegistrosEmpresa(dtPortugal, DB_DCZ)
-        If bandera = 0 Then
-            Exit Sub
-        End If
-
-        bandera = CheckRegistrosEmpresa(dtUK, DB_UK)
-        If bandera = 0 Then
-            Exit Sub
-        End If
-
-        bandera = CheckRegistrosEmpresa(dtNO, DB_NO)
-        If bandera = 0 Then
-            Exit Sub
-        End If
         '---------------FIN CHECKS---------------------------
 
         'Inserta horas en Tecozam
@@ -554,7 +543,7 @@ Public Class CargaHorasJPSTAFF
         Return nuevaTabla
     End Function
 
-    Public Function CheckRegistrosEmpresa(ByVal dtTecozam As DataTable, ByVal basededatos As String) As Integer
+    Public Function CheckRegistrosEmpresa(ByVal dtTecozam As DataTable, ByVal basededatos As String) As Boolean
         'En este For se hacen los CHECKS necesarios
         Dim IDOperario As String = ""
         Dim CategoriaSSCP As String = ""
@@ -566,11 +555,11 @@ Public Class CargaHorasJPSTAFF
                 CategoriaSSCP = ObtieneCategoriaIDOperario(IDOperario, basededatos)
                 If CategoriaSSCP.ToString.Length = 0 Or (CategoriaSSCP.ToString <> 1 And CategoriaSSCP.ToString <> 4 And CategoriaSSCP.ToString <> 5) Then
                     MsgBox("Existe error al asociar CategoriaSCCP en el operario " & IDOperario & " en " & basededatos & ".", vbOKCancel + vbCritical, "Aviso")
-                    Return 0
+                    Return False
                 End If
             Catch ex As Exception
                 MsgBox("Existe error al asociar CategoriaSCCP en el operario " & IDOperario & " en " & basededatos & ".", vbOK + vbCritical, "Aviso")
-                Return 0
+                Return False
             End Try
 
             Dim NObra As String = dr("CentroCoste").ToString
@@ -594,14 +583,14 @@ Public Class CargaHorasJPSTAFF
 
                 If dtTrab.Rows.Count = 0 Then
                     MsgBox("No existe partes de horas asignado a la obra " & NObra & " en " & basededatos & ".", vbOKCancel + vbCritical, "Aviso")
-                    Return 0
+                    Return False
                 End If
             Catch ex As Exception
                 MsgBox("No existe partes de horas asignado a la obra " & NObra & " en " & basededatos & ".", vbOKCancel + vbCritical, "Aviso")
-                Return 0
+                Return False
             End Try
         Next
-        Return 1
+        Return True
     End Function
 
     Public Sub creaTablaYParteHoras(ByVal basededatos As String, ByVal obra As String)
@@ -6001,10 +5990,13 @@ Public Class CargaHorasJPSTAFF
                     If page = pdfReader.NumberOfPages Then
                         Dim texto As String = PdfTextExtractor.GetTextFromPage(pdfReader, page)
                         Dim posicionName As Integer = texto.IndexOf("Class 1A Pension")
+                        'dfernandez prueba quitar dept -------
+                        Dim textoLimpio As Integer = devuelveIndiceFinal(texto)
+                        '--------
                         ' Buscar la posición de "©"
-                        Dim total As Integer = texto.IndexOf("Dept")
+                        ' Dim total As Integer = texto.IndexOf("Dept")
                         Dim resultado As String
-                        resultado = texto.Substring(posicionName + "Class 1A Pension".Length, total - posicionName - "Class 1A Pension".Length).Trim()
+                        resultado = texto.Substring(posicionName + "Class 1A Pension".Length, textoLimpio - posicionName - "Class 1A Pension".Length).Trim()
                         resultado &= vbCrLf
                         cadenaFinal &= resultado
                     Else
@@ -6025,6 +6017,46 @@ Public Class CargaHorasJPSTAFF
                 Console.WriteLine("Falta un digito (")
         End Select
     End Sub
+
+    Public Function devuelveIndiceFinal(ByVal texto As String) As String
+        Dim lastComa As Integer = texto.LastIndexOf(",")
+
+        If lastComa >= 0 Then
+            Dim final As String = texto.Substring(lastComa)
+
+            Dim longitudAntes As Integer = final.Length
+            final = final.Replace("  ", " ")
+
+            Dim longitudDespues As Integer = final.Length
+            Dim contador As Integer = (longitudAntes - longitudDespues) / 2
+
+            Dim campos As String() = final.Split(" "c)
+            Dim indicePrimerNumero As Integer = -1
+
+            For i As Integer = 0 To campos.Length - 1
+                Dim numero As Double
+                If Double.TryParse(campos(i), numero) Then
+                    indicePrimerNumero = i
+                    Exit For
+                End If
+            Next
+
+            ' Campos que necesitamos
+            indicePrimerNumero += 15
+
+            ' Obtener todo el texto hasta el campo 15
+            Dim textoHastaCampo15 As String = String.Join(" ", campos, 0, indicePrimerNumero)
+
+            ' Calcular el índice en el texto original que corresponde al final del campo 15
+            Dim indiceFinal As Integer = lastComa + textoHastaCampo15.Length + contador
+
+            ' Devolver el índice final
+            Return indiceFinal
+        End If
+
+        Return -1
+    End Function
+
     Dim cadenaFinal As String
     Dim ruta As String
     Public Sub GuardaFicheroUkTxt()
@@ -6062,7 +6094,7 @@ Public Class CargaHorasJPSTAFF
         Dim fichero As Integer = 1
         Do
             SeleccionarPDFyLeerDataTableUK(fichero)
-            Dim respuesta As DialogResult = MessageBox.Show("¿Deseas cargar algún Excel más?", "Continuar", MessageBoxButtons.YesNo)
+            Dim respuesta As DialogResult = MessageBox.Show("¿Deseas cargar algún PDF más?", "Continuar", MessageBoxButtons.YesNo)
             ' Salir del bucle si el usuario responde "No"
             If respuesta = DialogResult.No Then
                 Exit Do
@@ -6236,9 +6268,38 @@ Public Class CargaHorasJPSTAFF
                 End If
             Else
                 ' Manejar el caso donde no se encuentra ninguna letra del array
-                MessageBox.Show("No se encontró ninguna letra 'A' o 'M' o 'C' en la fila.")
-            End If
+                Dim campos As String() = fila.Split(" "c)
+                Dim nombreOperario As String = ""
+                Dim indicePrimerNumero As Integer = -1
 
+                For i As Integer = 1 To campos.Length - 1
+                    Dim numero As Double
+                    If Double.TryParse(campos(i), numero) Then
+                        indicePrimerNumero = i
+                        Exit For
+                    Else
+                        nombreOperario &= campos(i)
+                    End If
+                Next
+
+                nuevaFila("Operario") = nombreOperario
+                nuevaFila("Pre tax") = campos(indicePrimerNumero)
+                nuevaFila("Gu Costs") = campos(indicePrimerNumero + 1)
+                nuevaFila("Abstence Pay") = campos(indicePrimerNumero + 2)
+                nuevaFila("Holiday Pay") = campos(indicePrimerNumero + 3)
+                nuevaFila("Pre Tax Pension") = campos(indicePrimerNumero + 4)
+                nuevaFila("Taxable Pay") = campos(indicePrimerNumero + 5)
+                nuevaFila("Tax") = campos(indicePrimerNumero + 6)
+                nuevaFila("Net NI") = campos(indicePrimerNumero + 7)
+                nuevaFila("Post Tax Add") = campos(indicePrimerNumero + 8)
+                nuevaFila("Post Tax Pension") = campos(indicePrimerNumero + 9)
+                nuevaFila("AEO") = campos(indicePrimerNumero + 10)
+                nuevaFila("Students Loans") = campos(indicePrimerNumero + 11)
+                nuevaFila("Net Pay") = campos(indicePrimerNumero + 12)
+                nuevaFila("Net Er NI") = campos(indicePrimerNumero + 13)
+                nuevaFila("Er Pension") = campos(indicePrimerNumero + 14)
+
+            End If
 
             ' Agregar la nueva fila a la nueva tabla
             dtUKPersonas.Rows.Add(nuevaFila)
@@ -6352,6 +6413,7 @@ Public Class CargaHorasJPSTAFF
                 package.Save()
             End Using
 
+            ' CAMBIAR
             MsgBox("Fichero creado correctamente en N:\10. AUXILIARES\00. EXPERTIS\02. A3\")
         End If
     End Sub
@@ -6661,7 +6723,7 @@ Public Class CargaHorasJPSTAFF
         Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
         ' Return resultado.Trim.Replace(" ", "")
 
-        ' dfernandez 30/04/2000 : Corrección de Other Payouts
+        ' dfernandez 30/04/2024 : Corrección de Other Payouts
         Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
         If Char.IsDigit(ultimoCaracter) Then
             resultado.Substring(0, resultado.Length - 1)
@@ -6686,7 +6748,7 @@ Public Class CargaHorasJPSTAFF
         Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
         ' Return resultado.Trim.Replace(" ", "")
 
-        ' dfernandez 30/04/2000 : Corrección de Montly Food Allowance
+        ' dfernandez 30/04/2024 : Corrección de Montly Food Allowance
         Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
         If Char.IsDigit(ultimoCaracter) Then
             resultado.Substring(0, resultado.Length - 1)
@@ -6708,8 +6770,17 @@ Public Class CargaHorasJPSTAFF
         ' Encontrar la posición de la primera coma después de "Fixed salary"
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
-        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
-        Return resultado.Trim.Replace(" ", "")
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
+        ' Return resultado.Trim.Replace(" ", "")
+
+        ' dfernandez 04/06/2024 - Arreglo primera columna vacía
+        Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
+        If Char.IsDigit(ultimoCaracter) Then
+            resultado.Substring(0, resultado.Length - 1)
+            Return resultado.Trim.Replace(" ", "")
+        Else
+            Return "0"
+        End If
     End Function
 
     Public Function devuelveDeductions(ByVal texto As String) As String
@@ -6723,8 +6794,17 @@ Public Class CargaHorasJPSTAFF
         ' Encontrar la posición de la primera coma después de "Fixed salary"
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
-        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
-        Return resultado.Trim.Replace(" ", "")
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
+        ' Return resultado.Trim.Replace(" ", "")
+
+        ' dfernandez 04/06/2024 - Arreglo primera columna vacía
+        Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
+        If Char.IsDigit(ultimoCaracter) Then
+            resultado.Substring(0, resultado.Length - 1)
+            Return resultado.Trim.Replace(" ", "")
+        Else
+            Return "0"
+        End If
     End Function
 
     Public Function devuelvePayBasis(ByVal texto As String) As String
@@ -6739,7 +6819,16 @@ Public Class CargaHorasJPSTAFF
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
         Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
-        Return resultado.Trim.Replace(" ", "")
+        ' Return resultado.Trim.Replace(" ", "")
+
+        ' dfernandez 04/06/2024 - Arreglo primera columna vacía
+        Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
+        If Char.IsDigit(ultimoCaracter) Then
+            resultado.Substring(0, resultado.Length - 1)
+            Return resultado.Trim.Replace(" ", "")
+        Else
+            Return "0"
+        End If
     End Function
 
     Public Function devuelveCashBenefit(ByVal texto As String) As String
@@ -6750,11 +6839,22 @@ Public Class CargaHorasJPSTAFF
         If startIndex = "-1" Then
             Return 0
         End If
+
         ' Encontrar la posición de la primera coma después de "Fixed salary"
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
-        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
-        Return resultado.Trim.Replace(" ", "")
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
+        ' Return resultado.Trim.Replace(" ", "")
+
+        ' dfernandez 04/06/2024 - Arreglo primera columna vacía
+        Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
+        If Char.IsDigit(ultimoCaracter) Then
+            resultado.Substring(0, resultado.Length - 1)
+            Return resultado.Trim.Replace(" ", "")
+        Else
+            Return "0"
+        End If
+
     End Function
     Public Function devuelveComplementos(ByVal texto As String) As Double
         Dim overtime As Double = 0
@@ -7248,6 +7348,10 @@ Public Class CargaHorasJPSTAFF
             dtHorasPersonasDias.Columns.Add(i.ToString(), System.Type.GetType("System.Double"))
         Next
 
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dtHoras.Rows.Count
+        PvProgreso.Step = 1 : PvProgreso.Visible = True
+
         ' Iterar sobre las filas de dtHoras y calcular la suma por día y operario
         For Each filaHoras As DataRow In dtHoras.Rows
             Dim fechaTrabajo As DateTime = DateTime.Parse(filaHoras("FechaInicio").ToString())
@@ -7280,6 +7384,8 @@ Public Class CargaHorasJPSTAFF
                     dtHorasPersonasDias.Rows.Add(fila)
                 End If
             End If
+            filas += 1
+            PvProgreso.Value = filas
         Next
 
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial
@@ -7310,6 +7416,7 @@ Public Class CargaHorasJPSTAFF
             package.Save()
 
             MsgBox("Fichero guardado en N:\10. AUXILIARES\00. EXPERTIS\05. CHECK HORAS-A3\")
+            PvProgreso.Value = 0
         End Using
     End Sub
 
@@ -7332,7 +7439,7 @@ Public Class CargaHorasJPSTAFF
             SeleccionarPDFyLeerDataTableUK(fichero)
             GuardaFicheroUkTxt()
             LeeFicheroYGuardaEnExcelNuevo(dtUkPersonas, fichero)
-            Dim respuesta As DialogResult = MessageBox.Show("¿Deseas cargar algún Excel más?", "Continuar", MessageBoxButtons.YesNo)
+            Dim respuesta As DialogResult = MessageBox.Show("¿Deseas cargar algún PDF más?", "Continuar", MessageBoxButtons.YesNo)
             ' Salir del bucle si el usuario responde "No"
             If respuesta = DialogResult.No Then
                 Exit Do
@@ -7480,6 +7587,25 @@ Public Class CargaHorasJPSTAFF
                         Next
                     Next
 
+                    ' dfernandez 04/06/2024 - Formato hojas ficheros
+                    Dim estiloMoneda As ExcelRange = worksheetFichero.Cells("B2:" & GetExcelColumnName(worksheetFichero.Dimension.End.Column - 1) & worksheetFichero.Dimension.End.Row)
+                    estiloMoneda.Style.Numberformat.Format = "#,##0.00£"
+                    Dim rangoF_H As ExcelRange = worksheetFichero.Cells(2, 8, worksheetFichero.Dimension.End.Row, 8) ' Columna I es la 9
+                    rangoF_H.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                    rangoF_H.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+
+                    Dim rangoF_K As ExcelRange = worksheetFichero.Cells(2, 11, worksheetFichero.Dimension.End.Row, 11) ' Columna J es la 10
+                    rangoF_K.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                    rangoF_K.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+
+                    Dim rangoF_Q As ExcelRange = worksheetFichero.Cells(2, 17, worksheetFichero.Dimension.End.Row, 17) ' Columna O es la 15
+                    rangoF_Q.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                    rangoF_Q.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+
+                    Dim rangoF_P As ExcelRange = worksheetFichero.Cells(2, 16, worksheetFichero.Dimension.End.Row, 16) ' Columna P es la 16
+                    rangoF_P.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                    rangoF_P.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 255, 153)) ' Amarillo claro
+
                     sumaColumnas(package, fichero)
                 Next
 
@@ -7540,7 +7666,7 @@ Public Class CargaHorasJPSTAFF
                 package.Save()
             End Using
         End If
-        'MsgBox("Fichero creado correctamente en N:\10. AUXILIARES\00. EXPERTIS\02. A3\")
+        MessageBox.Show("Fichero creado correctamente", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub
 
     Function GetDoubleValue(ByVal row As DataRow, ByVal columnName As String) As Double
@@ -7876,8 +8002,38 @@ Public Class CargaHorasJPSTAFF
         Windows.Forms.Application.DoEvents()
     End Sub
 
-    Public Sub EstableceProgressBar()
 
-    End Sub
+    Public Function CheckDuplicidadHoras(ByVal dt As DataTable, ByVal fecha1 As String, ByVal fecha2 As String, ByVal database As String) As Boolean
+        For Each dtRow As DataRow In dt.Rows
+            Dim f As New Filter
+            Dim f2 As New Filter
+            f2.Add("NObra", FilterOperator.Equal, dtRow("CentroCoste"))
+            Dim idObra As String = New BE.DataEngine().Filter(database & "..tbObraCabecera", f2).Rows(0)("IDObra")
+
+            f.Add("IDOperario", FilterOperator.Equal, dtRow("IDOperario"))
+            f.Add("IDObra", FilterOperator.Equal, idObra)
+            f.Add("FechaInicio", FilterOperator.GreaterThanOrEqual, fecha1)
+            f.Add("FechaInicio", FilterOperator.LessThanOrEqual, fecha2)
+            f.Add("IDHora", FilterOperator.Equal, "HA")
+
+            Dim dtControl As DataTable
+            dtControl = New BE.DataEngine().Filter(database & "..tbObraMODControl", f)
+
+            If dtControl.Rows.Count > 0 Then
+                MessageBox.Show("DB: " & database & vbCrLf & _
+                "Existen horas duplicadas para el operario " & dtRow("IDOperario") & " en la obra " & dtRow("CentroCoste") & " en el mes seleccionado. Hablar con David Velasco.", "Error horas duplicadas", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                Return False
+            End If
+        Next
+        Return True
+    End Function
+
+    Private Function CheckAndExitIfTrue(ByVal checkFunction As Func(Of Integer), ByVal expected As Integer) As Boolean
+        Dim bandera As Integer = checkFunction()
+        If bandera = expected Then
+            Return True
+        End If
+        Return False
+    End Function
 
 End Class
