@@ -6468,6 +6468,9 @@ Public Class CargaHorasJPSTAFF
         'AÑADO LA NUEVA LINEA DE ANGEL
         Dim nuevaFila As DataRow = dataTable.NewRow()
 
+        ' StringBuilder para errores diccionario
+        Dim sb As New StringBuilder
+
         ' Crear un lector de PDF
         Dim pdfReader As New PdfReader(pdfPath)
         ' Recorrer las páginas del PDF
@@ -6557,6 +6560,11 @@ Public Class CargaHorasJPSTAFF
                 viejos = (cashBenefit - foodAllowance) * 0.023
                 nuevaFila("Accrued holiday pay over 60 yr old") = viejos
             End If
+
+            If old <> 0 And old <> 1 Then
+                sb.Append("El operario con dicc. " & old.ToString & " no está dado de alta en Expertis." & vbCrLf)
+            End If
+
             accruedEC = (accruedholidaypay + viejos) * 0.141
             nuevaFila("Accrued EC of holiday pay") = accruedEC
             contribucion = (cashBenefit + paymentinkind) * 0.141
@@ -6567,6 +6575,10 @@ Public Class CargaHorasJPSTAFF
             ' Agregar la nueva fila a la nueva tabla
             dataTable.Rows.Add(nuevaFila)
         Next
+
+        If sb.Length <> 0 Then
+            MessageBox.Show(sb.ToString, "Error en diccionarios", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End If
 
         Return dataTable
     End Function
@@ -6582,6 +6594,7 @@ Public Class CargaHorasJPSTAFF
 
         Return soloNumeros
     End Function
+
     Public Function DevuelvePagoPorViejo(ByVal diccionario As String) As Double
         Dim dt As New DataTable
         Dim f As New Filter
@@ -6590,8 +6603,8 @@ Public Class CargaHorasJPSTAFF
         dt = New BE.DataEngine().Filter(DB_NO & "..frmMntoOperario", f)
 
         If dt.Rows.Count = 0 Then
-            MsgBox("El operario con diccionario " & diccionario & " no está dado de alta en Expertis.")
-            Return 0
+            'MsgBox("El operario con diccionario " & diccionario & " no está dado de alta en Expertis.")
+            Return CDbl(diccionario)
         End If
         Dim fecha_nacimiento As String
         Try
