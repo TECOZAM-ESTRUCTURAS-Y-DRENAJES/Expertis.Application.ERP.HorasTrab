@@ -5995,6 +5995,9 @@ Public Class CargaHorasJPSTAFF
                         '--------
                         ' Buscar la posición de "©"
                         ' Dim total As Integer = texto.IndexOf("Dept")
+                        If textoLimpio = -1 Then
+                            Exit For
+                        End If
                         Dim resultado As String
                         resultado = texto.Substring(posicionName + "Class 1A Pension".Length, textoLimpio - posicionName - "Class 1A Pension".Length).Trim()
                         resultado &= vbCrLf
