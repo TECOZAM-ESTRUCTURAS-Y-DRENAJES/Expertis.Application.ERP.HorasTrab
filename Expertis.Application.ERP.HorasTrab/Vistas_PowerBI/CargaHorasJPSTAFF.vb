@@ -8156,6 +8156,8 @@ Public Class CargaHorasJPSTAFF
                 ' Aplicar estilos personalizados
                 GestionarEstilos(worksheet, dtFinal, fecha1)
 
+                GestionDatosHoras(worksheet, dtFinal, fecha1)
+
                 ' Guardar el paquete de Excel en la ruta seleccionada
                 Dim fileInfo As New FileInfo(rutaArchivo)
                 package.SaveAs(fileInfo)
@@ -8209,15 +8211,96 @@ Public Class CargaHorasJPSTAFF
         rangoCombinado5.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center ' Centrar el texto horizontalmente
         rangoCombinado5.Style.VerticalAlignment = ExcelVerticalAlignment.Center ' Centrar el texto verticalmente
 
+        GestionSabadosYDomingos(worksheet, fecha1)
 
+        CentrarExcel(worksheet)
+    End Sub
+    Public Sub CentrarExcel(ByVal worksheet As ExcelWorksheet)
+        ' Asumiendo que ya has definido `worksheet` como tu objeto ExcelWorksheet
+
+        ' Definir el rango desde la columna G (7) hasta la columna CU (100)
+        Dim startColumn As Integer = 7 ' Columna G
+        Dim endColumn As Integer = 100 ' Columna CU
+        Dim totalRows As Integer = worksheet.Dimension.End.Row ' Número total de filas
+
+        ' Recorrer cada fila en el rango de columnas especificado
+        For row As Integer = 1 To totalRows
+            For col As Integer = startColumn To endColumn
+                Dim celda As ExcelRange = worksheet.Cells(row, col)
+                ' Centrar el contenido horizontalmente
+                celda.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center
+                ' Centrar el contenido verticalmente (opcional)
+                celda.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center
+            Next
+        Next
+
+        For row As Integer = 1 To totalRows
+            For col As Integer = 1 To endColumn - 1
+                Dim celda As ExcelRange = worksheet.Cells(row, col)
+                With celda.Style.Border
+                    .Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin
+                    .Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin
+                    .Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin
+                    .Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin
+                End With
+            Next
+        Next
+
+        'PINTA EL DIA DE LA SEMANA
+        ' Definir el color de fondo
+        Dim color As System.Drawing.Color = System.Drawing.Color.FromArgb(164, 180, 192)
+
+        For row As Integer = 4 To 4
+            For col As Integer = startColumn To endColumn - 1
+                Dim celda As ExcelRange = worksheet.Cells(row, col)
+                ' Establecer el patrón de relleno a sólido y el color de fondo
+                celda.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                celda.Style.Fill.BackgroundColor.SetColor(color)
+            Next
+        Next
+    End Sub
+    Public Sub GestionSabadosYDomingos(ByVal worksheet As ExcelWorksheet, ByVal fecha1 As String)
         ' Rellenar la fila desde G6 con los números del 1 al 31 repetidos tres veces
         Dim columnaInicial As Integer = 7 ' Columna G
         Dim columnaFinal As Integer = columnaInicial + 31 * 3 - 1 ' CU
         Dim numeroDia As Integer = 1
+        Dim fechaInicio As Date = New DateTime(DateTime.Now.Year, DateTime.Now.Month, 1) ' Primer día del mes actual
+
+
 
         For columna As Integer = columnaInicial To columnaFinal
             Dim celda As ExcelRange = worksheet.Cells(5, columna) ' Fila 5
             celda.Value = numeroDia
+
+            Dim fechaActual As Date
+            Try
+                fechaActual = New DateTime(Year(fecha1), Month(fecha1), numeroDia)
+                ' Verificar el día de la semana
+                Dim diaSemana As DayOfWeek = fechaActual.DayOfWeek
+
+                Select Case diaSemana
+                    Case DayOfWeek.Saturday
+                        worksheet.Cells(4, columna).Value = "S" ' Sábado
+                        ' Cambiar el color de fondo de la columna a amarillo fosforescente
+                        For fila As Integer = 4 To worksheet.Dimension.End.Row
+                            worksheet.Cells(fila, columna).Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                            worksheet.Cells(fila, columna).Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow)
+                        Next
+                    Case DayOfWeek.Sunday
+                        worksheet.Cells(4, columna).Value = "D" ' Domingo
+                        ' Cambiar el color de fondo de la columna a amarillo fosforescente
+                        For fila As Integer = 4 To worksheet.Dimension.End.Row
+                            worksheet.Cells(fila, columna).Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                            worksheet.Cells(fila, columna).Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow)
+                        Next
+                    Case Else
+                        worksheet.Cells(4, columna).Value = "L" ' Día laborable
+                End Select
+            Catch ex As Exception
+                worksheet.Cells(4, columna).Value = ""
+            End Try
+
+            ' Incrementar el número del día
             numeroDia += 1
 
             If numeroDia > 31 Then
@@ -8226,9 +8309,8 @@ Public Class CargaHorasJPSTAFF
             ' Ajustar el ancho de la columna a 3
             worksheet.Column(columna).Width = 4
         Next
-
-        'Pintar sabados y domingos
     End Sub
+
     Public Sub GestionarEstilos(ByVal worksheet As ExcelWorksheet, ByVal dtFinal As DataTable, ByVal fecha1 As String)
         SetInformacion(worksheet, fecha1, dtFinal)
 
@@ -8267,4 +8349,160 @@ Public Class CargaHorasJPSTAFF
         worksheet.Column(5).Width = 15
         worksheet.Column(6).Width = 20
     End Sub
+
+    Public Sub GestionDatosHoras(ByVal worksheet As ExcelWorksheet, ByVal dtFinal As DataTable, ByVal fecha1 As String)
+        '1º Control de la A de ausencia para las personas que no están para esa fecha.
+        Dim fila As Integer = 1
+        For Each dr As DataRow In dtFinal.Rows
+            Dim fechaBaja As String = dr("Finish day:").ToString
+            Dim fechaAlta As String = dr("Start day:").ToString
+
+            For dia As Integer = 1 To 31
+                ' Construir una fecha a partir del primer día del mes y el año de fecha1
+                Try
+                    Dim fechaComparar As New Date(Year(fecha1), Month(fecha1), dia)
+
+                    If Len(fechaBaja) <> 0 Then
+                        If fechaBaja <= fechaComparar Then
+                            'MsgBox("Está de baja: " & fechaBaja & "Fecha actual" & fechaComparar)
+                            ' Escribir "A" en la celda correspondiente de Excel
+                            Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
+                            Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
+                            Dim diaSemana As DayOfWeek = fechaComparar.DayOfWeek
+                            If diaSemana >= DayOfWeek.Monday AndAlso diaSemana <= DayOfWeek.Friday Then
+                                ' Escribir el valor "A"
+                                celda.Value = "A"
+                                ' Establecer el color de fondo de la celda
+                                celda.Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(0, 176, 240))
+                            End If
+                            
+                        Else
+                            'MsgBox("No está de baja")
+                        End If
+                        'Aqui va la gente que no hay que ponerle una A
+                    Else
+                    End If
+
+                    If Len(fechaAlta) <> 0 Then
+                        If fechaAlta > fechaComparar Then
+                            'MsgBox("Está de baja: " & fechaBaja & "Fecha actual" & fechaComparar)
+                            ' Escribir "A" en la celda correspondiente de Excel
+                            Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
+                            Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
+                            Dim diaSemana As DayOfWeek = fechaComparar.DayOfWeek
+                            If diaSemana >= DayOfWeek.Monday AndAlso diaSemana <= DayOfWeek.Friday Then
+                                ' Escribir el valor "A"
+                                celda.Value = "A"
+                                ' Establecer el color de fondo de la celda
+                                celda.Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(0, 176, 240))
+                            End If
+                        Else
+                            'AQUI OBTENGO EL VALOR DE LOS DIAS TRABAJADOS
+                            'SI LA PERSONA ES STAFF SE PONE 7,5 HORAS DE LUNES A VIERNES SIEMPRE QUE NO HAYA A
+                            If dr("Skill") = "STAFF" Then
+                                Dim diaSemana As DayOfWeek = fechaComparar.DayOfWeek
+                                If diaSemana >= DayOfWeek.Monday AndAlso diaSemana <= DayOfWeek.Friday Then
+                                    Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
+                                    Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
+
+                                    If String.IsNullOrEmpty(celda.Text) Then
+                                        celda.Value = CDbl("7,5")
+                                        celda.Style.Font.Color.SetColor(System.Drawing.Color.Black)
+                                    End If
+                                End If
+                            Else
+                                Dim dt As New DataTable
+                                Dim f As New Filter
+                                f.Add("FechaParte", FilterOperator.Equal, fechaComparar)
+                                f.Add("IDOperario", FilterOperator.Equal, dr("EXP."))
+                                dt = New BE.DataEngine().Filter("tbHorasInternacional", f)
+                                If dt.Rows.Count > 0 Then
+                                    Dim IDCausa As String = Nz(dt(0)("IDCausa").ToString, "")
+                                    If Len(IDCausa) <> 0 Then
+                                        Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
+                                        Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
+                                        celda.Value = IDCausa
+                                        If IDCausa = "B" Then
+                                            celda.Style.Font.Color.SetColor(System.Drawing.Color.Orange)
+                                        ElseIf IDCausa = "UA" Then
+                                            celda.Style.Font.Color.SetColor(System.Drawing.Color.Green)
+                                        ElseIf IDCausa = "V" Then
+                                            celda.Style.Font.Color.SetColor(System.Drawing.Color.Red)
+                                        Else
+                                            celda.Style.Font.Color.SetColor(System.Drawing.Color.Black)
+                                        End If
+
+                                    Else
+                                        Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
+                                        Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
+                                        Dim horas As Double = dt(0)("HorasProductivas").ToString.Replace(".", ",")
+                                        celda.Value = horas
+                                        'OBTENER COLOR DEL TURNO
+                                        Dim color As System.Drawing.Color
+                                        color = getColorTurnoTrabajador(dt)
+                                        celda.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                                        celda.Style.Fill.BackgroundColor.SetColor(color)
+                                    End If
+                                Else
+                                    If fechaComparar.DayOfWeek >= DayOfWeek.Monday AndAlso fechaComparar.DayOfWeek <= DayOfWeek.Friday Then
+                                        Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
+                                        Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
+                                        celda.Value = CDbl("0.0")
+                                        celda.Style.Font.Color.SetColor(System.Drawing.Color.Black)
+                                    End If
+                                End If
+                            End If
+
+                        End If
+                    End If
+                Catch ex As Exception
+                    Continue For
+                End Try
+            Next
+
+            fila += 1
+        Next
+    End Sub
+    Public Function getColorTurnoTrabajador(ByVal dt As DataTable) As System.Drawing.Color
+        ' Supongamos que HoraEntrada y HoraSalida están en formato TimeSpan
+        Dim turnoEntrada As TimeSpan = CType(dt(0)("HoraEntrada"), TimeSpan)
+        Dim turnoSalida As TimeSpan = CType(dt(0)("HoraSalida"), TimeSpan)
+
+        ' Convertir las cadenas de hora a TimeSpan para comparación
+        Dim intervalo0Inicio As TimeSpan = TimeSpan.Parse("07:00")
+        Dim intervalo0Fin As TimeSpan = TimeSpan.Parse("16:00")
+
+        Dim intervalo1Inicio As TimeSpan = TimeSpan.Parse("07:00")
+        Dim intervalo1Fin As TimeSpan = TimeSpan.Parse("14:00")
+
+        Dim intervalo2Inicio As TimeSpan = TimeSpan.Parse("14:00")
+        Dim intervalo2Fin As TimeSpan = TimeSpan.Parse("21:00")
+
+        Dim intervalo3Inicio As TimeSpan = TimeSpan.Parse("10:30")
+        Dim intervalo3Fin As TimeSpan = TimeSpan.Parse("20:00")
+
+        Dim intervalo4Inicio As TimeSpan = TimeSpan.Parse("10:00")
+        Dim intervalo4Fin As TimeSpan = TimeSpan.Parse("20:00")
+
+        ' Comprobar en qué intervalo se encuentra el turno
+        If turnoEntrada = intervalo0Inicio AndAlso turnoSalida = intervalo0Fin Then
+            'MsgBox("Turno de 07:00 a 16:00")
+            Return System.Drawing.Color.FromArgb(255, 255, 255)
+        ElseIf turnoEntrada = intervalo1Inicio AndAlso turnoSalida = intervalo1Fin Then
+            'MsgBox("Turno de 07:00 a 14:00")
+            Return System.Drawing.Color.FromArgb(244, 180, 132)
+        ElseIf turnoEntrada = intervalo2Inicio AndAlso turnoSalida = intervalo2Fin Then
+            'MsgBox("Turno de 14:00 a 21:00")
+            Return System.Drawing.Color.FromArgb(120, 216, 112)
+        ElseIf turnoEntrada = intervalo3Inicio AndAlso turnoSalida = intervalo3Fin Then
+            'MsgBox("Turno de 10:30 a 20:00")
+            Return System.Drawing.Color.FromArgb(156, 196, 228)
+        ElseIf turnoEntrada = intervalo4Inicio AndAlso turnoSalida = intervalo4Fin Then
+            'MsgBox("Turno de 10:00 a 20:00")
+            Return System.Drawing.Color.FromArgb(168, 164, 164)
+        Else
+            Return System.Drawing.Color.FromArgb(255, 255, 255)
+        End If
+
+    End Function
 End Class
