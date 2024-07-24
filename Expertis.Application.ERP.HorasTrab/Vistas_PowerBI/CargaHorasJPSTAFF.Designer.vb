@@ -163,6 +163,9 @@ Partial Class CargaHorasJPSTAFF
         Me.Tab4 = New Solmicro.Expertis.Engine.UI.Tab
         Me.UiTabPage12 = New Janus.Windows.UI.Tab.UITabPage
         Me.UiTabPage13 = New Janus.Windows.UI.Tab.UITabPage
+        Me.UiTabPage14 = New Janus.Windows.UI.Tab.UITabPage
+        Me.Frame16 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bExportarNoruega = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame1.SuspendLayout()
         Me.Frame2.SuspendLayout()
         Me.Frame3.SuspendLayout()
@@ -207,6 +210,8 @@ Partial Class CargaHorasJPSTAFF
         Me.Tab4.SuspendLayout()
         Me.UiTabPage12.SuspendLayout()
         Me.UiTabPage13.SuspendLayout()
+        Me.UiTabPage14.SuspendLayout()
+        Me.Frame16.SuspendLayout()
         Me.SuspendLayout()
         '
         'bBorrarExcel
@@ -1517,7 +1522,7 @@ Partial Class CargaHorasJPSTAFF
         Me.Tab4.Name = "Tab4"
         Me.Tab4.Size = New System.Drawing.Size(873, 222)
         Me.Tab4.TabIndex = 29
-        Me.Tab4.TabPages.AddRange(New Janus.Windows.UI.Tab.UITabPage() {Me.UiTabPage12, Me.UiTabPage13})
+        Me.Tab4.TabPages.AddRange(New Janus.Windows.UI.Tab.UITabPage() {Me.UiTabPage12, Me.UiTabPage13, Me.UiTabPage14})
         Me.Tab4.UseThemes = True
         '
         'UiTabPage12
@@ -1537,6 +1542,34 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage13.Size = New System.Drawing.Size(871, 200)
         Me.UiTabPage13.TabStop = True
         Me.UiTabPage13.Text = "BORRAR HORAS"
+        '
+        'UiTabPage14
+        '
+        Me.UiTabPage14.Controls.Add(Me.Frame16)
+        Me.UiTabPage14.Location = New System.Drawing.Point(1, 21)
+        Me.UiTabPage14.Name = "UiTabPage14"
+        Me.UiTabPage14.Size = New System.Drawing.Size(871, 200)
+        Me.UiTabPage14.TabStop = True
+        Me.UiTabPage14.Text = "INTERNACIONAL NUEVO"
+        '
+        'Frame16
+        '
+        Me.Frame16.Controls.Add(Me.bExportarNoruega)
+        Me.Frame16.Location = New System.Drawing.Point(27, 28)
+        Me.Frame16.Name = "Frame16"
+        Me.Frame16.Size = New System.Drawing.Size(224, 112)
+        Me.Frame16.TabIndex = 27
+        Me.Frame16.TabStop = False
+        Me.Frame16.Text = "Noruega"
+        '
+        'bExportarNoruega
+        '
+        Me.bExportarNoruega.Icon = CType(resources.GetObject("bExportarNoruega.Icon"), System.Drawing.Icon)
+        Me.bExportarNoruega.Location = New System.Drawing.Point(38, 42)
+        Me.bExportarNoruega.Name = "bExportarNoruega"
+        Me.bExportarNoruega.Size = New System.Drawing.Size(147, 38)
+        Me.bExportarNoruega.TabIndex = 6
+        Me.bExportarNoruega.Text = "Exportar horas"
         '
         'CargaHorasJPSTAFF
         '
@@ -1602,6 +1635,8 @@ Partial Class CargaHorasJPSTAFF
         Me.Tab4.ResumeLayout(False)
         Me.UiTabPage12.ResumeLayout(False)
         Me.UiTabPage13.ResumeLayout(False)
+        Me.UiTabPage14.ResumeLayout(False)
+        Me.Frame16.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -1741,4 +1776,7 @@ Partial Class CargaHorasJPSTAFF
     Friend WithEvents Label27 As Solmicro.Expertis.Engine.UI.Label
     Friend WithEvents Label26 As Solmicro.Expertis.Engine.UI.Label
     Friend WithEvents Label25 As Solmicro.Expertis.Engine.UI.Label
+    Friend WithEvents UiTabPage14 As Janus.Windows.UI.Tab.UITabPage
+    Friend WithEvents Frame16 As Solmicro.Expertis.Engine.UI.Frame
+    Friend WithEvents bExportarNoruega As Solmicro.Expertis.Engine.UI.Button
 End Class

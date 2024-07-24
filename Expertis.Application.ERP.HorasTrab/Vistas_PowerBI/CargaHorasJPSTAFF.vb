@@ -15,6 +15,8 @@ Imports System.IO
 Imports OfficeOpenXml
 Imports System.Data
 Imports System.Globalization
+Imports OfficeOpenXml.Style
+Imports System.Drawing
 
 
 
@@ -8052,4 +8054,217 @@ Public Class CargaHorasJPSTAFF
         Return False
     End Function
 
+    Private Sub bExportarNoruega_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bExportarNoruega.Click
+        Dim frm As New frmInformeFecha
+        frm.ShowDialog()
+        Dim Fecha1 As String
+        Dim Fecha2 As String
+
+        Fecha1 = frm.fecha1
+        Fecha2 = frm.fecha2
+
+        If frm.blEstado = False Then
+            Exit Sub
+        End If
+
+        '1. OBTENGO INFO BASICA DE LAS PERSONAS
+        Dim dtPersonas As New DataTable
+        dtPersonas = getTablaPersonas()
+
+        '2. LE DOY LA 1ª FORMA A LA TABLA
+        Dim dtFinal As New DataTable
+        FormaTablaSalidaNoruega(dtFinal)
+        setPrimerCambioForma(dtFinal, dtPersonas)
+
+        ExportarFichero(dtFinal, Fecha1, Fecha2)
+    End Sub
+    Public Function getTablaPersonas() As DataTable
+        Dim strWhere As String = "IDOperario !='00'"
+        Return New BE.DataEngine().Filter("frmMntoOperario", "IDOperario, Nombre, Apellidos, FechaAlta, Fecha_Baja, IDOficio", strWhere)
+    End Function
+    Public Sub FormaTablaSalidaNoruega(ByRef dtFinal As DataTable)
+        dtFinal.Columns.Add("EXP.")
+        dtFinal.Columns.Add("Name:")
+        dtFinal.Columns.Add("SITE")
+        dtFinal.Columns.Add("Start day:")
+        dtFinal.Columns.Add("Finish day:")
+        dtFinal.Columns.Add("Skill")
+    End Sub
+
+    Public Sub setPrimerCambioForma(ByRef dtFinal As DataTable, ByRef dtPersonas As DataTable)
+        ' Iterar a través de cada fila en dtPersonas
+        For Each dr As DataRow In dtPersonas.Rows
+            ' Crear una nueva fila en dtFinal
+            Dim newRow As DataRow = dtFinal.NewRow()
+
+            ' Asignar los valores de la fila actual de dtPersonas a la nueva fila de dtFinal
+            newRow("EXP.") = dr("IDOperario")
+            newRow("Name:") = dr("Nombre") & " " & Nz(dr("Apellidos"), "")
+            newRow("SITE") = ""
+            ' Manejar la conversión y formato de la fecha
+            Dim fechaAlta As Object = dr("FechaAlta")
+            If IsDBNull(fechaAlta) OrElse Not DateTime.TryParse(fechaAlta.ToString(), New DateTime()) Then
+                newRow("Start day:") = DBNull.Value
+            Else
+                Dim fecha As DateTime = Convert.ToDateTime(fechaAlta)
+                newRow("Start day:") = fecha.ToString("dd/MM/yyyy") ' Formatear solo la fecha
+            End If
+            Dim fechaBaja As Object = dr("Fecha_Baja")
+            If IsDBNull(fechaBaja) OrElse Not DateTime.TryParse(fechaBaja.ToString(), New DateTime()) Then
+                newRow("Finish day:") = DBNull.Value
+            Else
+                Dim fecha As DateTime = Convert.ToDateTime(fechaBaja)
+                newRow("Finish day:") = fecha.ToString("dd/MM/yyyy") ' Formatear solo la fecha
+            End If
+
+            Dim idOficio As String = dr("IDOficio").ToString()
+            If idOficio = "ADMINOBRA" OrElse idOficio = "TEC_OBRA" OrElse idOficio = "TECPROY" OrElse idOficio = "INGENIERO" Then
+                newRow("Skill") = "STAFF"
+            Else
+                newRow("Skill") = idOficio
+            End If
+
+            ' Agregar la nueva fila a dtFinal
+            dtFinal.Rows.Add(newRow)
+        Next
+    End Sub
+
+    Public Sub ExportarFichero(ByVal dtFinal As DataTable, ByVal fecha1 As String, ByVal fecha2 As String)
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial
+
+        Dim saveFileDialog1 As New SaveFileDialog()
+        saveFileDialog1.Filter = "Archivos de Excel|*.xlsx|Todos los archivos|*.*"
+        saveFileDialog1.Title = "Guardar archivo"
+
+        ' Mostrar el cuadro de diálogo y verificar si el usuario hizo clic en "Guardar"
+        If saveFileDialog1.ShowDialog() = DialogResult.OK Then
+            ' Obtener la ruta seleccionada por el usuario
+            Dim rutaArchivo As String = saveFileDialog1.FileName
+
+            Using package As New ExcelPackage()
+
+                ' Convertir fecha2 a DateTime y formatear el nombre de la hoja
+                Dim fecha As DateTime = Convert.ToDateTime(fecha2)
+                Dim nombreHoja As String = fecha.ToString("MMM yyyy").ToUpper() ' Formato JUN 2024
+
+                ' Crear una hoja de cálculo y obtener una referencia a ella.
+                Dim worksheet = package.Workbook.Worksheets.Add(nombreHoja)
+
+                ' Copiar los datos de la DataTable a la hoja de cálculo.
+                worksheet.Cells("A5").LoadFromDataTable(dtFinal, True)
+
+                ' Aplicar estilos personalizados
+                GestionarEstilos(worksheet, dtFinal, fecha1)
+
+                ' Guardar el paquete de Excel en la ruta seleccionada
+                Dim fileInfo As New FileInfo(rutaArchivo)
+                package.SaveAs(fileInfo)
+            End Using
+        End If
+        MessageBox.Show("Fichero guardado correctamente", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information)
+    End Sub
+    Public Sub SetInformacion(ByVal worksheet As ExcelWorksheet, ByVal fecha1 As String, ByVal dtFinal As DataTable)
+        ' Poner "Hola" en la primera celda (A1) y aplicar formato negrita
+        Dim fecha As DateTime = Convert.ToDateTime(fecha1)
+        Dim celdaFecha As ExcelRange = worksheet.Cells(1, 1) ' A1
+        celdaFecha.Value = fecha.ToString("MMM-yy")
+        celdaFecha.Style.Font.Bold = True
+
+        ' Combinar celdas de B1 a F1 y poner "MONTHLY SHEET REPORT" en negrita
+        Dim rangoCombinado As ExcelRange = worksheet.Cells(1, 2, 1, 6) ' Combina de B1 a F1
+        rangoCombinado.Merge = True
+        rangoCombinado.Value = "MONTHLY SHEET REPORT"
+        rangoCombinado.Style.Font.Bold = True
+        rangoCombinado.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center ' Opcional: centrar el texto
+
+        ' Combinar celdas de A2 a F4 y poner "Reporte Detallado" en negrita
+        Dim rangoCombinado2 As ExcelRange = worksheet.Cells(2, 1, 4, 6) ' Combina de A2 a F4
+        rangoCombinado2.Merge = True
+        rangoCombinado2.Value = "REPORTE DETALLADO"
+        rangoCombinado2.Style.Font.Bold = True
+        rangoCombinado2.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center ' Opcional: centrar el texto
+        rangoCombinado2.Style.VerticalAlignment = ExcelVerticalAlignment.Center ' Opcional: centrar verticalmente el texto
+
+        ' Combinar celdas de G2 a AK3 y poner "NORMAL + OVERTIME SCHEDULE" en negrita
+        Dim rangoCombinado3 As ExcelRange = worksheet.Cells(2, 7, 3, 37) ' Combina de G2 a AK3
+        rangoCombinado3.Merge = True
+        rangoCombinado3.Value = MonthName(fecha.Month).ToUpper() & " (NORMAL + OVERTIME SCHEDULE)"
+        rangoCombinado3.Style.Font.Bold = True
+        rangoCombinado3.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center
+        rangoCombinado3.Style.VerticalAlignment = ExcelVerticalAlignment.Center
+
+        ' Combinar celdas de AL2 a BP3 y poner "SECCIÓN ADICIONAL 1" en negrita
+        Dim rangoCombinado4 As ExcelRange = worksheet.Cells(2, 38, 3, 64) ' Combina de AL2 a BP3
+        rangoCombinado4.Merge = True
+        rangoCombinado4.Value = MonthName(fecha.Month).ToUpper() & " (NORMAL SCHEDULE)"
+        rangoCombinado4.Style.Font.Bold = True
+        rangoCombinado4.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center ' Centrar el texto horizontalmente
+        rangoCombinado4.Style.VerticalAlignment = ExcelVerticalAlignment.Center ' Centrar el texto verticalmente
+
+        ' Combinar celdas de BQ2 a CU3 y poner "SECCIÓN ADICIONAL 2" en negrita
+        Dim rangoCombinado5 As ExcelRange = worksheet.Cells(2, 65, 3, 99) ' Combina de BQ2 a CU3
+        rangoCombinado5.Merge = True
+        rangoCombinado5.Value = MonthName(fecha.Month).ToUpper() & " (OVER TIME)"
+        rangoCombinado5.Style.Font.Bold = True
+        rangoCombinado5.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center ' Centrar el texto horizontalmente
+        rangoCombinado5.Style.VerticalAlignment = ExcelVerticalAlignment.Center ' Centrar el texto verticalmente
+
+
+        ' Rellenar la fila desde G6 con los números del 1 al 31 repetidos tres veces
+        Dim columnaInicial As Integer = 7 ' Columna G
+        Dim columnaFinal As Integer = columnaInicial + 31 * 3 - 1 ' CU
+        Dim numeroDia As Integer = 1
+
+        For columna As Integer = columnaInicial To columnaFinal
+            Dim celda As ExcelRange = worksheet.Cells(5, columna) ' Fila 5
+            celda.Value = numeroDia
+            numeroDia += 1
+
+            If numeroDia > 31 Then
+                numeroDia = 1
+            End If
+            ' Ajustar el ancho de la columna a 3
+            worksheet.Column(columna).Width = 4
+        Next
+
+        'Pintar sabados y domingos
+    End Sub
+    Public Sub GestionarEstilos(ByVal worksheet As ExcelWorksheet, ByVal dtFinal As DataTable, ByVal fecha1 As String)
+        SetInformacion(worksheet, fecha1, dtFinal)
+
+        ' Aplicar formato negrita a la fila 1
+        Dim fila1 As ExcelRange = worksheet.Cells(5, 1, 5, worksheet.Dimension.End.Column)
+        fila1.Style.Font.Bold = True
+
+        ' Pintar las filas en función de la fecha de  baja
+        For i As Integer = 0 To dtFinal.Rows.Count - 1
+
+            Dim filaActual As Integer = i + 6 ' Ajustar para comenzar en la fila 6
+            Dim idOficio As String = dtFinal.Rows(i)("Skill").ToString()
+
+            ' Primero, pintar en función del valor de IDOficio
+            If idOficio = "STAFF" OrElse idOficio = "ENCARGADO" Then
+                Dim rango As ExcelRange = worksheet.Cells(filaActual, 1, filaActual, 6)
+                rango.Style.Fill.PatternType = ExcelFillStyle.Solid
+                rango.Style.Fill.BackgroundColor.SetColor(Color.LightGray)
+            End If
+
+            ' Luego, pintar en función de la fecha de baja
+            If Not IsDBNull(dtFinal.Rows(i)("Finish day:")) Then
+                Dim rango As ExcelRange = worksheet.Cells(filaActual, 1, filaActual, 6)
+                rango.Style.Fill.PatternType = ExcelFillStyle.Solid
+                rango.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(255, 0, 176, 240))
+
+                ' Tachado del contenido de la columna "Name"
+                Dim nombreCelda As ExcelRange = worksheet.Cells(filaActual, 2) ' Suponiendo que la columna "Name" es la segunda columna (B)
+                nombreCelda.Style.Font.Strike = True
+            End If
+        Next
+
+        ' Ajustar el ancho de las columnas B, D, E y F
+        worksheet.Column(2).Width = 30 ' Columna B
+        worksheet.Column(4).Width = 15
+        worksheet.Column(5).Width = 15
+        worksheet.Column(6).Width = 20
+    End Sub
 End Class
