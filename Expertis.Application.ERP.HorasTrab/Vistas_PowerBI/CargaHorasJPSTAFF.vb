@@ -8160,6 +8160,10 @@ Public Class CargaHorasJPSTAFF
                 GestionarFormulacion(worksheet)
                 GestionarOvertime(worksheet, fecha1)
 
+                ' Crear una nueva hoja llamada TURNOS y llamar al método creaHojaTurnos
+                Dim worksheetTurnos = package.Workbook.Worksheets.Add("TURNOS OPERARIOS")
+                creaHojaTurnos(worksheetTurnos, dtFinal, fecha1)
+
                 ' Crear una nueva hoja llamada PARAMETROS y llamar al método creaHojaParametros
                 Dim worksheetParametros = package.Workbook.Worksheets.Add("PARAMETROS")
                 creaHojaParametros(worksheetParametros)
@@ -8171,7 +8175,167 @@ Public Class CargaHorasJPSTAFF
         End If
         MessageBox.Show("Fichero guardado correctamente", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub
+    Public Sub creaHojaTurnos(ByVal worksheet As ExcelWorksheet, ByVal dtFinal As DataTable, ByVal fecha1 As String)
+        FormaTablaTurnos(dtFinal)
+        DesgloseValores(dtFinal, fecha1)
 
+        worksheet.Cells("A1").LoadFromDataTable(dtFinal, True)
+
+        ' Aplicar formato negrita a la fila 1
+        Dim fila1 As ExcelRange = worksheet.Cells(1, 1, 1, worksheet.Dimension.End.Column)
+        fila1.Style.Font.Bold = True
+
+        ' Ajusta el ancho de la columna B a 20
+        worksheet.Column(2).Width = 20
+        worksheet.Column(4).Width = 15
+        worksheet.Column(5).Width = 15
+
+        ' Inmoviliza paneles desde la fila 2 y la columna F
+        worksheet.View.FreezePanes(2, 7)
+
+        ' Aplica bordes a toda la tabla
+        Dim dataRange As ExcelRange = worksheet.Cells(1, 1, dtFinal.Rows.Count + 1, dtFinal.Columns.Count)
+        dataRange.Style.Border.Top.Style = ExcelBorderStyle.Thin
+        dataRange.Style.Border.Bottom.Style = ExcelBorderStyle.Thin
+        dataRange.Style.Border.Left.Style = ExcelBorderStyle.Thin
+        dataRange.Style.Border.Right.Style = ExcelBorderStyle.Thin
+
+        ' Pintar las filas en función de la fecha de  baja
+        For i As Integer = 0 To dtFinal.Rows.Count - 1
+
+            Dim filaActual As Integer = i + 2 ' Ajustar para comenzar en la fila 6
+            Dim idOficio As String = dtFinal.Rows(i)("Skill").ToString()
+
+            ' Primero, pintar en función del valor de IDOficio
+            If idOficio = "STAFF" OrElse idOficio = "ENCARGADO" Then
+                Dim rango As ExcelRange = worksheet.Cells(filaActual, 1, filaActual, 6)
+                rango.Style.Fill.PatternType = ExcelFillStyle.Solid
+                rango.Style.Fill.BackgroundColor.SetColor(Color.LightGray)
+            End If
+
+            ' Luego, pintar en función de la fecha de baja
+            If Not IsDBNull(dtFinal.Rows(i)("Finish day:")) Then
+                Dim rango As ExcelRange = worksheet.Cells(filaActual, 1, filaActual, 6)
+                rango.Style.Fill.PatternType = ExcelFillStyle.Solid
+                rango.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(255, 0, 176, 240))
+
+                ' Tachado del contenido de la columna "Name"
+                Dim nombreCelda As ExcelRange = worksheet.Cells(filaActual, 2) ' Suponiendo que la columna "Name" es la segunda columna (B)
+                nombreCelda.Style.Font.Strike = True
+            End If
+        Next
+
+        PintarFindes(worksheet, dtFinal, fecha1)
+    End Sub
+    Public Sub PintarFindes(ByVal worksheet As ExcelWorksheet, ByVal dtFinal As DataTable, ByVal fecha1 As String)
+        ' Rellenar la fila desde G6 con los números del 1 al 31 repetidos tres veces
+        Dim columnaInicial As Integer = 7 ' Columna G
+        Dim columnaFinal As Integer = columnaInicial + 31 * 2 - 1 ' BP
+        Dim numeroDia As Integer = 1
+        Dim fechaInicio As Date = New DateTime(DateTime.Now.Year, DateTime.Now.Month, 1) ' Primer día del mes actual
+
+        For columna As Integer = columnaInicial To columnaFinal
+            Dim  celda As ExcelRange = worksheet.Cells(1, columna) ' Fila 1
+            Dim parts() As String = celda.Text.ToString.Split(" "c)
+
+            Dim fechaActual As Date
+            Try
+                 fechaActual = New DateTime(Year(fecha1), Month(fecha1), parts(0))
+                ' Verificar el día de la semana
+                Dim diaSemana As DayOfWeek = fechaActual.DayOfWeek
+
+                Select Case diaSemana
+                    Case DayOfWeek.Saturday
+                        ' Cambiar el color de fondo de la columna a amarillo fosforescente
+                        For fila As Integer = 1 To worksheet.Dimension.End.Row
+                            worksheet.Cells(fila, columna).Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                            worksheet.Cells(fila, columna).Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow)
+                        Next
+                    Case DayOfWeek.Sunday
+                        For fila As Integer = 1 To worksheet.Dimension.End.Row
+                            worksheet.Cells(fila, columna).Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                            worksheet.Cells(fila, columna).Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow)
+                        Next
+                End Select
+            Catch ex As Exception
+            End Try
+
+        Next
+    End Sub
+
+    Public Sub DesgloseValores(ByVal dtFinal As DataTable, ByVal fecha1 As String)
+        For Each row As DataRow In dtFinal.Rows
+            Dim diaColumna As Integer = 1
+            For i As Integer = 7 To dtFinal.Columns.Count - 1
+                Dim columnName As String = dtFinal.Columns(i).ColumnName
+                ' Verificar si el nombre de la columna contiene " E" o " S"
+                If columnName.EndsWith(" E") Then
+                    ' Extraer el número de la columna
+                    Dim numero As Integer = Integer.Parse(columnName.Split(" "c)(0))
+                    ' Llamar al método y pasarle el número
+                    Dim turnoEntrada As String = ProcesarTurnoEntrada(numero, fecha1, row("EXP."))
+                    If Len(turnoEntrada) > 0 Then
+                        row(diaColumna & " E") = turnoEntrada
+                    End If
+                ElseIf columnName.EndsWith(" S") Then
+                    ' Extraer el número de la columna
+                    Dim numero As Integer = Integer.Parse(columnName.Split(" "c)(0))
+                    ' Llamar al método y pasarle el número
+                    Dim turnoSalida As String = ProcesarTurnoSalida(numero, fecha1, row("EXP."))
+                    If Len(turnoSalida) > 0 Then
+                        row(diaColumna & " S") = turnoSalida
+                        diaColumna += 1
+                    Else
+                        diaColumna += 1
+                    End If
+                End If
+
+            Next
+        Next
+    End Sub
+
+    Function ProcesarTurnoEntrada(ByVal dia As Integer, ByVal fecha1 As String, ByVal IDOperario As String) As String
+        Dim mes As String = Month(fecha1)
+        Dim año As String = Year(fecha1)
+
+        Dim fechaParte As New DateTime(CInt(año), CInt(mes), dia)
+
+        Dim dtRegistro As New DataTable
+        Dim filtro As New Filter
+        filtro.Add("FechaParte", FilterOperator.Equal, fechaParte)
+        filtro.Add("IDOperario", FilterOperator.Equal, IDOperario)
+        dtRegistro = New BE.DataEngine().Filter("tbHorasInternacional", filtro)
+
+        If dtRegistro.Rows.Count > 0 Then
+            Return dtRegistro(0)("HoraEntrada").ToString
+        End If
+
+    End Function
+
+    Function ProcesarTurnoSalida(ByVal dia As Integer, ByVal fecha1 As String, ByVal IDOperario As String) As String
+        Dim mes As String = Month(fecha1)
+        Dim año As String = Year(fecha1)
+
+        Dim fechaParte As New DateTime(CInt(año), CInt(mes), dia)
+
+        Dim dtRegistro As New DataTable
+        Dim filtro As New Filter
+        filtro.Add("FechaParte", FilterOperator.Equal, fechaParte)
+        filtro.Add("IDOperario", FilterOperator.Equal, IDOperario)
+        dtRegistro = New BE.DataEngine().Filter("tbHorasInternacional", filtro)
+
+        If dtRegistro.Rows.Count > 0 Then
+            Return dtRegistro(0)("HoraSalida").ToString
+        End If
+
+    End Function
+    Public Sub FormaTablaTurnos(ByVal dtFinal As DataTable)
+        ' Agregar nuevas columnas al DataTable dtFinal
+        For i As Integer = 1 To 31
+            dtFinal.Columns.Add(i.ToString() & " E", GetType(String))
+            dtFinal.Columns.Add(i.ToString() & " S", GetType(String))
+        Next
+    End Sub
     Public Sub GestionarOvertime(ByVal worksheet As ExcelWorksheet, ByVal fecha1 As String)
         ' Define el rango origen y destino
         Dim startRow As Integer = 6
@@ -8353,9 +8517,10 @@ Public Class CargaHorasJPSTAFF
                                     sourceColumnLetter & row & "=" & ChrW(34) & ChrW(34) & ", " & ChrW(34) & ChrW(34) & ", IF(" & _
                                     sourceColumnLetter & row & "=" & ChrW(34) & "V" & ChrW(34) & ", " & ChrW(34) & "V" & ChrW(34) & ", IF(" & _
                                     sourceColumnLetter & row & "=" & ChrW(34) & "UA" & ChrW(34) & ", " & ChrW(34) & "UA" & ChrW(34) & ", IF(" & _
+                                    sourceColumnLetter & row & "=" & ChrW(34) & "VIAJE" & ChrW(34) & ", " & ChrW(34) & "VIAJE" & ChrW(34) & ", IF(" & _
                                     sourceColumnLetter & row & "=" & ChrW(34) & "B" & ChrW(34) & ", " & ChrW(34) & "B" & ChrW(34) & ", IF(" & _
                                     sourceColumnLetter & row & "=" & ChrW(34) & "H" & ChrW(34) & ", " & ChrW(34) & "H" & ChrW(34) & ", " & _
-                                     sourceColumnLetter & row & "-" & GetColumnLetter(col + 31) & row & "))))))"
+                                    sourceColumnLetter & row & "-" & GetColumnLetter(col + 31) & row & ")))))))"
                     worksheet.Cells(row, col).Formula = formula
 
                     ' Obtén el color de la fuente de la celda fuente
@@ -8628,8 +8793,6 @@ Public Class CargaHorasJPSTAFF
         Dim columnaFinal As Integer = columnaInicial + 31 * 3 - 1 ' CU
         Dim numeroDia As Integer = 1
         Dim fechaInicio As Date = New DateTime(DateTime.Now.Year, DateTime.Now.Month, 1) ' Primer día del mes actual
-
-
 
         For columna As Integer = columnaInicial To columnaFinal
             Dim celda As ExcelRange = worksheet.Cells(5, columna) ' Fila 5
