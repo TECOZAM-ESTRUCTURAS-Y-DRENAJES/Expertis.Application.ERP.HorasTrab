@@ -8264,35 +8264,76 @@ Public Class CargaHorasJPSTAFF
     End Sub
 
     Public Sub DesgloseValores(ByVal dtFinal As DataTable, ByVal fecha1 As String)
+        ' Obtener todas las fechas relevantes del mes
+        Dim mes As Integer = Month(fecha1)
+        Dim año As Integer = Year(fecha1)
+        Dim fechaInicio As New DateTime(año, mes, 1)
+        Dim fechaFin As New DateTime(año, mes, DateTime.DaysInMonth(año, mes))
+
+
+        ' Hacer una sola consulta para obtener todas las horas de entrada y salida de todos los operarios
+        Dim dtRegistro As New DataTable
+        Dim filtro As New Filter
+        filtro.Add("FechaParte", FilterOperator.GreaterThanOrEqual, fechaInicio)
+        filtro.Add("FechaParte", FilterOperator.LessThanOrEqual, fechaFin)
+
+        dtRegistro = New BE.DataEngine().Filter("tbHorasInternacional", filtro)
+
+        ' Crear diccionarios para almacenar las horas de entrada y salida por operario y fecha
+        Dim horasEntrada As New Dictionary(Of String, Dictionary(Of DateTime, String))()
+        Dim horasSalida As New Dictionary(Of String, Dictionary(Of DateTime, String))()
+
+        For Each row As DataRow In dtRegistro.Rows
+            Dim idOperario As String = row("IDOperario").ToString()
+            Dim fechaParte As DateTime = CType(row("FechaParte"), DateTime) 
+            Dim horaEntrada As String = If(row.IsNull("HoraEntrada"), String.Empty, row("HoraEntrada").ToString())
+            Dim horaSalida As String = If(row.IsNull("HoraSalida"), String.Empty, row("HoraSalida").ToString())
+
+            If Not horasEntrada.ContainsKey(idOperario) Then
+                horasEntrada(idOperario) = New Dictionary(Of DateTime, String)()
+            End If
+            If Not horasSalida.ContainsKey(idOperario) Then
+                horasSalida(idOperario) = New Dictionary(Of DateTime, String)()
+            End If
+
+            horasEntrada(idOperario)(fechaParte) = horaEntrada
+            horasSalida(idOperario)(fechaParte) = horaSalida
+        Next
+
+        ' Procesar los datos en memoria
         For Each row As DataRow In dtFinal.Rows
+            Dim idOperario As String = row("EXP.").ToString()
             Dim diaColumna As Integer = 1
             For i As Integer = 7 To dtFinal.Columns.Count - 1
                 Dim columnName As String = dtFinal.Columns(i).ColumnName
-                ' Verificar si el nombre de la columna contiene " E" o " S"
                 If columnName.EndsWith(" E") Then
-                    ' Extraer el número de la columna
                     Dim numero As Integer = Integer.Parse(columnName.Split(" "c)(0))
-                    ' Llamar al método y pasarle el número
-                    Dim turnoEntrada As String = ProcesarTurnoEntrada(numero, fecha1, row("EXP."))
-                    If Len(turnoEntrada) > 0 Then
-                        row(diaColumna & " E") = turnoEntrada
+                    Dim fechaParte As New DateTime(año, mes, numero)
+
+                    If horasEntrada.ContainsKey(idOperario) AndAlso horasEntrada(idOperario).ContainsKey(fechaParte) Then
+                        Dim turnoEntrada As String = horasEntrada(idOperario)(fechaParte)
+                        If Len(turnoEntrada) > 0 Then
+                            row(diaColumna & " E") = turnoEntrada
+                        End If
                     End If
                 ElseIf columnName.EndsWith(" S") Then
-                    ' Extraer el número de la columna
                     Dim numero As Integer = Integer.Parse(columnName.Split(" "c)(0))
-                    ' Llamar al método y pasarle el número
-                    Dim turnoSalida As String = ProcesarTurnoSalida(numero, fecha1, row("EXP."))
-                    If Len(turnoSalida) > 0 Then
-                        row(diaColumna & " S") = turnoSalida
+                    Dim fechaParte As New DateTime(año, mes, numero)
+
+                    If horasSalida.ContainsKey(idOperario) AndAlso horasSalida(idOperario).ContainsKey(fechaParte) Then
+                        Dim turnoSalida As String = horasSalida(idOperario)(fechaParte)
+                        If Len(turnoSalida) > 0 Then
+                            row(diaColumna & " S") = turnoSalida
+                        End If
                         diaColumna += 1
                     Else
                         diaColumna += 1
                     End If
                 End If
-
             Next
         Next
     End Sub
+
 
     Function ProcesarTurnoEntrada(ByVal dia As Integer, ByVal fecha1 As String, ByVal IDOperario As String) As String
         Dim mes As String = Month(fecha1)
@@ -8403,93 +8444,96 @@ Public Class CargaHorasJPSTAFF
                 If IDOficio = "STAFF" Then
                     worksheet.Cells(row, col + 62).Value = CDbl(0)
                 Else
-                    'SI ES DEL TURNO 1
+                    'SI ES DEL TURNO 1 O DE OTRO
+                    ' Condición principal para verificar el turno
                     If r = 255 AndAlso g = 255 AndAlso b = 255 Then
                         If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
-                            ' Acción para días de lunes a viernes. RESTAR el valor de origen -7,5
+                            ' Acción para días de lunes a viernes
                             Dim horas = CDbl(worksheet.Cells(row, col).Value - 7.5)
                             If horas < 0 Then
                                 worksheet.Cells(row, col + 62).Value = CDbl(0)
                             Else
                                 worksheet.Cells(row, col + 62).Value = horas
                             End If
+                        Else
+                            ' Acción para fines de semana
+                            worksheet.Cells(row, col + 62).Value = CDbl(value)
+                        End If
 
+                    ElseIf r = 255 AndAlso g = 244 AndAlso b = 180 Then
+                        If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
+                            ' Acción para días de lunes a viernes
+                            Dim horas = CDbl(worksheet.Cells(row, col).Value - 6.5)
+                            If horas < 0 Then
+                                worksheet.Cells(row, col + 62).Value = CDbl(0)
+                            Else
+                                worksheet.Cells(row, col + 62).Value = horas
+                            End If
+                        Else
+                            ' Acción para fines de semana
+                            worksheet.Cells(row, col + 62).Value = CDbl(value) - 5
+                        End If
+
+                    ElseIf r = 255 AndAlso g = 120 AndAlso b = 216 Then
+                        If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
+                            ' Acción para días de lunes a viernes
+                            Dim horas = CDbl(worksheet.Cells(row, col).Value - 6.5)
+                            If horas < 0 Then
+                                worksheet.Cells(row, col + 62).Value = CDbl(0)
+                            Else
+                                worksheet.Cells(row, col + 62).Value = horas
+                            End If
+                        Else
+                            ' Acción para fines de semana
+                            worksheet.Cells(row, col + 62).Value = CDbl(value) - 5
+                        End If
+
+                    ElseIf r = 255 AndAlso g = 156 AndAlso b = 196 Then
+                        If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
+                            ' Acción para días de lunes a viernes
+                            Dim horas = CDbl(worksheet.Cells(row, col).Value - 7.5)
+                            If horas < 0 Then
+                                worksheet.Cells(row, col + 62).Value = CDbl(0)
+                            Else
+                                worksheet.Cells(row, col + 62).Value = horas
+                            End If
+                            ' Acción para fines de semana comentada en el código original
+                            ' Else
+                            '    worksheet.Cells(row, col + 62).Value = CDbl(value) - 5
+                        End If
+
+                    ElseIf r = 255 AndAlso g = 168 AndAlso b = 164 Then
+                        If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
+                            ' Acción para días de lunes a viernes
+                            Dim horas = CDbl(worksheet.Cells(row, col).Value - 7.5)
+                            If horas < 0 Then
+                                worksheet.Cells(row, col + 62).Value = CDbl(0)
+                            Else
+                                worksheet.Cells(row, col + 62).Value = horas
+                            End If
+                            ' Acción para fines de semana comentada en el código original
+                            ' Else
+                            '    worksheet.Cells(row, col + 62).Value = CDbl(value) - 5
+                        End If
+                    Else
+                        If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
+                            ' Acción para días de lunes a viernes
+                            Dim horas = CDbl(worksheet.Cells(row, col).Value - 7.5)
+                            If horas < 0 Then
+                                worksheet.Cells(row, col + 62).Value = CDbl(0)
+                            Else
+                                worksheet.Cells(row, col + 62).Value = horas
+                            End If
                         Else
                             ' Acción para fines de semana
                             worksheet.Cells(row, col + 62).Value = CDbl(value)
                         End If
                     End If
-                    ' SI ES DEL TURNO 2 -> naranja
-                    If r = 255 AndAlso g = 244 AndAlso b = 180 Then
-                        If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
-                            ' Acción para días de lunes a viernes. RESTAR el valor de origen -7,5
-                            Dim horas = CDbl(worksheet.Cells(row, col).Value - 6.5)
-                            If horas < 0 Then
-                                worksheet.Cells(row, col + 62).Value = CDbl(0)
-                            Else
-                                worksheet.Cells(row, col + 62).Value = horas
-                            End If
-
-                        Else
-                            ' Acción para fines de semana
-                            worksheet.Cells(row, col + 62).Value = CDbl(value) - 5
-                        End If
-                    End If
-
-                    ' SI ES DEL TURNO 3 -> verde
-                    If r = 255 AndAlso g = 120 AndAlso b = 216 Then
-                        If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
-                            ' Acción para días de lunes a viernes. RESTAR el valor de origen -7,5
-                            Dim horas = CDbl(worksheet.Cells(row, col).Value - 6.5)
-                            If horas < 0 Then
-                                worksheet.Cells(row, col + 62).Value = CDbl(0)
-                            Else
-                                worksheet.Cells(row, col + 62).Value = horas
-                            End If
-
-                        Else
-                            ' Acción para fines de semana
-                            worksheet.Cells(row, col + 62).Value = CDbl(value) - 5
-                        End If
-                    End If
-
-                    ' SI ES DEL TURNO 4 -> azul
-                    If r = 255 AndAlso g = 156 AndAlso b = 196 Then
-                        If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
-                            ' Acción para días de lunes a viernes. RESTAR el valor de origen -7,5
-                            Dim horas = CDbl(worksheet.Cells(row, col).Value - 7.5)
-                            If horas < 0 Then
-                                worksheet.Cells(row, col + 62).Value = CDbl(0)
-                            Else
-                                worksheet.Cells(row, col + 62).Value = horas
-                            End If
-
-                            'Else
-                            '    ' Acción para fines de semana
-                            '    worksheet.Cells(row, col + 62).Value = CDbl(value) - 5
-                        End If
-                    End If
-
-                    ' SI ES DEL TURNO 5 -> gris
-                    If r = 255 AndAlso g = 168 AndAlso b = 164 Then
-                        If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
-                            ' Acción para días de lunes a viernes. RESTAR el valor de origen -7,5
-                            Dim horas = CDbl(worksheet.Cells(row, col).Value - 7.5)
-                            If horas < 0 Then
-                                worksheet.Cells(row, col + 62).Value = CDbl(0)
-                            Else
-                                worksheet.Cells(row, col + 62).Value = horas
-                            End If
-
-                            'Else
-                            '    ' Acción para fines de semana
-                            '    worksheet.Cells(row, col + 62).Value = CDbl(value) - 5
-                        End If
-                    End If
                 End If
+
             End If
         Catch ex As Exception
-        End Try  
+        End Try
     End Sub
     Public Sub GestionarFormulacion(ByVal worksheet As ExcelWorksheet)
         ' Define el rango desde AL9 hasta BP y hasta la última fila
@@ -8833,7 +8877,7 @@ Public Class CargaHorasJPSTAFF
                 numeroDia = 1
             End If
             ' Ajustar el ancho de la columna a 3
-            worksheet.Column(columna).Width = 4
+            worksheet.Column(columna).Width = 6
         Next
     End Sub
 
@@ -9046,7 +9090,7 @@ Public Class CargaHorasJPSTAFF
             'MsgBox("Turno de 10:00 a 20:00")
             Return System.Drawing.Color.FromArgb(168, 164, 164)
         Else
-            Return System.Drawing.Color.FromArgb(255, 255, 255)
+            Return System.Drawing.Color.FromArgb(255, 192, 203)
         End If
 
     End Function

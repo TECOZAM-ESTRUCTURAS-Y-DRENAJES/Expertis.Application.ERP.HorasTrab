@@ -190,6 +190,12 @@
     <Compile Include="frmHorasAPP.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmHorasInternacionalApp.Designer.vb">
+      <DependentUpon>frmHorasInternacionalApp.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmHorasInternacionalApp.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmInformeFecha.Designer.vb">
       <DependentUpon>frmInformeFecha.vb</DependentUpon>
     </Compile>
@@ -287,6 +293,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmHorasAPP.resx">
       <DependentUpon>frmHorasAPP.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmHorasInternacionalApp.resx">
+      <DependentUpon>frmHorasInternacionalApp.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="frmInformeFecha.resx">
