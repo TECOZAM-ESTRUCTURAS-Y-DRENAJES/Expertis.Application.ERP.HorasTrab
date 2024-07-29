@@ -589,10 +589,11 @@ Public Class frmHorasInternacionalApp
 
         ' Añadir registros al DataTable
         dtTurnos.Rows.Add(1, "07:00h to 16:00h")
-        dtTurnos.Rows.Add(2, "07:00h to 14:00h")
+        dtTurnos.Rows.Add(2, "07:00h to 14:00ºh")
         dtTurnos.Rows.Add(3, "14:00h to 21:00h")
         dtTurnos.Rows.Add(4, "10:30h to 20:00h")
         dtTurnos.Rows.Add(5, "10:00h to 20:00h")
+        dtTurnos.Rows.Add(6, "- OTRO HORARIO -")
 
         Dim dtTurnosExplicacion As New DataTable()
         dtTurnosExplicacion.Columns.Add("Explicacion", GetType(String))
@@ -609,16 +610,17 @@ Public Class frmHorasInternacionalApp
         ' Copiar los datos de la DataTable a la hoja de cálculo
         worksheet.Cells("A1").LoadFromDataTable(dtParametros, True)
         worksheet.Cells("A11").LoadFromDataTable(dtTurnos, True)
-        worksheet.Cells("A18").LoadFromDataTable(dtTurnosExplicacion, True)
+        worksheet.Cells("A19").LoadFromDataTable(dtTurnosExplicacion, True)
 
         ' Aplicar formato de borde a las celdas
         ApplyBorder(worksheet.Cells("A1:B9"))
-        ApplyBorder(worksheet.Cells("A11:B16"))
+        ApplyBorder(worksheet.Cells("A11:B17"))
 
         ApplyCellBackgroundColor(worksheet.Cells("B13"), 244, 180, 132)
         ApplyCellBackgroundColor(worksheet.Cells("B14"), 120, 216, 112)
         ApplyCellBackgroundColor(worksheet.Cells("B15"), 156, 196, 228)
         ApplyCellBackgroundColor(worksheet.Cells("B16"), 168, 164, 164)
+        ApplyCellBackgroundColor(worksheet.Cells("B17"), 255, 192, 203)
 
         worksheet.Column(2).Width = 20
     End Sub
