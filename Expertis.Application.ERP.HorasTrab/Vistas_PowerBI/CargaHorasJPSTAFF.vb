@@ -395,7 +395,7 @@ Public Class CargaHorasJPSTAFF
 
                 IDTrabajo = rsTrabajo.Rows(0)("IdTrabajo") : CodTrabajo = rsTrabajo.Rows(0)("CodTrabajo")
                 Dim DescTrabajo As String = "" : Dim IdTipoTrabajo As String = "" : Dim IdSubTipoTrabajo As String = ""
-                DescTrabajo = rsTrabajo.Rows(0)("DescTrabajo") : IdTipoTrabajo = rsTrabajo.Rows(0)("IdTipoTrabajo") : IdSubTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdSubtipotrabajo"), "")
+                DescTrabajo = rsTrabajo.Rows(0)("DescTrabajo") : IdTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdTipoTrabajo"), "") : IdSubTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdSubtipotrabajo"), "")
                 Dim DescParte As String : DescParte = "JP STAFF " & mes & "-" & año & "-JP"
 
                 txtSQL = "Insert into " & DB_NO & "..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
@@ -489,14 +489,17 @@ Public Class CargaHorasJPSTAFF
         '-------------------------------------------------------
 
         '--------------INICIO CHECKS---------------------------
-        If CheckAndExitIfTrue(Function() CheckDuplicidadHoras(dtTecozam, Fecha1, Fecha2, DB_TECOZAM), False) Then Exit Sub
-        If CheckAndExitIfTrue(Function() CheckDuplicidadHoras(dtPortugal, Fecha1, Fecha2, DB_DCZ), False) Then Exit Sub
-        If CheckAndExitIfTrue(Function() CheckDuplicidadHoras(dtUK, Fecha1, Fecha2, DB_UK), False) Then Exit Sub
-        If CheckAndExitIfTrue(Function() CheckDuplicidadHoras(dtNO, Fecha1, Fecha2, DB_NO), False) Then Exit Sub
+
         If CheckAndExitIfTrue(Function() CheckRegistrosEmpresa(dtTecozam, DB_TECOZAM), False) Then Exit Sub
         If CheckAndExitIfTrue(Function() CheckRegistrosEmpresa(dtPortugal, DB_DCZ), False) Then Exit Sub
         If CheckAndExitIfTrue(Function() CheckRegistrosEmpresa(dtUK, DB_UK), False) Then Exit Sub
         If CheckAndExitIfTrue(Function() CheckRegistrosEmpresa(dtNO, DB_NO), False) Then Exit Sub
+
+
+        If CheckAndExitIfTrue(Function() CheckDuplicidadHoras(dtTecozam, Fecha1, Fecha2, DB_TECOZAM), False) Then Exit Sub
+        If CheckAndExitIfTrue(Function() CheckDuplicidadHoras(dtPortugal, Fecha1, Fecha2, DB_DCZ), False) Then Exit Sub
+        If CheckAndExitIfTrue(Function() CheckDuplicidadHoras(dtUK, Fecha1, Fecha2, DB_UK), False) Then Exit Sub
+        If CheckAndExitIfTrue(Function() CheckDuplicidadHoras(dtNO, Fecha1, Fecha2, DB_NO), False) Then Exit Sub
 
         '---------------FIN CHECKS---------------------------
 
@@ -1076,12 +1079,12 @@ Public Class CargaHorasJPSTAFF
         Dim sql As String
         '------COMO YO LO DE DEJARIA---------
         sql = "select IDOperario, Obra_Predeterminada from " & DB_TECOZAM & "..tbMaestroOperarioSat " & _
-        "where (Obra_Predeterminada='16895681' Or Obra_Predeterminada='11984995') and " & _
+        "where (Obra_Predeterminada='16895681' Or Obra_Predeterminada='11984995' Or Obra_Predeterminada='16901645' Or Obra_Predeterminada='17734421') and " & _
         "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<=GETDATE()))" & _
         " Union " & _
         "select IDOperario, Proyecto AS Obra_Predeterminada " & _
         "from " & DB_TECOZAM & "..tbHistoricoPersonal " & _
-        "where (Proyecto = '16895681' OR Proyecto = '11984995') and " & _
+        "where (Proyecto = '16895681' OR Proyecto = '11984995' Or Obra_Predeterminada='16901645' Or Obra_Predeterminada='17734421') and " & _
         "((Fecha >= '" & Fecha1 & "' AND Fecha <=GETDATE()))"
 
 
@@ -1153,7 +1156,7 @@ Public Class CargaHorasJPSTAFF
             'IDObra destino = OFICINA
             IDObra = fila("Obra_Predeterminada")
             'Si es distinto que oficina y almacen
-            If IDObra <> "11984995" And IDObra <> "16895681" Then
+            If IDObra <> "11984995" And IDObra <> "16895681" And IDObra <> "16901645" And IDObra <> "17734421" Then
                 IDObra = DevuelveUltimoCambioObra(IDOperario, DB_TECOZAM)
             End If
 
@@ -3070,7 +3073,16 @@ Public Class CargaHorasJPSTAFF
         Try
             Dim IDOperario As String
             Dim incentivos As String
+
+            'dvelasco 08/08/24
+            Dim filas As Integer = 0
+            PvProgreso.Value = 0 : PvProgreso.Maximum = dt.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
             For Each row As DataRow In dt.Rows
+
+                filas += 1
+                PvProgreso.Value = filas
+
                 'Verificar si la celda está vacía
                 If Len(row("F1").ToString) = 0 Then
                     'Return newDataTable
@@ -3107,6 +3119,8 @@ Public Class CargaHorasJPSTAFF
                 newRow("Empresa") = empresa
                 newDataTable.Rows.Add(newRow)
             Next
+
+            AjusteProgressBar(filas, dt)
         Catch ex As Exception
             MsgBox("Error al leer las extras de " & empresa & " pero deja seguir.")
         End Try
@@ -3936,13 +3950,13 @@ Public Class CargaHorasJPSTAFF
         dtFestivos = New BE.DataEngine().Filter(DB_TECOZAM & "..tbCalendarioCentro", f, "Fecha, TipoDia")
 
         For Each dr As DataRow In dtPersonasDeBaja.Rows
-            'If dr("idoperario") <> "T3249" Then
-            'Continue For ' Esto pasará a la siguiente iteración
-            'End If
             bbdd = dr("Empresa") : idoperario = dr("idoperario") : fechabaja = dr("Fecha_Baja") : fechaalta = Nz(dr("Fecha_Alta"), Fecha2)
             fechaCalculos = Fecha1 : idobra = Nz(dr("IDObra").ToString, getObraBaja(bbdd, idoperario, fechabaja))
 
             ActualizarLProgreso("Importando : " & idoperario & " - HORAS DE BAJA")
+
+            Dim fechaFinalEmpresa As String = ""
+            fechaFinalEmpresa = getFechaFinalEmpresa(bbdd, idoperario)
 
             'Para los que están de baja en el intervalo de fechas, por ejemplo 15/09/23
             If fechabaja > Fecha1 Then
@@ -3958,6 +3972,12 @@ Public Class CargaHorasJPSTAFF
             While fechaCalculos <= fechaFin
                 If fechaalta = fechaCalculos Then
                     Exit While
+                End If
+
+                If Len(fechaFinalEmpresa) <> 0 Then
+                    If fechaFinalEmpresa = fechaCalculos Then
+                        Exit While
+                    End If
                 End If
                 'Si es festivo pasa al siguiente
                 For Each fila As DataRow In dtFestivos.Rows
@@ -3976,6 +3996,29 @@ Public Class CargaHorasJPSTAFF
             PvProgreso.Value = filas
         Next
     End Sub
+    Public Function getFechaFinalEmpresa(ByVal bbdd As String, ByVal idoperario As String) As String
+        'Asigno bases de datos
+        If bbdd = "T. ES." Then
+            bbdd = DB_TECOZAM
+        ElseIf bbdd = "FERR." Then
+            bbdd = DB_FERRALLAS
+        ElseIf bbdd = "SEC." Then
+            bbdd = DB_SECOZAM
+        End If
+
+        Dim dtOperario As New DataTable
+        Dim filtro As New Filter
+
+        filtro.Add("IDOperario", FilterOperator.Equal, idoperario)
+        dtOperario = New BE.DataEngine().Filter(bbdd & "..frmMntoOperario", filtro)
+
+        If Len(dtOperario.Rows(0)("fecha_baja").ToString) <> 0 Then
+            Return dtOperario.Rows(0)("fecha_baja").ToString
+        Else
+            Return ""
+        End If
+    End Function
+
     Public Sub insertarOActualizar(ByVal bbdd As String, ByVal idoperario As String, ByVal idobra As String, ByVal dias As Integer, ByVal fechaInicio As String)
         'Asigno bases de datos
         If bbdd = "T. ES." Then
@@ -4118,10 +4161,49 @@ Public Class CargaHorasJPSTAFF
             dr("Fecha_Baja") = fila("fBaja")
             dr("Fecha_Alta") = fila("fAlta")
             dr("nDias") = fila("nDias")
+            dr("IDObra") = fila("Lugar")
             dtPersonasDeBaja.Rows.Add(dr)
         Next
 
+        Dim empresa As String
+        Dim idoperario As String
+        Dim idobra As String
+        For Each fila As DataRow In dtPersonasDeBaja.Rows
+            empresa = fila("Empresa")
+            idoperario = fila("IDOperario")
+            idobra = Nz(fila("IDObra"), "")
+
+            If Len(idobra) = 0 Then
+                Dim obraOficina = checkOficina(empresa, idoperario)
+                If Len(obraOficina) <> 0 Then
+                    fila("IDObra") = obraOficina
+                End If
+            End If
+        Next
     End Sub
+    Public Function checkOficina(ByVal bbdd As String, ByVal idoperario As String) As String
+        If bbdd = "T. ES." Then
+            bbdd = DB_TECOZAM
+        ElseIf bbdd = "FERR." Then
+            bbdd = DB_FERRALLAS
+        ElseIf bbdd = "SEC." Then
+            bbdd = DB_SECOZAM
+        End If
+
+        Dim f As New Filter
+        f.Add("IDOperario", FilterOperator.Equal, idoperario)
+        Dim dt As New DataTable
+        dt = New BE.DataEngine().Filter(bbdd & "..frmMntoOperario", f)
+
+        If dt.Rows(0)("Obra_predeterminada").ToString = "11854299" Or dt.Rows(0)("Obra_predeterminada").ToString = "16895681" Or dt.Rows(0)("Obra_predeterminada").ToString = "12677838" Or _
+            dt.Rows(0)("Obra_predeterminada").ToString = "16901645" Or dt.Rows(0)("Obra_predeterminada").ToString = "17734421" Then
+            Return dt.Rows(0)("Obra_predeterminada").ToString
+        Else
+            Return ""
+        End If
+
+    End Function
+
     Public Function GetListadoPersonasDeBajaPorAccidente(ByVal Fecha1 As String, ByVal Fecha2 As String) As DataTable
         '1. SACO LAS PERSONAS QUE SE HAN DADO DE ALTA EN UN MES
         Dim filtro As New Filter
@@ -4131,7 +4213,7 @@ Public Class CargaHorasJPSTAFF
         sql = "select * from xTecozam50R2..vUnionOperariosAccidentes"
         sql &= " where ((fAlta >= '" & Fecha1 & "' AND fBaja >= '" & Fecha1 & "' AND fBaja <= '" & Fecha2 & "')"
         sql &= " or(fAlta >= '" & Fecha1 & "' AND fAlta <= '" & Fecha2 & "') or (fBaja<='" & Fecha1 & "' and fAlta>='" & Fecha2 & "') or fAlta is null)"
-        sql &= " and fBaja is not null and nDiasBaja!=0"
+        sql &= " and fBaja is not null and (nDiasBaja!=0 or ndiasBaja is null)"
 
         dtPersonas = aux.EjecutarSqlSelect(sql)
         Return dtPersonas
@@ -5309,6 +5391,10 @@ Public Class CargaHorasJPSTAFF
 
         Dim result As DialogResult = MessageBox.Show("¿Quieres añadir un fichero de regularizaciones?", "Confirmar", MessageBoxButtons.YesNo)
 
+        'David Velasco 08/08/24
+        '5º. Hoja IDGET con un registro para evitar error al cargar power bi
+        Dim dtIDGET = getTablaEvitarError()
+
         If result = DialogResult.Yes Then
             Dim dtRegularizaciones As DataTable
             dtRegularizaciones = getFicheroRegularizaciones()
@@ -5317,12 +5403,35 @@ Public Class CargaHorasJPSTAFF
             'dtRegularizar+dtRegularizaciones
             Dim dtTotalAnual As DataTable
             dtTotalAnual = sumaTablas(dtRegularizar, dtRegularizaciones)
-            GeneraExcelRegularizarA3(dtTotalAnual, dtA3EntreFechasPowerBi, dtSemestral, mes2, anio)
+            GeneraExcelRegularizarA3(dtTotalAnual, dtA3EntreFechasPowerBi, dtSemestral, mes2, anio, getTablaEvitarError)
         Else
-            GeneraExcelRegularizarA3(dtRegularizar, dtA3EntreFechasPowerBi, dtSemestral, mes2, anio)
+            GeneraExcelRegularizarA3(dtRegularizar, dtA3EntreFechasPowerBi, dtSemestral, mes2, anio, getTablaEvitarError)
         End If
 
     End Sub
+    Public Function getTablaEvitarError() As DataTable
+        ' Crear una nueva instancia de DataTable
+        Dim dt As New DataTable()
+
+        ' Agregar las columnas a la tabla
+        dt.Columns.Add("Empresa", GetType(String))
+        dt.Columns.Add("IDGET", GetType(String))
+        dt.Columns.Add("Total", GetType(Integer))
+
+        ' Crear una nueva fila
+        Dim row As DataRow = dt.NewRow()
+
+        ' Asignar valores a la fila
+        row("Empresa") = "T. ES"
+        row("IDGET") = "GET03503"
+        row("Total") = 0
+
+        ' Agregar la fila a la tabla
+        dt.Rows.Add(row)
+
+        ' Retornar la tabla
+        Return dt
+    End Function
     Public Function sumaTablas(ByVal dtRegularizar As DataTable, ByVal dtRegularizaciones As DataTable)
         ' Crear un nuevo DataTable para almacenar los resultados finales
         Dim dtFinal As New DataTable
@@ -5376,7 +5485,7 @@ Public Class CargaHorasJPSTAFF
         Return ObtenerDatosExcelCabecera(ruta, hoja, rango)
     End Function
     Public Sub GeneraExcelRegularizarA3(ByVal dtRegularizar As DataTable, ByVal dtA3EntreFechasPowerBi As DataTable, ByVal dtSemestral As DataTable, _
-                                        ByVal mes As String, ByVal anio As String)
+                                        ByVal mes As String, ByVal anio As String, ByVal dtIDGetEvitarError As DataTable)
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial
 
         Dim ruta As New FileInfo("N:\10. AUXILIARES\00. EXPERTIS\04. REGULARIZACIONES\" & mes & " REGULARIZACIONES " & mes & anio.Substring(anio.Length - 2) & ".xlsx")
@@ -5433,6 +5542,18 @@ Public Class CargaHorasJPSTAFF
             resumenCategoria.Column(2).Width = 14
             resumenCategoria.Column(3).Width = 14
 
+            'CUARTA HOJA DEL EXCEL QUE ES PARA EVITAR EL ERROR DE POWER BI HOJA IDGET
+            Dim hojaIDGET = package.Workbook.Worksheets.Add("IDGET")
+            hojaIDGET.Cells("A1").LoadFromDataTable(dtIDGetEvitarError, True)
+
+            Dim fil1 As ExcelRange = hojaIDGET.Cells(1, 1, 1, hojaIDGET.Dimension.End.Column)
+            fil1.Style.Font.Bold = True
+
+            Dim columnaC As ExcelRange = hojaIDGET.Cells("C2:C" & hojaIDGET.Dimension.End.Row)
+            columnaC.Style.Numberformat.Format = "#,##0.00€"
+            hojaIDGET.Column(1).Width = 14
+            hojaIDGET.Column(2).Width = 14
+            hojaIDGET.Column(3).Width = 14
             ' Guardar el archivo de Excel.
             package.Save()
         End Using
@@ -5482,35 +5603,34 @@ Public Class CargaHorasJPSTAFF
         tablaResultado.Columns.Add("IDCategoriaProfesionalSCCP", GetType(Integer))
         tablaResultado.Columns.Add("Total", GetType(Double))
 
-        ' Obtener la cantidad de categorías posibles (1 a 5)
-        Dim numCategorias As Integer = 5
+        ' Recorrer la tabla y acumular totales por empresa y categoría
+        For Each fila As DataRow In dtFinalA3.Rows
+            Dim idCategoria As Integer = CInt(fila("IDCategoriaProfesionalSCCP"))
+            Dim empresa As String = CStr(fila("Empresa"))
+            Dim costoEmpresa As Double = CDbl(Nz(fila("CosteEmpresa"), 0))
 
-        ' Recorrer la tabla para cada categoría y empresa
-        For categoria As Integer = 1 To numCategorias
-            For Each fila As DataRow In dtFinalA3.Rows
-                Dim idCategoria As Integer = CInt(fila("IDCategoriaProfesionalSCCP"))
-                Dim empresa As String = CStr(fila("Empresa"))
-                Dim costoEmpresa As Double = CDbl(Nz(fila("CosteEmpresa"), 0))
+            ' Buscar si ya existe una fila para esta categoría y empresa en la tabla de resultados
+            Dim filasExistentes() As DataRow = tablaResultado.Select("IDCategoriaProfesionalSCCP = " & idCategoria & " AND Empresa = '" & empresa & "'")
 
-                ' Comprobar si la fila coincide con la categoría actual
-                If idCategoria = categoria Then
-                    ' Buscar si ya existe una fila para esta categoría y empresa en la tabla de resultados
-                    Dim filasExistentes() As DataRow = tablaResultado.Select("IDCategoriaProfesionalSCCP = " & categoria & " AND Empresa = '" & empresa & "'")
-
-                    If filasExistentes.Length > 0 Then
-                        ' Si existe una fila para esta categoría y empresa, acumular el costo
-                        filasExistentes(0)("Total") = CDbl(filasExistentes(0)("Total")) + costoEmpresa
-                    Else
-                        ' Si no existe una fila, agregar una nueva
-                        Dim filaResultado As DataRow = tablaResultado.NewRow()
-                        filaResultado("IDCategoriaProfesionalSCCP") = categoria
-                        filaResultado("Empresa") = empresa
-                        filaResultado("Total") = costoEmpresa
-                        tablaResultado.Rows.Add(filaResultado)
-                    End If
-                End If
-            Next
+            If filasExistentes.Length > 0 Then
+                ' Si existe una fila para esta categoría y empresa, acumular el costo
+                filasExistentes(0)("Total") = CDbl(filasExistentes(0)("Total")) + costoEmpresa
+            Else
+                ' Si no existe una fila, agregar una nueva
+                Dim filaResultado As DataRow = tablaResultado.NewRow()
+                filaResultado("IDCategoriaProfesionalSCCP") = idCategoria
+                filaResultado("Empresa") = empresa
+                filaResultado("Total") = costoEmpresa
+                tablaResultado.Rows.Add(filaResultado)
+            End If
         Next
+
+        ' Ordenar la tabla por la columna "Empresa" DESC y luego por "IDCategoriaProfesionalSCCP" ASC
+        Dim vistaOrdenada As DataView = tablaResultado.DefaultView
+        vistaOrdenada.Sort = "Empresa DESC, IDCategoriaProfesionalSCCP ASC"
+
+        ' Obtener la tabla ordenada
+        tablaResultado = vistaOrdenada.ToTable()
 
         Return tablaResultado
     End Function
@@ -8026,7 +8146,8 @@ Public Class CargaHorasJPSTAFF
         For Each dtRow As DataRow In dt.Rows
             Dim f As New Filter
             Dim f2 As New Filter
-            f2.Add("NObra", FilterOperator.Equal, dtRow("CentroCoste"))
+            Dim nobra As String = dtRow("CentroCoste")
+            f2.Add("NObra", FilterOperator.Equal, nobra)
             Dim idObra As String = New BE.DataEngine().Filter(database & "..tbObraCabecera", f2).Rows(0)("IDObra")
 
             f.Add("IDOperario", FilterOperator.Equal, dtRow("IDOperario"))
