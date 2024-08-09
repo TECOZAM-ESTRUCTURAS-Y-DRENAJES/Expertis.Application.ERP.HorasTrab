@@ -275,7 +275,7 @@ Public Class frmHorasInternacionalApp
         For Each row As DataRow In dtFinal.Rows
             Dim idOperario As String = row("EXP.").ToString()
             Dim diaColumna As Integer = 1
-            For i As Integer = 7 To dtFinal.Columns.Count - 1
+            For i As Integer = 6 To dtFinal.Columns.Count - 1
                 Dim columnName As String = dtFinal.Columns(i).ColumnName
                 If columnName.EndsWith(" E") Then
                     Dim numero As Integer = Integer.Parse(columnName.Split(" "c)(0))
