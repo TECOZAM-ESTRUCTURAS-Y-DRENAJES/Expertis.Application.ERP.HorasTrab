@@ -970,6 +970,7 @@ Public Class frmHorasInternacionalApp
             Else
                 EscribirHorasProductivas(worksheet, dt, fila, dia)
             End If
+
         Else
             If EsDiaLaboral(fechaComparar) Then
                 Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
@@ -984,6 +985,7 @@ Public Class frmHorasInternacionalApp
         Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
         Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
         celda.Value = IDCausa
+
         Select Case IDCausa
             Case "B"
                 celda.Style.Font.Color.SetColor(System.Drawing.Color.Orange)
@@ -1001,6 +1003,10 @@ Public Class frmHorasInternacionalApp
         Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
         Dim horas As Double = dt(0)("HorasProductivas").ToString.Replace(".", ",")
         celda.Value = horas
+
+        If Len(dt(0)("Comentarios").ToString) <> 0 Then
+            celda.AddComment(dt(0)("Comentarios").ToString)
+        End If
         Dim color As System.Drawing.Color = getColorTurnoTrabajador(dt)
         celda.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
         celda.Style.Fill.BackgroundColor.SetColor(color)
