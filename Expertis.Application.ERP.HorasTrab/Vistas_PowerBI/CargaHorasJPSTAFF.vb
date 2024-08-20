@@ -1599,7 +1599,12 @@ Public Class CargaHorasJPSTAFF
         basededatos = DevuelveBaseDeDatosInternacional(obra)
 
         If basededatos = "0" Then
-            Exit Sub
+            Dim dtBaseDatos As DataTable = ObtenerDatosExcel(ruta, hoja1, "C1:D1")
+            Try
+                basededatos = dtBaseDatos.Rows(0)("F2").ToString.Trim()
+            Catch ex As Exception
+                Exit Sub
+            End Try
         End If
 
         dtHoras = dtFormaInternacional(dtHoras, fecha1)
@@ -1859,7 +1864,7 @@ Public Class CargaHorasJPSTAFF
         ElseIf obra.StartsWith("TN") Then
             basededatos = "xTecozamNorge50R2"
         Else
-            MsgBox("No se encuentra base de datos para esta obra")
+            'MsgBox("No se encuentra base de datos para esta obra")
             basededatos = "0"
         End If
 
