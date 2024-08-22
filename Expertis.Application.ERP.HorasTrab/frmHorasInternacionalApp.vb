@@ -3,6 +3,7 @@ Imports System.Windows.Forms
 Imports OfficeOpenXml
 Imports OfficeOpenXml.Style
 Imports System.Drawing
+Imports Solmicro.Expertis.Application.ERP.Operario
 
 Public Class frmHorasInternacionalApp
 
@@ -22,8 +23,19 @@ Public Class frmHorasInternacionalApp
     End Sub
 
     Private Sub LoadToolbarActions()
-        Me.FormActions.Add("Generar excel horas Noruega.", AddressOf generaExcelNoruega)
+        Me.FormActions.Add("Generar excel horas Noruega.", AddressOf exportacion)
     End Sub
+    Public Sub exportacion()
+        ' Crear una instancia de la clase ExportacionCuadranteNoruega
+        Dim tablaOriginal As String = "frmMntoHorasInternacional"
+        Dim exportacion As New ExportacionCuadranteNoruega()
+        ' Llamar al método generaExcelNoruega
+        exportacion.tablaDatos = tablaOriginal
+        exportacion.tipoExportacion = "ORIGINAL"
+        exportacion.generaExcelNoruega()
+    End Sub
+
+#Region "Codigo Antiguo antes de modularizar"
 
     Public Sub generaExcelNoruega()
         Dim frm As New frmInformeFecha
@@ -248,7 +260,7 @@ Public Class frmHorasInternacionalApp
         filtro.Add("FechaParte", FilterOperator.GreaterThanOrEqual, fechaInicio)
         filtro.Add("FechaParte", FilterOperator.LessThanOrEqual, fechaFin)
 
-        dtRegistro = New BE.DataEngine().Filter("tbHorasInternacional", filtro)
+        dtRegistro = New BE.DataEngine().Filter("frmMntoHorasInternacional", filtro)
 
         ' Crear diccionarios para almacenar las horas de entrada y salida por operario y fecha
         Dim horasEntrada As New Dictionary(Of String, Dictionary(Of DateTime, String))()
@@ -316,7 +328,7 @@ Public Class frmHorasInternacionalApp
         Dim filtro As New Filter
         filtro.Add("FechaParte", FilterOperator.Equal, fechaParte)
         filtro.Add("IDOperario", FilterOperator.Equal, IDOperario)
-        dtRegistro = New BE.DataEngine().Filter("tbHorasInternacional", filtro)
+        dtRegistro = New BE.DataEngine().Filter("frmMntoHorasInternacional", filtro)
 
         If dtRegistro.Rows.Count > 0 Then
             Return dtRegistro(0)("HoraEntrada").ToString
@@ -334,7 +346,7 @@ Public Class frmHorasInternacionalApp
         Dim filtro As New Filter
         filtro.Add("FechaParte", FilterOperator.Equal, fechaParte)
         filtro.Add("IDOperario", FilterOperator.Equal, IDOperario)
-        dtRegistro = New BE.DataEngine().Filter("tbHorasInternacional", filtro)
+        dtRegistro = New BE.DataEngine().Filter("frmMntoHorasInternacional", filtro)
 
         If dtRegistro.Rows.Count > 0 Then
             Return dtRegistro(0)("HoraSalida").ToString
@@ -528,14 +540,16 @@ Public Class frmHorasInternacionalApp
                 ' Verifica si la celda actual tiene un valor
                 If Len(celda) <> 0 Then
                     ' Asigna la fórmula a la celda actual si está vacía
-                    Dim formula As String = "=IF(" & sourceColumnLetter & row & "=" & ChrW(34) & "A" & ChrW(34) & ", " & ChrW(34) & "A" & ChrW(34) & ", IF(" & _
-                                    sourceColumnLetter & row & "=" & ChrW(34) & ChrW(34) & ", " & ChrW(34) & ChrW(34) & ", IF(" & _
-                                    sourceColumnLetter & row & "=" & ChrW(34) & "V" & ChrW(34) & ", " & ChrW(34) & "V" & ChrW(34) & ", IF(" & _
-                                    sourceColumnLetter & row & "=" & ChrW(34) & "UA" & ChrW(34) & ", " & ChrW(34) & "UA" & ChrW(34) & ", IF(" & _
-                                    sourceColumnLetter & row & "=" & ChrW(34) & "VIAJE" & ChrW(34) & ", " & ChrW(34) & "VIAJE" & ChrW(34) & ", IF(" & _
-                                    sourceColumnLetter & row & "=" & ChrW(34) & "B" & ChrW(34) & ", " & ChrW(34) & "B" & ChrW(34) & ", IF(" & _
-                                    sourceColumnLetter & row & "=" & ChrW(34) & "H" & ChrW(34) & ", " & ChrW(34) & "H" & ChrW(34) & ", " & _
-                                    sourceColumnLetter & row & "-" & GetColumnLetter(col + 31) & row & ")))))))"
+                    Dim formula As String = "=IF(" & sourceColumnLetter & row & "=" & ChrW(34) & "A" & ChrW(34) & ", " & ChrW(34) & "A" & ChrW(34) & _
+                         ", IF(" & sourceColumnLetter & row & "=" & ChrW(34) & ChrW(34) & ", " & ChrW(34) & ChrW(34) & _
+                         ", IF(" & sourceColumnLetter & row & "=" & ChrW(34) & "V" & ChrW(34) & ", " & ChrW(34) & "V" & ChrW(34) & _
+                         ", IF(" & sourceColumnLetter & row & "=" & ChrW(34) & "UA" & ChrW(34) & ", " & ChrW(34) & "UA" & ChrW(34) & _
+                         ", IF(" & sourceColumnLetter & row & "=" & ChrW(34) & "VIAJE" & ChrW(34) & ", " & ChrW(34) & "VIAJE" & ChrW(34) & _
+                         ", IF(" & sourceColumnLetter & row & "=" & ChrW(34) & "B" & ChrW(34) & ", " & ChrW(34) & "B" & ChrW(34) & _
+                         ", IF(" & sourceColumnLetter & row & "=" & ChrW(34) & "H" & ChrW(34) & ", " & ChrW(34) & "H" & ChrW(34) & _
+                         ", IF(" & sourceColumnLetter & row & "=" & ChrW(34) & "D" & ChrW(34) & ", " & ChrW(34) & "D" & ChrW(34) & _
+                         ", " & sourceColumnLetter & row & "-" & GetColumnLetter(col + 31) & row & "))))))))"
+
                     worksheet.Cells(row, col).Formula = formula
 
                     ' Obtén el color de la fuente de la celda fuente
@@ -961,7 +975,7 @@ Public Class frmHorasInternacionalApp
         Dim f As New Filter
         f.Add("FechaParte", FilterOperator.Equal, fechaComparar)
         f.Add("IDOperario", FilterOperator.Equal, dr("EXP."))
-        dt = New BE.DataEngine().Filter("tbHorasInternacional", f)
+        dt = New BE.DataEngine().Filter("frmMntoHorasInternacional", f)
 
         If dt.Rows.Count > 0 Then
             Dim IDCausa As String = Nz(dt(0)("IDCausa").ToString, "")
@@ -1001,7 +1015,10 @@ Public Class frmHorasInternacionalApp
     Private Sub EscribirHorasProductivas(ByVal worksheet As ExcelWorksheet, ByVal dt As DataTable, ByVal fila As Integer, ByVal dia As Integer)
         Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
         Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
-        Dim horas As Double = dt(0)("HorasProductivas").ToString.Replace(".", ",")
+        Dim horas As Double = 0
+        If Not IsDBNull(dt(0)("Horas")) Then
+            Double.TryParse(dt(0)("Horas").ToString(), horas)
+        End If
         celda.Value = horas
 
         If Len(dt(0)("Comentarios").ToString) <> 0 Then
@@ -1073,4 +1090,6 @@ Public Class frmHorasInternacionalApp
         End If
 
     End Function
+#End Region
+
 End Class
