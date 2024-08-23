@@ -3,7 +3,6 @@ Imports System.Windows.Forms
 Imports OfficeOpenXml
 Imports OfficeOpenXml.Style
 Imports System.Drawing
-Imports Solmicro.Expertis.Application.ERP.Operario
 
 Public Class frmHorasInternacionalApp
 
@@ -28,7 +27,7 @@ Public Class frmHorasInternacionalApp
     Public Sub exportacion()
         ' Crear una instancia de la clase ExportacionCuadranteNoruega
         Dim tablaOriginal As String = "frmMntoHorasInternacional"
-        Dim exportacion As New ExportacionCuadranteNoruega()
+        Dim exportacion As New ExportacionNoruegaCuadrante()
         ' Llamar al método generaExcelNoruega
         exportacion.tablaDatos = tablaOriginal
         exportacion.tipoExportacion = "ORIGINAL"
