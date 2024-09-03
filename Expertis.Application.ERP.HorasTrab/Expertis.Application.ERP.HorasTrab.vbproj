@@ -148,6 +148,12 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Auxiliares\frmInformeFechaInternacional.Designer.vb">
+      <DependentUpon>frmInformeFechaInternacional.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Auxiliares\frmInformeFechaInternacional.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Horas España\CIMntoBusqHorasAPP.Designer.vb">
       <DependentUpon>CIMntoBusqHorasAPP.vb</DependentUpon>
     </Compile>
@@ -230,44 +236,48 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Vistas_PowerBI\CargaHorasJPSTAFF.Designer.vb">
+    <Compile Include="Coste_laboral\CargaHorasJPSTAFF.Designer.vb">
       <DependentUpon>CargaHorasJPSTAFF.vb</DependentUpon>
     </Compile>
-    <Compile Include="Vistas_PowerBI\CargaHorasJPSTAFF.vb">
+    <Compile Include="Coste_laboral\CargaHorasJPSTAFF.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Vistas_PowerBI\CIMntoTrabObraMesUnionBasesDatos.Designer.vb">
+    <Compile Include="Coste_laboral\CIMntoTrabObraMesUnionBasesDatos.Designer.vb">
       <DependentUpon>CIMntoTrabObraMesUnionBasesDatos.vb</DependentUpon>
     </Compile>
-    <Compile Include="Vistas_PowerBI\CIMntoTrabObraMesUnionBasesDatos.vb">
+    <Compile Include="Coste_laboral\CIMntoTrabObraMesUnionBasesDatos.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Vistas_PowerBI\frmBorraHoras.Designer.vb">
+    <Compile Include="Coste_laboral\frmBorraHoras.Designer.vb">
       <DependentUpon>frmBorraHoras.vb</DependentUpon>
     </Compile>
-    <Compile Include="Vistas_PowerBI\frmBorraHoras.vb">
+    <Compile Include="Coste_laboral\frmBorraHoras.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Vistas_PowerBI\frmCreaHorasDobleCotizacion.Designer.vb">
+    <Compile Include="Coste_laboral\frmCreaHorasDobleCotizacion.Designer.vb">
       <DependentUpon>frmCreaHorasDobleCotizacion.vb</DependentUpon>
     </Compile>
-    <Compile Include="Vistas_PowerBI\frmCreaHorasDobleCotizacion.vb">
+    <Compile Include="Coste_laboral\frmCreaHorasDobleCotizacion.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Vistas_PowerBI\frmCreaHorasOperarioObraFecha.Designer.vb">
+    <Compile Include="Coste_laboral\frmCreaHorasOperarioObraFecha.Designer.vb">
       <DependentUpon>frmCreaHorasOperarioObraFecha.vb</DependentUpon>
     </Compile>
-    <Compile Include="Vistas_PowerBI\frmCreaHorasOperarioObraFecha.vb">
+    <Compile Include="Coste_laboral\frmCreaHorasOperarioObraFecha.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Vistas_PowerBI\frmFechasExtras.Designer.vb">
+    <Compile Include="Coste_laboral\frmFechasExtras.Designer.vb">
       <DependentUpon>frmFechasExtras.vb</DependentUpon>
     </Compile>
-    <Compile Include="Vistas_PowerBI\frmFechasExtras.vb">
+    <Compile Include="Coste_laboral\frmFechasExtras.vb">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Auxiliares\frmInformeFechaInternacional.resx">
+      <DependentUpon>frmInformeFechaInternacional.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Horas España\CIMntoBusqHorasAPP.resx">
       <DependentUpon>CIMntoBusqHorasAPP.vb</DependentUpon>
       <SubType>Designer</SubType>
@@ -319,27 +329,27 @@
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Vistas_PowerBI\CargaHorasJPSTAFF.resx">
+    <EmbeddedResource Include="Coste_laboral\CargaHorasJPSTAFF.resx">
       <DependentUpon>CargaHorasJPSTAFF.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Vistas_PowerBI\CIMntoTrabObraMesUnionBasesDatos.resx">
+    <EmbeddedResource Include="Coste_laboral\CIMntoTrabObraMesUnionBasesDatos.resx">
       <DependentUpon>CIMntoTrabObraMesUnionBasesDatos.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Vistas_PowerBI\frmBorraHoras.resx">
+    <EmbeddedResource Include="Coste_laboral\frmBorraHoras.resx">
       <DependentUpon>frmBorraHoras.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Vistas_PowerBI\frmCreaHorasDobleCotizacion.resx">
+    <EmbeddedResource Include="Coste_laboral\frmCreaHorasDobleCotizacion.resx">
       <DependentUpon>frmCreaHorasDobleCotizacion.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Vistas_PowerBI\frmCreaHorasOperarioObraFecha.resx">
+    <EmbeddedResource Include="Coste_laboral\frmCreaHorasOperarioObraFecha.resx">
       <DependentUpon>frmCreaHorasOperarioObraFecha.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Vistas_PowerBI\frmFechasExtras.resx">
+    <EmbeddedResource Include="Coste_laboral\frmFechasExtras.resx">
       <DependentUpon>frmFechasExtras.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>

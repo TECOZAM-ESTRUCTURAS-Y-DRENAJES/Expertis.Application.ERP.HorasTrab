@@ -164,6 +164,8 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage12 = New Janus.Windows.UI.Tab.UITabPage
         Me.UiTabPage13 = New Janus.Windows.UI.Tab.UITabPage
         Me.UiTabPage14 = New Janus.Windows.UI.Tab.UITabPage
+        Me.Frame17 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bCreaHorasInternacional = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame16 = New Solmicro.Expertis.Engine.UI.Frame
         Me.bExportarNoruega = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame1.SuspendLayout()
@@ -211,6 +213,7 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage12.SuspendLayout()
         Me.UiTabPage13.SuspendLayout()
         Me.UiTabPage14.SuspendLayout()
+        Me.Frame17.SuspendLayout()
         Me.Frame16.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -1385,7 +1388,7 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage11.Controls.Add(Me.Frame12)
         Me.UiTabPage11.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage11.Name = "UiTabPage11"
-        Me.UiTabPage11.Size = New System.Drawing.Size(875, 182)
+        Me.UiTabPage11.Size = New System.Drawing.Size(893, 198)
         Me.UiTabPage11.TabStop = True
         Me.UiTabPage11.Text = "CHECK A3 VS HORAS"
         '
@@ -1545,6 +1548,7 @@ Partial Class CargaHorasJPSTAFF
         '
         'UiTabPage14
         '
+        Me.UiTabPage14.Controls.Add(Me.Frame17)
         Me.UiTabPage14.Controls.Add(Me.Frame16)
         Me.UiTabPage14.Location = New System.Drawing.Point(1, 21)
         Me.UiTabPage14.Name = "UiTabPage14"
@@ -1552,20 +1556,40 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage14.TabStop = True
         Me.UiTabPage14.Text = "INTERNACIONAL NUEVO"
         '
+        'Frame17
+        '
+        Me.Frame17.Controls.Add(Me.bCreaHorasInternacional)
+        Me.Frame17.Location = New System.Drawing.Point(28, 33)
+        Me.Frame17.Name = "Frame17"
+        Me.Frame17.Size = New System.Drawing.Size(224, 112)
+        Me.Frame17.TabIndex = 29
+        Me.Frame17.TabStop = False
+        Me.Frame17.Text = "Desde app Internacional"
+        '
+        'bCreaHorasInternacional
+        '
+        Me.bCreaHorasInternacional.Icon = CType(resources.GetObject("bCreaHorasInternacional.Icon"), System.Drawing.Icon)
+        Me.bCreaHorasInternacional.Location = New System.Drawing.Point(21, 38)
+        Me.bCreaHorasInternacional.Name = "bCreaHorasInternacional"
+        Me.bCreaHorasInternacional.Size = New System.Drawing.Size(159, 38)
+        Me.bCreaHorasInternacional.TabIndex = 28
+        Me.bCreaHorasInternacional.Text = "CREAR HORAS INTERNACIONAL"
+        '
         'Frame16
         '
         Me.Frame16.Controls.Add(Me.bExportarNoruega)
-        Me.Frame16.Location = New System.Drawing.Point(27, 28)
+        Me.Frame16.Location = New System.Drawing.Point(615, 33)
         Me.Frame16.Name = "Frame16"
         Me.Frame16.Size = New System.Drawing.Size(224, 112)
         Me.Frame16.TabIndex = 27
         Me.Frame16.TabStop = False
         Me.Frame16.Text = "Noruega"
+        Me.Frame16.Visible = False
         '
         'bExportarNoruega
         '
         Me.bExportarNoruega.Icon = CType(resources.GetObject("bExportarNoruega.Icon"), System.Drawing.Icon)
-        Me.bExportarNoruega.Location = New System.Drawing.Point(38, 42)
+        Me.bExportarNoruega.Location = New System.Drawing.Point(39, 43)
         Me.bExportarNoruega.Name = "bExportarNoruega"
         Me.bExportarNoruega.Size = New System.Drawing.Size(147, 38)
         Me.bExportarNoruega.TabIndex = 6
@@ -1636,6 +1660,7 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage12.ResumeLayout(False)
         Me.UiTabPage13.ResumeLayout(False)
         Me.UiTabPage14.ResumeLayout(False)
+        Me.Frame17.ResumeLayout(False)
         Me.Frame16.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
@@ -1779,4 +1804,6 @@ Partial Class CargaHorasJPSTAFF
     Friend WithEvents UiTabPage14 As Janus.Windows.UI.Tab.UITabPage
     Friend WithEvents Frame16 As Solmicro.Expertis.Engine.UI.Frame
     Friend WithEvents bExportarNoruega As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents Frame17 As Solmicro.Expertis.Engine.UI.Frame
+    Friend WithEvents bCreaHorasInternacional As Solmicro.Expertis.Engine.UI.Button
 End Class

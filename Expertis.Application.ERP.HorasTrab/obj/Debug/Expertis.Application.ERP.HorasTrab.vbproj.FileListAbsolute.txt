@@ -101,3 +101,4 @@ C:\Users\dfernandez\Desktop\FuentesExpertis\Application\Expertis.Application.ERP
 C:\Users\dfernandez\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.xml
 C:\Users\dfernandez\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.pdb
 C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmHorasInternacionalApp.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmInformeFechaInternacional.resources
