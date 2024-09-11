@@ -40,6 +40,7 @@ Public Class ExportacionNoruegaCuadrante
         Dim strWhere As String = "IDOperario !='00'"
         Return New BE.DataEngine().Filter("frmMntoOperario", "IDOperario, Nombre, Apellidos, FechaAlta, Fecha_Baja, IDOficio", strWhere)
     End Function
+
     Public Sub FormaTablaSalidaNoruega(ByRef dtFinal As DataTable)
         dtFinal.Columns.Add("EXP.")
         dtFinal.Columns.Add("Name:")
@@ -117,9 +118,15 @@ Public Class ExportacionNoruegaCuadrante
                 GestionarFormulacion(worksheet)
                 GestionarOvertime(worksheet, fecha1)
 
-                ' Crear una nueva hoja llamada TURNOS y llamar al método creaHojaTurnos
-                Dim worksheetTurnos = package.Workbook.Worksheets.Add("TURNOS OPERARIOS")
-                creaHojaTurnos(worksheetTurnos, dtFinal, fecha1)
+
+                If tipoExportacion = "ORIGINAL" Then
+
+                Else
+                    ' Crear una nueva hoja llamada TURNOS y llamar al método creaHojaTurnos
+                    Dim worksheetTurnos = package.Workbook.Worksheets.Add("TURNOS OPERARIOS")
+                    creaHojaTurnos(worksheetTurnos, dtFinal, fecha1)
+                End If
+                
 
                 ' Crear una nueva hoja llamada PARAMETROS y llamar al método creaHojaParametros
                 Dim worksheetParametros = package.Workbook.Worksheets.Add("PARAMETROS")
@@ -132,6 +139,7 @@ Public Class ExportacionNoruegaCuadrante
         End If
         MessageBox.Show("Fichero guardado correctamente", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub
+
     Public Sub creaHojaTurnos(ByVal worksheet As ExcelWorksheet, ByVal dtFinal As DataTable, ByVal fecha1 As String)
         FormaTablaTurnos(dtFinal)
         DesgloseValores(dtFinal, fecha1)
@@ -184,6 +192,7 @@ Public Class ExportacionNoruegaCuadrante
 
         PintarFindes(worksheet, dtFinal, fecha1)
     End Sub
+
     Public Sub PintarFindes(ByVal worksheet As ExcelWorksheet, ByVal dtFinal As DataTable, ByVal fecha1 As String)
         ' Rellenar la fila desde G6 con los números del 1 al 31 repetidos tres veces
         Dim columnaInicial As Integer = 7 ' Columna G
@@ -362,6 +371,7 @@ Public Class ExportacionNoruegaCuadrante
             Next
         Next
     End Sub
+
     Public Sub AsignaColorFuentesyDatos(ByVal row As Integer, ByVal col As Integer, ByVal worksheet As ExcelWorksheet, ByVal value As String, ByVal columnaDia As Integer, ByVal fecha1 As String)
 
         ' Copia el color de la fuente de la celda origen a la celda destino
@@ -499,6 +509,7 @@ Public Class ExportacionNoruegaCuadrante
         Catch ex As Exception
         End Try
     End Sub
+
     Public Sub GestionarFormulacion(ByVal worksheet As ExcelWorksheet)
         ' Define el rango desde AL9 hasta BP y hasta la última fila
         Dim startColumn As Integer = worksheet.Cells("AL9").Start.Column
@@ -963,7 +974,7 @@ Public Class ExportacionNoruegaCuadrante
             If Len(IDCausa) <> 0 Then
                 EscribirIDCausa(worksheet, fila, dia, IDCausa)
             Else
-                EscribirHorasProductivas(worksheet, dt, fila, dia)
+                EscribirHorasProductivas(worksheet, dt, fila, dia, fechaComparar)
             End If
 
         Else
@@ -993,15 +1004,35 @@ Public Class ExportacionNoruegaCuadrante
         End Select
     End Sub
 
-    Private Sub EscribirHorasProductivas(ByVal worksheet As ExcelWorksheet, ByVal dt As DataTable, ByVal fila As Integer, ByVal dia As Integer)
+    Private Sub EscribirHorasProductivas(ByVal worksheet As ExcelWorksheet, ByVal dt As DataTable, ByVal fila As Integer, ByVal dia As Integer, ByVal fechaComparar As Date)
         Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
         Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
 
         Dim horas As Double = 0
 
+        Dim color As System.Drawing.Color = getColorTurnoTrabajador(dt)
+        celda.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+        celda.Style.Fill.BackgroundColor.SetColor(color)
+
+
         If tipoExportacion = "ORIGINAL" Then
             If Not IsDBNull(dt.Rows(0)("Horas")) Then
                 Double.TryParse(dt.Rows(0)("Horas").ToString(), horas)
+                If EsFindeSemana(fechaComparar) Then
+                    'SI EL COLOR DE ESTA CELDA ES NARANJA(FFF4B484) Y VERDE:6,5
+                    'ROSA: FFFFC0CB
+                    'SI NO. QUE PONGA 0 Y MEJOR NULL QUE NO APAREZCA
+                    Dim colorHex As String = celda.Style.Fill.BackgroundColor.Rgb
+                    If colorHex = "FFF4B484" Or colorHex = "FF78D870" Then
+                        If horas > 6.5 Then
+                            horas = 6.5
+                        End If
+                    Else
+                        celda.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow)
+                        horas = ""
+                    End If
+
+                End If
             End If
         ElseIf tipoExportacion = "TECOZAM" Then
             horas = dt.Rows(0)("Horas").ToString.Replace(".", ",")
@@ -1013,9 +1044,6 @@ Public Class ExportacionNoruegaCuadrante
         If Len(dt.Rows(0)("Comentarios").ToString) <> 0 Then
             celda.AddComment(dt.Rows(0)("Comentarios").ToString)
         End If
-        Dim color As System.Drawing.Color = getColorTurnoTrabajador(dt)
-        celda.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
-        celda.Style.Fill.BackgroundColor.SetColor(color)
 
         'AQUI TAMBIEN METO EL COLOR A LA SEGUNDA Y TERCERA PARTE DEL EXCEL
         ' Obtener la celda que está 31 posiciones a la derecha
@@ -1035,6 +1063,9 @@ Public Class ExportacionNoruegaCuadrante
 
     Private Function EsDiaLaboral(ByVal fecha As Date) As Boolean
         Return fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday
+    End Function
+    Private Function EsFindeSemana(ByVal fecha As Date) As Boolean
+        Return fecha.DayOfWeek = DayOfWeek.Saturday OrElse fecha.DayOfWeek = DayOfWeek.Sunday
     End Function
 
     Public Function getColorTurnoTrabajador(ByVal dt As DataTable) As System.Drawing.Color
