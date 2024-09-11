@@ -265,7 +265,14 @@ Public Class ExportacionNoruegaCuadrante
                 Dim columnName As String = dtFinal.Columns(i).ColumnName
                 If columnName.EndsWith(" E") Then
                     Dim numero As Integer = Integer.Parse(columnName.Split(" "c)(0))
-                    Dim fechaParte As New DateTime(año, mes, numero)
+
+                    Dim fechaParte As DateTime
+                    Try
+                        fechaParte = New DateTime(año, mes, numero)
+                    Catch ex As Exception
+                        Exit For
+                    End Try
+
 
                     If horasEntrada.ContainsKey(idOperario) AndAlso horasEntrada(idOperario).ContainsKey(fechaParte) Then
                         Dim turnoEntrada As String = horasEntrada(idOperario)(fechaParte)
