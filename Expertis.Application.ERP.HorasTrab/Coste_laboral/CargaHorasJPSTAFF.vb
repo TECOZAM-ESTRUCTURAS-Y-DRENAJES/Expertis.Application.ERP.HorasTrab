@@ -1690,10 +1690,10 @@ Public Class CargaHorasJPSTAFF
         basededatos = DevuelveBaseDeDatosInternacional(obra)
 
         If basededatos = "0" Then
-            Dim dtBaseDatos As DataTable = ObtenerDatosExcel(ruta, hoja1, "C1:D1")
+            Dim dtBaseDatos As DataTable = ObtenerDatosExcel(ruta, hoja2, "C1:D1")
             basededatos = dtBaseDatos.Rows(0)("F2").ToString.Trim()
             If Len(basededatos) = 0 Then
-                MsgBox("No se encuentra base de datos para esta obra. Por favor indique la base de datos en la celda D1.")
+                MsgBox("No se encuentra base de datos para esta obra. Por favor indique la base de datos en la celda D1 de la pestaña HORAS.")
                 Exit Sub
             End If
         End If
