@@ -26,11 +26,11 @@ Public Class frmHorasInternacionalApp
     End Sub
     Public Sub exportacion()
         ' Crear una instancia de la clase ExportacionCuadranteNoruega
-        Dim tablaOriginal As String = "frmMntoHorasInternacional"
+        Dim tablaOriginal As String = "frmMntoHorasInternacionalTecozam"
         Dim exportacion As New ExportacionNoruegaCuadrante()
         ' Llamar al método generaExcelNoruega
         exportacion.tablaDatos = tablaOriginal
-        exportacion.tipoExportacion = "ORIGINAL"
+        exportacion.tipoExportacion = "TECOZAM"
         exportacion.generaExcelNoruega()
     End Sub
 

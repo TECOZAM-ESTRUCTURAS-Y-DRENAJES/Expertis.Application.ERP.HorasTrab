@@ -64,7 +64,7 @@ Partial Class frmHorasInternacionalApp
         Grid_DesignTimeLayout.LayoutString = resources.GetString("Grid_DesignTimeLayout.LayoutString")
         Me.Grid.DesignTimeLayout = Grid_DesignTimeLayout
         Me.Grid.Size = New System.Drawing.Size(531, 259)
-        Me.Grid.ViewName = "frmMntoHorasInternacional"
+        Me.Grid.ViewName = "frmMntoHorasInternacionalTecozam"
         '
         'Toolbar
         '
@@ -159,7 +159,7 @@ Partial Class frmHorasInternacionalApp
         Me.ClientSize = New System.Drawing.Size(539, 447)
         Me.Name = "frmHorasInternacionalApp"
         Me.Text = "frmHorasInternacionalApp"
-        Me.ViewName = "frmMntoHorasInternacional"
+        Me.ViewName = "frmMntoHorasInternacionalTecozam"
         Me.FilterPanel.ResumeLayout(False)
         Me.FilterPanel.PerformLayout()
         Me.CIMntoGridPanel.ResumeLayout(False)
