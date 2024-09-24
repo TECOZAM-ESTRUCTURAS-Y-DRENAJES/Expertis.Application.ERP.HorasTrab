@@ -7058,14 +7058,15 @@ Public Class CargaHorasJPSTAFF
         ' Encontrar la posición de la primera coma después de "Fixed salary"
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
-        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
         ' Return resultado.Trim.Replace(" ", "")
 
         ' dfernandez 30/04/2024 : Corrección de Other Payouts
         Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
         If Char.IsDigit(ultimoCaracter) Then
             resultado.Substring(0, resultado.Length - 1)
-            Return resultado.Trim.Replace(" ", "")
+            'Return resultado.Trim.Replace(" ", "")
+            Return 0
         Else
             Return "0"
         End If
@@ -7083,14 +7084,15 @@ Public Class CargaHorasJPSTAFF
         ' Encontrar la posición de la primera coma después de "Fixed salary"
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
-        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
         ' Return resultado.Trim.Replace(" ", "")
 
         ' dfernandez 30/04/2024 : Corrección de Montly Food Allowance
         Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
         If Char.IsDigit(ultimoCaracter) Then
             resultado.Substring(0, resultado.Length - 1)
-            Return resultado.Trim.Replace(" ", "")
+            resultado = resultado.Trim.Replace(" ", "")
+            Return resultado
         Else
             Return "0"
         End If
@@ -7108,7 +7110,7 @@ Public Class CargaHorasJPSTAFF
         ' Encontrar la posición de la primera coma después de "Fixed salary"
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
-        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
         ' Return resultado.Trim.Replace(" ", "")
 
         ' dfernandez 04/06/2024 - Arreglo primera columna vacía
@@ -7132,7 +7134,7 @@ Public Class CargaHorasJPSTAFF
         ' Encontrar la posición de la primera coma después de "Fixed salary"
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
-        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
         ' Return resultado.Trim.Replace(" ", "")
 
         ' dfernandez 04/06/2024 - Arreglo primera columna vacía
@@ -7181,7 +7183,7 @@ Public Class CargaHorasJPSTAFF
         ' Encontrar la posición de la primera coma después de "Fixed salary"
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
-        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
+        Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
         ' Return resultado.Trim.Replace(" ", "")
 
         ' dfernandez 04/06/2024 - Arreglo primera columna vacía
@@ -8313,7 +8315,7 @@ Public Class CargaHorasJPSTAFF
             bonus = "0"
         Else
             Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
-            Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 5)
+            Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
             Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
             If Char.IsDigit(ultimoCaracter) Then
                 resultado.Substring(0, resultado.Length - 1)
@@ -8334,11 +8336,26 @@ Public Class CargaHorasJPSTAFF
             Dim menosIndexDed As Integer = texto.IndexOf("-", startIndexDed)
             Dim espacioIndexDed As Integer = texto.IndexOf(" ", menosIndexDed)
             Dim segundoEspacioIndexDed As Integer = texto.IndexOf(" ", espacioIndexDed + 1)
+
+            ' Obtenemos el resultado inicial
             Dim resultadoDed As String = texto.Substring(menosIndexDed, segundoEspacioIndexDed - menosIndexDed)
+
+            ' Quitamos cualquier espacio en blanco
+            resultadoDed = resultadoDed.Trim().Replace(" ", "")
+
+            ' Buscamos la posición de la coma
+            Dim comaIndexDed As Integer = resultadoDed.IndexOf(",")
+
+            If comaIndexDed <> -1 AndAlso resultadoDed.Length > comaIndexDed + 2 Then
+                ' Si hay una coma, extraemos hasta dos dígitos después de la coma
+                resultadoDed = resultadoDed.Substring(0, comaIndexDed + 3) ' Incluimos dos dígitos después de la coma
+            End If
+
             Dim ultimoCaracterDed As Char = resultadoDed(resultadoDed.Length - 1)
+
             If Char.IsDigit(ultimoCaracterDed) Then
-                resultadoDed.Substring(0, resultadoDed.Length - 1)
-                deduction = resultadoDed.Trim.Replace(" ", "")
+                ' Actualizamos el valor de deduction con el formato correcto
+                deduction = resultadoDed
             Else
                 deduction = "0"
             End If
