@@ -2625,7 +2625,7 @@ Public Class CargaHorasJPSTAFF
             Case "T. NO."
                 rango = "A2:T10000"
             Case Else
-                MsgBox("El nombre identificado entre parentesis no se reconoce pero funciona. Coje las 3 primeras columnas.")
+                'MsgBox("El nombre identificado entre parentesis no se reconoce pero funciona. Coje las 3 primeras columnas.")
                 rango = "A2:C10000"
         End Select
 
@@ -2784,6 +2784,13 @@ Public Class CargaHorasJPSTAFF
                 bbdd = DB_DCZ
                 Diccionario = row("F1")
                 IDOperario = DevuelveIDOperarioDiccionario(bbdd, Diccionario)
+                descOperario = DevuelveDescOperario(bbdd, IDOperario)
+                newRow("IDOperario") = IDOperario
+                newRow("DescOperario") = descOperario
+                newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
+            ElseIf row("F3").ToString = "T. SL." Then
+                bbdd = DB_SL
+                IDOperario = row("F1")
                 descOperario = DevuelveDescOperario(bbdd, IDOperario)
                 newRow("IDOperario") = IDOperario
                 newRow("DescOperario") = descOperario
@@ -3531,6 +3538,8 @@ Public Class CargaHorasJPSTAFF
             bbdd = "xTecozamUnitedKingdom50R2"
         ElseIf empresa = "T. NO." Then
             bbdd = "xTecozamNorge50R2"
+        ElseIf empresa = "T. SL." Then
+            bbdd = DB_SL
         End If
         Return bbdd
     End Function
