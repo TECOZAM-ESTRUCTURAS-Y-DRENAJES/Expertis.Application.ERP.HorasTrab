@@ -2740,13 +2740,13 @@ Public Class CargaHorasJPSTAFF
         Dim Diccionario As String
         Dim descOperario As String
         Dim bbdd As String
+        Dim empresa As String = ""
         For Each row As DataRow In dt.Rows
             If Len(row("F1").ToString) = 0 Then
                 'Return newDataTable
                 Exit For ' Salir del bucle si la celda está vacía
             End If
             Dim newRow As DataRow = newDataTable.NewRow()
-
             If row("F3").ToString = "T. ES." Then
                 bbdd = DB_TECOZAM
                 IDOperario = DevuelveIDOperario(bbdd, row("F1"))
@@ -2754,7 +2754,7 @@ Public Class CargaHorasJPSTAFF
                 newRow("IDOperario") = IDOperario
                 newRow("DescOperario") = descOperario
                 newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
-
+                empresa = "T. ES."
             ElseIf row("F3").ToString = "FERR." Then
                 bbdd = DB_FERRALLAS
                 IDOperario = DevuelveIDOperario(bbdd, row("F1"))
@@ -2762,7 +2762,7 @@ Public Class CargaHorasJPSTAFF
                 newRow("IDOperario") = IDOperario
                 newRow("DescOperario") = descOperario
                 newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
-
+                empresa = "FERR."
             ElseIf row("F3").ToString = "SEC." Then
                 bbdd = DB_SECOZAM
                 IDOperario = DevuelveIDOperario(bbdd, row("F1"))
@@ -2770,7 +2770,7 @@ Public Class CargaHorasJPSTAFF
                 newRow("IDOperario") = IDOperario
                 newRow("DescOperario") = descOperario
                 newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
-
+                empresa = "SEC."
             ElseIf row("F3").ToString = "T. UK." Then
                 bbdd = DB_UK
                 Diccionario = row("F1")
@@ -2779,7 +2779,7 @@ Public Class CargaHorasJPSTAFF
                 newRow("IDOperario") = IDOperario
                 newRow("DescOperario") = descOperario
                 newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
-
+                empresa = "T. UK."
             ElseIf row("F3").ToString = "D. P." Then
                 bbdd = DB_DCZ
                 Diccionario = row("F1")
@@ -2788,6 +2788,7 @@ Public Class CargaHorasJPSTAFF
                 newRow("IDOperario") = IDOperario
                 newRow("DescOperario") = descOperario
                 newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
+                empresa = "D. P."
             ElseIf row("F3").ToString = "T. SL." Then
                 bbdd = DB_SL
                 IDOperario = row("F1")
@@ -2795,6 +2796,7 @@ Public Class CargaHorasJPSTAFF
                 newRow("IDOperario") = IDOperario
                 newRow("DescOperario") = descOperario
                 newRow("IDGET") = DevuelveIDGET(bbdd, IDOperario)
+                empresa = "T. SL."
             End If
 
             newRow("CosteEmpresa") = row("F2")
@@ -2825,6 +2827,15 @@ Public Class CargaHorasJPSTAFF
             Return Nothing
             Exit Function
         End If
+
+        Dim fila As DataRow = dtResumen.NewRow()
+        fila("Sociedad") = empresa
+        fila("Importe A3 origen") = CosteE1
+        fila("Tipo Moneda") = "€"
+        fila("Cambio") = 1
+        fila("Importe A3 final(€)") = CosteEFinal
+        dtResumen.Rows.Add(fila)
+
         Return newDataTable
     End Function
     Public Function FormaTablaDCZ(ByVal dt As DataTable, ByVal newDataTable As DataTable, ByVal bbdd As String, ByVal mes As String, ByVal anio As String, ByVal empresa As String)
