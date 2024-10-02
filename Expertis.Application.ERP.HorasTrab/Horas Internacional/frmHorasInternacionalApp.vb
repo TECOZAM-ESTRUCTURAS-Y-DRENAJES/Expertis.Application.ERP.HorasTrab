@@ -28,6 +28,7 @@ Public Class frmHorasInternacionalApp
         'David V 01/10/2024
         If ExpertisApp.DataBaseName = "xTecozamUnitedKingdom50R2" Then
             Me.FormActions.Add("Generar excel horas Reino Unido.", AddressOf exportacionUK)
+            Me.FormActions.Add("Generar excel vacaciones Reino Unido.", AddressOf exportacionUKVacaciones)
         End If
     End Sub
     Public Sub exportacionNO()
@@ -43,6 +44,15 @@ Public Class frmHorasInternacionalApp
         ' Crear una instancia de la clase ExportacionCuadranteNoruega
         Dim tablaOriginal As String = "frmMntoHorasInternacionalTecozam"
         Dim exportacion As New ExportacionUKCuadrante()
+        ' Llamar al método generaExcelNoruega
+        exportacion.tablaDatos = tablaOriginal
+        exportacion.generaExcel()
+    End Sub
+
+    Public Sub exportacionUKVacaciones()
+        ' Crear una instancia de la clase ExportacionCuadranteNoruega
+        Dim tablaOriginal As String = "frmMntoHorasInternacionalTecozam"
+        Dim exportacion As New ExportacionUKVacaciones()
         ' Llamar al método generaExcelNoruega
         exportacion.tablaDatos = tablaOriginal
         exportacion.generaExcel()

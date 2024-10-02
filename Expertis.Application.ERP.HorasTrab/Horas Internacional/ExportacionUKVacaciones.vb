@@ -6,7 +6,7 @@ Imports System.Drawing
 Imports System.IO
 Imports System.Collections.Generic
 
-Public Class ExportacionUKCuadrante
+Public Class ExportacionUKVacaciones
     Public tablaDatos As String
     Public tipoExportacion As String
 
@@ -60,9 +60,8 @@ Public Class ExportacionUKCuadrante
             Dim nombreDia As String = fechaActual.ToString("dd") ' Nombre del día en formato dd
             Dim nombreMes As String = fechaActual.ToString("MM")
             Dim nombreAño As String = fechaActual.ToString("yy")
-            dtFinal.Columns.Add(nombreDia & "/" & nombreMes & "/" & nombreAño & "-PROD", GetType(String))
-            dtFinal.Columns.Add(nombreDia & "/" & nombreMes & "/" & nombreAño & "-NOPROD", GetType(String))
-            fechaActual = fechaActual.AddDays(1) ' Incrementar la fecha en 1 día
+            dtFinal.Columns.Add(nombreDia & "/" & nombreMes & "/" & nombreAño, GetType(String))
+            fechaActual = fechaActual.AddDays(1)
         End While
     End Sub
 
@@ -113,11 +112,10 @@ Public Class ExportacionUKCuadrante
                 Dim año As String = fechaActual.ToString("yy")
 
                 ' Verificar las columnas PROD y NOPROD para cada día con el formato "dd/MM/yy"
-                Dim colProd As String = dia & "/" & mes & "/" & año & "-PROD"
-                Dim colNoProd As String = dia & "/" & mes & "/" & año & "-NOPROD"
+                Dim colVac As String = dia & "/" & mes & "/" & año
 
                 ' Si las columnas existen en la tabla
-                If dtFinal.Columns.Contains(colProd) AndAlso dtFinal.Columns.Contains(colNoProd) Then
+                If dtFinal.Columns.Contains(colVac) Then
                     ' Crear un filtro para obtener la información desde la base de datos
                     Dim dt As New DataTable
                     Dim f As New Filter
@@ -126,28 +124,10 @@ Public Class ExportacionUKCuadrante
 
                     ' Obtener los datos desde la base de datos
                     dt = New BE.DataEngine().Filter(tablaDatos, f)
-
-                    ' Asignar los valores a las columnas correspondientes
                     If dt.Rows.Count > 0 Then
-                        ' Obtener el valor de "HorasProductivas", "HorasNoProductivas" e "IDCausa" desde la fila
-                        Dim horasProductivas As Object = dt.Rows(0)("HorasProductivas")
-                        Dim horasNoProductivas As Object = dt.Rows(0)("HorasNoProductivas")
-                        Dim idCausa As String = dt.Rows(0)("IDCausa").ToString() ' Asegúrate de que estás obteniendo IDCausa
-
-                        ' Verificar si horasProductivas es un número y asignar
-                        If IsNumeric(horasProductivas) Then
-                            dr(colProd) = Convert.ToDouble(horasProductivas)
-                        Else
-                            ' Si no es numérico, verifica si IDCausa tiene longitud > 0
-                            If Not String.IsNullOrEmpty(idCausa) Then
-                                dr(colProd) = idCausa ' Asignar el valor de IDCausa
-                            Else
-                                dr(colProd) = DBNull.Value ' O puedes asignar 0 si prefieres
-                            End If
-                        End If
-                        ' Verificar si horasNoProductivas es un número y asignar
-                        If IsNumeric(horasNoProductivas) Then
-                            dr(colNoProd) = Convert.ToDouble(horasNoProductivas)
+                        Dim idCausa As String = dt.Rows(0)("IDCausa").ToString()
+                        If Len(idCausa) > 0 And idCausa = "V" Then
+                            dr(colVac) = idCausa
                         End If
                     End If
 
@@ -190,8 +170,6 @@ Public Class ExportacionUKCuadrante
     Private Sub CrearHojaEmpleados(ByVal package As ExcelPackage, ByVal dtFinal As DataTable)
         Dim worksheet = package.Workbook.Worksheets.Add("UK")
         worksheet.Cells("A1").LoadFromDataTable(dtFinal, True)
-        ConvertirCeldasANumeros(worksheet)
-        CalcularTotales(dtFinal, worksheet)
         GestionarEstilos(worksheet)
     End Sub
 
@@ -258,9 +236,6 @@ Public Class ExportacionUKCuadrante
             ' Crear una hoja de cálculo y obtener una referencia a ella.
             Dim worksheetObra = package.Workbook.Worksheets.Add(dtObraCab.Rows(0)("NObra"))
             worksheetObra.Cells("A1").LoadFromDataTable(dtObra, True)
-
-            ConvertirCeldasANumeros(worksheetObra)
-            CalcularTotales(dtObra, worksheetObra)
             GestionarEstilos(worksheetObra)
         Next
     End Sub
@@ -271,63 +246,6 @@ Public Class ExportacionUKCuadrante
         package.SaveAs(fileInfo)
     End Sub
 
-
-    Private Sub ConvertirCeldasANumeros(ByVal worksheet As ExcelWorksheet)
-        ' Iterar a través de las filas y columnas para convertir cadenas numéricas en números
-        Dim lastRow As Integer = worksheet.Dimension.End.Row
-        Dim lastCol As Integer = worksheet.Dimension.End.Column
-
-        For row As Integer = 2 To lastRow ' Comenzar desde la fila 2
-            For col As Integer = 7 To lastCol ' Comenzar desde la columna 7
-                Dim cellValue As String = worksheet.Cells(row, col).Text
-                Dim numericValue As Double
-
-                ' Intentar convertir la cadena a un número
-                If Double.TryParse(cellValue, numericValue) Then
-                    worksheet.Cells(row, col).Value = numericValue ' Asignar el valor numérico
-                End If
-            Next
-        Next
-    End Sub
-    Public Sub CalcularTotales(ByVal dtFinal As DataTable, ByVal worksheet As ExcelWorksheet)
-        Dim lastRow As Integer = dtFinal.Rows.Count + 1 ' Contamos desde 1 y sumamos el encabezado
-        Dim lastCol As Integer = dtFinal.Columns.Count ' Última columna del DataTable
-
-        ' Definir las columnas para los totales
-        Dim totalProdCol As Integer = lastCol + 1
-        Dim totalNoProdCol As Integer = lastCol + 2
-        Dim totalGeneralCol As Integer = lastCol + 3
-
-        ' Agregar encabezados para los totales
-        worksheet.Cells(1, totalProdCol).Value = "TOTAL PROD"
-        worksheet.Cells(1, totalNoProdCol).Value = "TOTAL NOPROD"
-        worksheet.Cells(1, totalGeneralCol).Value = "TOTAL GENERAL"
-
-        ' Calcular totales por fila
-        For i As Integer = 2 To lastRow ' Comenzar desde 2 para omitir el encabezado
-            Dim totalProd As Double = 0
-            Dim totalNoProd As Double = 0
-
-            For j As Integer = 7 To lastCol ' Comenzar desde la columna 7
-                Dim columnName As String = dtFinal.Columns(j - 1).ColumnName ' j - 1 porque Cells es 1-based
-                Dim cellValue As Double
-
-                ' Comprobar si la celda no está vacía y convertir el valor a Double
-                If Double.TryParse(worksheet.Cells(i, j).Text, cellValue) Then
-                    If columnName.EndsWith("-PROD") Then
-                        totalProd += cellValue
-                    ElseIf columnName.EndsWith("-NOPROD") Then
-                        totalNoProd += cellValue
-                    End If
-                End If
-            Next
-
-            ' Colocar los totales en las columnas definidas
-            worksheet.Cells(i, totalProdCol).Value = totalProd
-            worksheet.Cells(i, totalNoProdCol).Value = totalNoProd
-            worksheet.Cells(i, totalGeneralCol).Value = totalProd + totalNoProd ' Suma de ambos totales
-        Next
-    End Sub
 
     Public Sub GestionarEstilos(ByVal worksheet As ExcelWorksheet)
         ' Verificar si hay datos en el worksheet
@@ -468,3 +386,4 @@ Public Class ExportacionUKCuadrante
     End Function
 
 End Class
+

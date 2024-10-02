@@ -199,6 +199,7 @@
     </Compile>
     <Compile Include="Horas Internacional\ExportacionPortugalCuadrante.vb" />
     <Compile Include="Horas Internacional\ExportacionUKCuadrante.vb" />
+    <Compile Include="Horas Internacional\ExportacionUKVacaciones.vb" />
     <Compile Include="Horas Internacional\frmHorasInternacionalApp.Designer.vb">
       <DependentUpon>frmHorasInternacionalApp.vb</DependentUpon>
     </Compile>
