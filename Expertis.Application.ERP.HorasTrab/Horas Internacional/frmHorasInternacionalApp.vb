@@ -30,6 +30,10 @@ Public Class frmHorasInternacionalApp
             Me.FormActions.Add("Generar excel horas Reino Unido.", AddressOf exportacionUK)
             Me.FormActions.Add("Generar excel vacaciones Reino Unido.", AddressOf exportacionUKVacaciones)
         End If
+        'David V 02/10/2024
+        If ExpertisApp.DataBaseName = "xDrenajesPortugal50R2" Then
+            Me.FormActions.Add("Generar excel horas Portugal.", AddressOf exportacionDCZ)
+        End If
     End Sub
     Public Sub exportacionNO()
         ' Crear una instancia de la clase ExportacionCuadranteNoruega
@@ -44,6 +48,15 @@ Public Class frmHorasInternacionalApp
         ' Crear una instancia de la clase ExportacionCuadranteNoruega
         Dim tablaOriginal As String = "frmMntoHorasInternacionalTecozam"
         Dim exportacion As New ExportacionUKCuadrante()
+        ' Llamar al método generaExcelNoruega
+        exportacion.tablaDatos = tablaOriginal
+        exportacion.generaExcel()
+    End Sub
+
+    Public Sub exportacionDCZ()
+        ' Crear una instancia de la clase ExportacionCuadranteNoruega
+        Dim tablaOriginal As String = "frmMntoHorasInternacionalTecozam"
+        Dim exportacion As New ExportacionPortugalCuadrante()
         ' Llamar al método generaExcelNoruega
         exportacion.tablaDatos = tablaOriginal
         exportacion.generaExcel()
