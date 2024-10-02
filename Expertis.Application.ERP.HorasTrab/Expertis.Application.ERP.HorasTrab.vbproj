@@ -190,6 +190,7 @@
     <Compile Include="Auxiliares\frmFiltroOficio.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Horas Internacional\CreacionHoras.vb" />
     <Compile Include="Horas Internacional\ExportacionNoruegaCuadrante.vb" />
     <Compile Include="Horas España\frmHorasAPP.Designer.vb">
       <DependentUpon>frmHorasAPP.vb</DependentUpon>
