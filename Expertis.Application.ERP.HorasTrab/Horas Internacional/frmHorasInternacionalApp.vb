@@ -86,6 +86,11 @@ Public Class frmHorasInternacionalApp
         fecha1 = frmFechas.fecha1
         fecha2 = frmFechas.fecha2
 
+        If frmFechas.blEstado = False Then
+            MsgBox("Proceso cancelado correctamente", MsgBoxStyle.Information)
+            Exit Sub
+        End If
+
         Dim ClaseCreacion As New CreacionHoras()
         ClaseCreacion.CrearHorasApp(fecha1, fecha2)
     End Sub
