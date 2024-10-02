@@ -3,15 +3,14 @@ Imports System.Windows.Forms
 Imports OfficeOpenXml
 Imports OfficeOpenXml.Style
 Imports System.Drawing
+Imports Solmicro.Expertis.Engine.UI
 
 Public Class frmHorasInternacionalApp
 
     Public Sub New()
-
         ' Llamada necesaria para el Diseñador de Windows Forms.
         InitializeComponent()
         LoadToolbarActions()
-
     End Sub
 
     Private Sub frmHorasInternacionalApp_QueryExecuting(ByVal sender As System.Object, ByRef e As Solmicro.Expertis.Engine.UI.QueryExecutingEventArgs) Handles MyBase.QueryExecuting
@@ -22,9 +21,16 @@ Public Class frmHorasInternacionalApp
     End Sub
 
     Private Sub LoadToolbarActions()
-        Me.FormActions.Add("Generar excel horas Noruega.", AddressOf exportacion)
+        'David V 01/08/2024
+        If ExpertisApp.DataBaseName = "xTecozamNorge50R2" Then
+            Me.FormActions.Add("Generar excel horas Noruega.", AddressOf exportacionNO)
+        End If
+        'David V 01/10/2024
+        If ExpertisApp.DataBaseName = "xTecozamUnitedKingdom50R2" Then
+            Me.FormActions.Add("Generar excel horas Reino Unido.", AddressOf exportacionUK)
+        End If
     End Sub
-    Public Sub exportacion()
+    Public Sub exportacionNO()
         ' Crear una instancia de la clase ExportacionCuadranteNoruega
         Dim tablaOriginal As String = "frmMntoHorasInternacionalTecozam"
         Dim exportacion As New ExportacionNoruegaCuadrante()
@@ -33,6 +39,15 @@ Public Class frmHorasInternacionalApp
         exportacion.tipoExportacion = "TECOZAM"
         exportacion.generaExcelNoruega()
     End Sub
+    Public Sub exportacionUK()
+        ' Crear una instancia de la clase ExportacionCuadranteNoruega
+        Dim tablaOriginal As String = "frmMntoHorasInternacionalTecozam"
+        Dim exportacion As New ExportacionUKCuadrante()
+        ' Llamar al método generaExcelNoruega
+        exportacion.tablaDatos = tablaOriginal
+        exportacion.generaExcel()
+    End Sub
+
 
 #Region "Codigo Antiguo antes de modularizar"
 

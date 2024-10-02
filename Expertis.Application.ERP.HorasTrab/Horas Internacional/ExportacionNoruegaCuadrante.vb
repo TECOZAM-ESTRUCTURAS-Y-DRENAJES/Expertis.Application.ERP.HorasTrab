@@ -307,7 +307,6 @@ Public Class ExportacionNoruegaCuadrante
         Next
     End Sub
 
-
     Function ProcesarTurnoEntrada(ByVal dia As Integer, ByVal fecha1 As String, ByVal IDOperario As String) As String
         Dim mes As String = Month(fecha1)
         Dim año As String = Year(fecha1)
@@ -343,6 +342,7 @@ Public Class ExportacionNoruegaCuadrante
         End If
 
     End Function
+
     Public Sub FormaTablaTurnos(ByVal dtFinal As DataTable)
         ' Agregar nuevas columnas al DataTable dtFinal
         For i As Integer = 1 To 31
@@ -1014,29 +1014,31 @@ Public Class ExportacionNoruegaCuadrante
         celda.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
         celda.Style.Fill.BackgroundColor.SetColor(color)
 
+        horas = dt.Rows(0)("Horas").ToString.Replace(".", ",")
 
-        If tipoExportacion = "ORIGINAL" Then
-            If Not IsDBNull(dt.Rows(0)("Horas")) Then
-                Double.TryParse(dt.Rows(0)("Horas").ToString(), horas)
-                If EsFindeSemana(fechaComparar) Then
-                    'SI EL COLOR DE ESTA CELDA ES NARANJA(FFF4B484) Y VERDE:6,5
-                    'ROSA: FFFFC0CB
-                    'SI NO. QUE PONGA 0 Y MEJOR NULL QUE NO APAREZCA
-                    Dim colorHex As String = celda.Style.Fill.BackgroundColor.Rgb
-                    If colorHex = "FFF4B484" Or colorHex = "FF78D870" Then
-                        If horas > 6.5 Then
-                            horas = 6.5
-                        End If
-                    Else
-                        celda.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow)
-                        horas = ""
-                    End If
 
-                End If
-            End If
-        ElseIf tipoExportacion = "TECOZAM" Then
-            horas = dt.Rows(0)("Horas").ToString.Replace(".", ",")
-        End If
+        'If tipoExportacion = "ORIGINAL" Then
+        '    If Not IsDBNull(dt.Rows(0)("Horas")) Then
+        '        Double.TryParse(dt.Rows(0)("Horas").ToString(), horas)
+        '        If EsFindeSemana(fechaComparar) Then
+        '            'SI EL COLOR DE ESTA CELDA ES NARANJA(FFF4B484) Y VERDE:6,5
+        '            'ROSA: FFFFC0CB
+        '            'SI NO. QUE PONGA 0 Y MEJOR NULL QUE NO APAREZCA
+        '            Dim colorHex As String = celda.Style.Fill.BackgroundColor.Rgb
+        '            If colorHex = "FFF4B484" Or colorHex = "FF78D870" Then
+        '                If horas > 6.5 Then
+        '                    horas = 6.5
+        '                End If
+        '            Else
+        '                celda.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow)
+        '                horas = ""
+        '            End If
+
+        '        End If
+        '    End If
+        'ElseIf tipoExportacion = "TECOZAM" Then
+        '    horas = dt.Rows(0)("Horas").ToString.Replace(".", ",")
+        'End If
 
 
         celda.Value = horas
