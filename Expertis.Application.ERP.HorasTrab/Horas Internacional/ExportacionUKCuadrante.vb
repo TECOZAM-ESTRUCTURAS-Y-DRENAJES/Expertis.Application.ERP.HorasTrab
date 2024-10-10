@@ -29,6 +29,7 @@ Public Class ExportacionUKCuadrante
         Dim dtPersonas As New DataTable
         dtPersonas = getTablaPersonas(Fecha1)
 
+
         '2. LE DOY LA 1ª FORMA A LA TABLA
         Dim dtFinal As New DataTable
         FormaTablaSalidaUK(dtFinal, Fecha1, Fecha2)
@@ -136,21 +137,32 @@ Public Class ExportacionUKCuadrante
                         Dim idCausa As String = dt.Rows(0)("IDCausa").ToString() ' Asegúrate de que estás obteniendo IDCausa
 
                         ' Verificar si horasProductivas es un número y asignar
-                        If IsNumeric(horasProductivas) Then
-                            dr(colProd) = Convert.ToDouble(horasProductivas, CultureInfo.InvariantCulture)
-                        Else
-                            ' Si no es numérico, verifica si IDCausa tiene longitud > 0
-                            If Not String.IsNullOrEmpty(idCausa) Then
-                                dr(colProd) = idCausa ' Asignar el valor de IDCausa
+                        If Not String.IsNullOrEmpty(horasProductivas.ToString()) Then ' Si la longitud es distinta de 0
+                            Dim horasProd As Double
+                            If Double.TryParse(horasProductivas.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, horasProd) Then
+                                dr(colProd) = horasProd
                             Else
-                                dr(colProd) = DBNull.Value ' O puedes asignar 0 si prefieres
+                                ' Si no es numérico, verifica si IDCausa tiene longitud > 0
+                                If Not String.IsNullOrEmpty(idCausa) Then
+                                    dr(colProd) = idCausa ' Asignar el valor de IDCausa
+                                Else
+                                    dr(colProd) = DBNull.Value ' O puedes asignar 0 si prefieres
+                                End If
                             End If
                         End If
+
                         ' Verificar si horasNoProductivas es un número y asignar
-                        If IsNumeric(horasNoProductivas) Then
-                            dr(colNoProd) = Convert.ToDouble(horasNoProductivas, CultureInfo.InvariantCulture)
+                        If Not String.IsNullOrEmpty(horasNoProductivas.ToString()) Then ' Si la longitud es distinta de 0
+                            Dim horasNoProd As Double
+                            If Double.TryParse(horasNoProductivas.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, horasNoProd) Then
+                                dr(colNoProd) = horasNoProd
+                            Else
+                                ' Si no es numérico, puedes manejarlo como sea necesario (opcional)
+                                dr(colNoProd) = DBNull.Value ' O cualquier valor predeterminado
+                            End If
                         End If
                     End If
+
 
                 End If
 
