@@ -5,6 +5,7 @@ Imports OfficeOpenXml.Style
 Imports System.Drawing
 Imports System.IO
 Imports System.Collections.Generic
+Imports System.Globalization
 
 Public Class ExportacionUKCuadrante
     Public tablaDatos As String
@@ -136,7 +137,7 @@ Public Class ExportacionUKCuadrante
 
                         ' Verificar si horasProductivas es un número y asignar
                         If IsNumeric(horasProductivas) Then
-                            dr(colProd) = Convert.ToDouble(horasProductivas)
+                            dr(colProd) = Convert.ToDouble(horasProductivas, CultureInfo.InvariantCulture)
                         Else
                             ' Si no es numérico, verifica si IDCausa tiene longitud > 0
                             If Not String.IsNullOrEmpty(idCausa) Then
@@ -147,7 +148,7 @@ Public Class ExportacionUKCuadrante
                         End If
                         ' Verificar si horasNoProductivas es un número y asignar
                         If IsNumeric(horasNoProductivas) Then
-                            dr(colNoProd) = Convert.ToDouble(horasNoProductivas)
+                            dr(colNoProd) = Convert.ToDouble(horasNoProductivas, CultureInfo.InvariantCulture)
                         End If
                     End If
 
