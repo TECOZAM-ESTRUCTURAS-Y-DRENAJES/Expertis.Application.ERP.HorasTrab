@@ -136,18 +136,18 @@ Public Class ExportacionUKCuadrante
                         Dim horasNoProductivas As Object = dt.Rows(0)("HorasNoProductivas")
                         Dim idCausa As String = dt.Rows(0)("IDCausa").ToString() ' Asegúrate de que estás obteniendo IDCausa
 
+                        ' Si no es numérico, verifica si IDCausa tiene longitud > 0
+                        If Not String.IsNullOrEmpty(idCausa) Then
+                            dr(colProd) = idCausa ' Asignar el valor de IDCausa
+                        Else
+                            dr(colProd) = DBNull.Value ' O puedes asignar 0 si prefieres
+                        End If
+
                         ' Verificar si horasProductivas es un número y asignar
                         If Not String.IsNullOrEmpty(horasProductivas.ToString()) Then ' Si la longitud es distinta de 0
                             Dim horasProd As Double
                             If Double.TryParse(horasProductivas.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, horasProd) Then
                                 dr(colProd) = horasProd
-                            Else
-                                ' Si no es numérico, verifica si IDCausa tiene longitud > 0
-                                If Not String.IsNullOrEmpty(idCausa) Then
-                                    dr(colProd) = idCausa ' Asignar el valor de IDCausa
-                                Else
-                                    dr(colProd) = DBNull.Value ' O puedes asignar 0 si prefieres
-                                End If
                             End If
                         End If
 
