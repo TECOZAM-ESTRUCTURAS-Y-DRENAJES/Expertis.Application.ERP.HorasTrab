@@ -3765,7 +3765,7 @@ Public Class CargaHorasJPSTAFF
     Public Function getDuplicados(ByVal Fecha1 As String, ByVal Fecha2 As String) As DataTable
         Dim sql As String
         Dim dtPersonasDuplicadas As DataTable
-        sql = "SELECT IDOPERARIO FROM TBOBRAMODCONTROL WHERE FECHAINICIO BETWEEN '" & Fecha1 & "' AND '" & Fecha2 & "'"
+        sql = "SELECT IDOPERARIO FROM vUniontbObraModControl WHERE FECHAINICIO BETWEEN '" & Fecha1 & "' AND '" & Fecha2 & "'"
         sql &= " GROUP BY IDOPERARIO HAVING COUNT(DISTINCT IDCATEGORIAPROFESIONALSCCP) > 1"
 
         dtPersonasDuplicadas = aux.EjecutarSqlSelect(sql)
