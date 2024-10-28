@@ -4051,8 +4051,6 @@ Public Class CargaHorasJPSTAFF
         PvProgreso.Value = 0
         ActualizarLProgreso("Progreso actual")
 
-        'MsgBox("Accidente: " & dtPersonasBajaPorAccidente.Rows.Count & " Enfermedad:" & dtPersonasBajaPorEnfermedad.Rows.Count)
-        'MsgBox(dtPersonasDeBaja.Rows.Count)
     End Sub
     Public Sub CrearHorasBaja(ByVal dtPersonasDeBaja As DataTable, ByVal Fecha1 As DateTime, ByVal Fecha2 As DateTime)
         '1. Miro la empresa en la que está
@@ -4102,7 +4100,7 @@ Public Class CargaHorasJPSTAFF
             End If
 
             While fechaCalculos <= fechaFin
-                If fechaalta = fechaCalculos Then
+                If fechaalta < fechaCalculos Then
                     Exit While
                 End If
 
