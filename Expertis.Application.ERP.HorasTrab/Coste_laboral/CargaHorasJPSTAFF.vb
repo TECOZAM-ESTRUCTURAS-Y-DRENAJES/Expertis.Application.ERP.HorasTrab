@@ -6785,8 +6785,6 @@ Public Class CargaHorasJPSTAFF
     Dim accrued_EC_holiday As String = "14,10"
     Dim employer_contribution As String = "14,10"
 
-
-
     Function LeerPDFaDataTableNO(ByVal pdfPath As String) As DataTable
         ' Crear un DataTable
         Dim dataTable As New DataTable()
@@ -6829,12 +6827,14 @@ Public Class CargaHorasJPSTAFF
             Dim impuestos As Double
             Dim contribucion As Double
             Dim old As Double
-            Dim bruto As Double
+            Dim diccionario As String
+            diccionario = devuelveDiccionarioNO(texto)
+
             ' Añadir una nueva fila a la nueva tabla
             nuevaFila = dataTable.NewRow()
 
             ' Asignar los valores a las columnas correspondientes
-            nuevaFila("Diccionario") = devuelveDiccionarioNO(texto)
+            nuevaFila("Diccionario") = diccionario
             nuevaFila("Operario") = devuelveOperarioNO(texto)
             tax = devuelveTAX(texto)
             'Si es 0 es que ha dado error y continua el for
@@ -6843,7 +6843,7 @@ Public Class CargaHorasJPSTAFF
             End If
             paymentinkind = Nz(devuelvePaymentInKind(texto), 0)
             deductions = Nz(devuelveDeductions(texto), 0)
-            cashBenefit = devuelveCashBenefit(texto)
+            cashBenefit = Nz(devuelveCashBenefit(texto), 0)
             nuevaFila("TAX") = tax
             nuevaFila("Cash Benefit (gross)") = cashBenefit
 
@@ -7061,7 +7061,15 @@ Public Class CargaHorasJPSTAFF
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
         Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
-        Return resultado.Trim.Replace(" ", "")
+        Dim resulFilaSigui As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 10)
+
+        If resulFilaSigui.Contains("-") Then
+            Return "0"
+        Else
+            resultado.Substring(0, resultado.Length - 1)
+            Return resultado.Trim.Replace(" ", "")
+        End If
+        'Return resultado.Trim.Replace(" ", "")
     End Function
 
 
@@ -7104,16 +7112,24 @@ Public Class CargaHorasJPSTAFF
         ' Obtener la subcadena deseada
         Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
         ' Return resultado.Trim.Replace(" ", "")
+        Dim resulFilaSigui As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 10)
+
+        If resulFilaSigui.Contains("-") Or resulFilaSigui.Contains("P") Then
+            Return "0"
+        Else
+            resultado.Substring(0, resultado.Length - 1)
+            Return resultado.Trim.Replace(" ", "")
+        End If
 
         ' dfernandez 30/04/2024 : Corrección de Montly Food Allowance
-        Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
-        If Char.IsDigit(ultimoCaracter) Then
-            resultado.Substring(0, resultado.Length - 1)
-            resultado = resultado.Trim.Replace(" ", "")
-            Return resultado
-        Else
-            Return "0"
-        End If
+        'Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
+        'If Char.IsDigit(ultimoCaracter) Then
+        '    resultado.Substring(0, resultado.Length - 1)
+        '    resultado = resultado.Trim.Replace(" ", "")
+        '    Return resultado
+        'Else
+        '    Return "0"
+        'End If
         ' ---
     End Function
 
@@ -7129,15 +7145,21 @@ Public Class CargaHorasJPSTAFF
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
         Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
-        ' Return resultado.Trim.Replace(" ", "")
 
+        Dim resulFilaSigui As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 10)
         ' dfernandez 04/06/2024 - Arreglo primera columna vacía
-        Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
-        If Char.IsDigit(ultimoCaracter) Then
+        'Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
+        'If Char.IsDigit(ultimoCaracter) Then
+        '    resultado.Substring(0, resultado.Length - 1)
+        '    Return resultado.Trim.Replace(" ", "")
+        'Else
+        '    Return "0"
+        'End If
+        If resulFilaSigui.Contains("-") Then
+            Return "0"
+        Else
             resultado.Substring(0, resultado.Length - 1)
             Return resultado.Trim.Replace(" ", "")
-        Else
-            Return "0"
         End If
     End Function
 
@@ -7198,21 +7220,28 @@ Public Class CargaHorasJPSTAFF
             Return 0
         End If
 
-        ' Encontrar la posición de la primera coma después de "Fixed salary"
+        ' Encontrar la posición de la primera coma después de "Cash benefit"
         Dim comaIndex As Integer = texto.IndexOf(",", startIndex)
         ' Obtener la subcadena deseada
         Dim resultado As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 3)
         ' Return resultado.Trim.Replace(" ", "")
 
+        Dim resulFilaSigui As String = texto.Substring(startIndex + searchString.Length, comaIndex - (startIndex + searchString.Length) + 10)
         ' dfernandez 04/06/2024 - Arreglo primera columna vacía
-        Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
-        If Char.IsDigit(ultimoCaracter) Then
+        'Dim ultimoCaracter As Char = resultado(resultado.Length - 1)
+        'If Char.IsDigit(ultimoCaracter) Then
+        '    resultado.Substring(0, resultado.Length - 1)
+        '    Return resultado.Trim.Replace(" ", "")
+        'Else
+        '    Return "0"
+        'End If
+
+        If resulFilaSigui.Contains("-") Then
+            Return "0"
+        Else
             resultado.Substring(0, resultado.Length - 1)
             Return resultado.Trim.Replace(" ", "")
-        Else
-            Return "0"
         End If
-
     End Function
     Public Function devuelveComplementos(ByVal texto As String) As Double
         Dim overtime As Double = 0
