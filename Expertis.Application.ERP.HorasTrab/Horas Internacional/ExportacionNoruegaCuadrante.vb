@@ -132,6 +132,10 @@ Public Class ExportacionNoruegaCuadrante
                 Dim worksheetParametros = package.Workbook.Worksheets.Add("PARAMETROS")
                 creaHojaParametros(worksheetParametros)
 
+                ' Crear una nueva hoja llamada REGISTROS TURNOS
+                Dim worksheetRegistrosTurnos = package.Workbook.Worksheets.Add("REGISTROS TURNOS")
+                creaHojaRegistrosTurnos(worksheetRegistrosTurnos, fecha1, fecha2)
+
                 ' Guardar el paquete de Excel en la ruta seleccionada
                 Dim fileInfo As New IO.FileInfo(rutaArchivo)
                 package.SaveAs(fileInfo)
@@ -595,10 +599,10 @@ Public Class ExportacionNoruegaCuadrante
 
         ' Añadir registros al DataTable
         dtTurnos.Rows.Add(1, "07:00h to 16:00h")
-        dtTurnos.Rows.Add(2, "07:00h to 14:00ºh")
+        dtTurnos.Rows.Add(2, "07:00h to 14:00h")
         dtTurnos.Rows.Add(3, "14:00h to 21:00h")
-        dtTurnos.Rows.Add(4, "10:30h to 20:00h")
-        dtTurnos.Rows.Add(5, "10:00h to 20:00h")
+        dtTurnos.Rows.Add(4, "10:30h to 19:00h")
+        dtTurnos.Rows.Add(5, "10:00h to 19:00h")
         dtTurnos.Rows.Add(6, "- OTRO HORARIO -")
 
         Dim dtTurnosExplicacion As New DataTable()
@@ -610,8 +614,8 @@ Public Class ExportacionNoruegaCuadrante
         dtTurnosExplicacion.Rows.Add("* (1) The schedule from 07:00h to 16:00h includes a 0,5 hour (10h-10:30h) break for rest and 1 hour (13h-14h) for lunch. This meal is taken in a canteen and therefore does not count as working time. MONDAY to FRIDAY")
         dtTurnosExplicacion.Rows.Add("* (2) The schedule from 07:00h to 14:00h includes a 0,5 hour (10h-10:30h) break. This meal is taken in a canteen and therefore does not count as working time. MONDAY to SATURDAY")
         dtTurnosExplicacion.Rows.Add("* (3) The schedule from 14:00h to 21:00h includes a 0,5 hour (17h-17:30h) break. This meal is taken in a canteen and therefore does not count as working time. MONDAY to SATURDAY")
-        dtTurnosExplicacion.Rows.Add("* (4) The schedule from 10:30h to 20:00h includes a 1 hour (14h-15h) break. This meal is taken in a canteen and therefore does not count as working time. MONDAY to FRIDAY")
-        dtTurnosExplicacion.Rows.Add("* (5) The schedule from 10:00h to 20:00h includes a 0,5 hour (13h-13:30h) break for rest and 1 hour (17h-18h) for lunch. This meal is taken in a canteen and therefore does not count as working time. MONDAY to FRIDAY")
+        dtTurnosExplicacion.Rows.Add("* (4) The schedule from 10:30h to 19:00h includes a 1 hour (14h-15h) break. This meal is taken in a canteen and therefore does not count as working time. MONDAY to FRIDAY")
+        dtTurnosExplicacion.Rows.Add("* (5) The schedule from 10:00h to 19:00h includes a 0,5 hour (13h-13:30h) break for rest and 1 hour (17h-18h) for lunch. This meal is taken in a canteen and therefore does not count as working time. MONDAY to FRIDAY")
 
         ' Copiar los datos de la DataTable a la hoja de cálculo
         worksheet.Cells("A1").LoadFromDataTable(dtParametros, True)
@@ -630,6 +634,115 @@ Public Class ExportacionNoruegaCuadrante
 
         worksheet.Column(2).Width = 20
     End Sub
+
+    Public Sub creaHojaRegistrosTurnos(ByVal worksheet As ExcelWorksheet, ByVal fecha1 As String, ByVal fecha2 As String)
+        Dim dtRegistros As New DataTable()
+
+        Dim f As New Filter
+        f.Add("FechaParte", FilterOperator.GreaterThanOrEqual, fecha1)
+        f.Add("FechaParte", FilterOperator.LessThanOrEqual, fecha2)
+        dtRegistros = New BE.DataEngine().Filter("frmMntoHorasInternacionalTecozam", f, _
+                                         "FechaParte As DateReport, Turno As Shift, IDOperario As WorkerID, " & _
+                                         "DescOperario As WorkerDescription, Oficio As Job, Estructura As Structure, HoraEntrada As StartTime, HoraSalida As EndTime, " & _
+                                         "DescansoEnt As StartBreak, DescansoSal As EndBreak, Descanso2Ent As StartBreak2, Descanso2Sal As EndBreak2, " & _
+                                         "TotalTurno As TotalShift, IDCausa, HoraEntradaOvertime As OvertimeStartTime, HoraSalidaOvertime As OvertimeEndTime, " & _
+                                         "HoraEntradaDescansoOvertime As OvertimeStartBreak, HoraSalidaDescansoOvertime As OvertimeEndBreak, " & _
+                                         "HoraEntradaDescansoOvertime2 As OvertimeStartBreak2, HoraSalidaDescansoOvertime2 As OvertimeEndBreak2, " & _
+                                         "TotalOvertime, Horas As TotalHours")
+
+        ' Crear el DataTable auxiliar con todas las columnas de tipo String
+        Dim dtAuxiliar As New DataTable()
+
+        ' Crear columnas en dtAuxiliar con el mismo nombre, pero todas de tipo String
+        For Each column As DataColumn In dtRegistros.Columns
+            dtAuxiliar.Columns.Add(column.ColumnName, GetType(String))
+        Next
+
+        ' Copiar filas de dtRegistros a dtAuxiliar, convirtiendo cada valor a String
+        For Each row As DataRow In dtRegistros.Rows
+            Dim newRow As DataRow = dtAuxiliar.NewRow()
+            For Each column As DataColumn In dtRegistros.Columns
+                newRow(column.ColumnName) = row(column).ToString()
+            Next
+            dtAuxiliar.Rows.Add(newRow)
+        Next
+
+
+        worksheet.Cells("A1").LoadFromDataTable(dtAuxiliar, True)
+        worksheet.Cells("A1:" & GetExcelColumnName(worksheet.Dimension.End.Column) & "1").AutoFilter = True
+
+        Dim fila1 As ExcelRange = worksheet.Cells(1, 1, 1, worksheet.Dimension.End.Column)
+        fila1.Style.Font.Bold = True
+
+        Dim borderStyle As ExcelBorderStyle = ExcelBorderStyle.Thin
+        For row As Integer = 1 To dtAuxiliar.Rows.Count + 1
+            For col As Integer = 1 To dtAuxiliar.Columns.Count
+                Dim cell As ExcelRange = worksheet.Cells(row, col)
+
+                ' Aplicar estilo de borde a cada celda
+                With cell.Style.Border
+                    .Top.Style = BorderStyle
+                    .Bottom.Style = BorderStyle
+                    .Left.Style = BorderStyle
+                    .Right.Style = BorderStyle
+                End With
+            Next
+        Next
+
+        ' Encontrar la posición de la columna "Shift" en dtAuxiliar
+        Dim shiftColumnIndex As Integer = dtAuxiliar.Columns.IndexOf("Shift") + 1  ' +1 para ajustar al índice de columna en Excel
+
+        For row As Integer = 2 To dtAuxiliar.Rows.Count + 1  ' Inicia en 2 para omitir el encabezado
+            ' Obtener el valor de la columna "Shift" en la fila actual
+            Dim shiftValue As String = worksheet.Cells(row, shiftColumnIndex).Text
+
+            ' Determinar el color de la fila según el valor de "Shift"
+            Dim rowColor As System.Drawing.Color = System.Drawing.Color.White  ' Blanco por defecto (sin color)
+
+            If shiftValue = "1" Then
+            ElseIf shiftValue = "2" Then
+                rowColor = System.Drawing.Color.FromArgb(244, 180, 132)  ' Color RGB personalizado (37, 150, 190)
+            ElseIf shiftValue = "3" Then
+                rowColor = System.Drawing.Color.FromArgb(120, 216, 112) ' Color RGB personalizado (120, 216, 112)
+            ElseIf shiftValue = "4" Then
+                rowColor = System.Drawing.Color.FromArgb(156, 196, 228) ' Color RGB personalizado (156, 196, 228)
+            ElseIf shiftValue = "5" Then
+                rowColor = System.Drawing.Color.FromArgb(168, 164, 164)  ' Color RGB personalizado (168, 164, 164)
+            End If
+
+            For col As Integer = 1 To dtAuxiliar.Columns.Count
+                Dim cell As ExcelRange = worksheet.Cells(row, col)
+
+                ' Aplicar color de fondo si corresponde
+                If rowColor <> System.Drawing.Color.White Then
+                    cell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                    cell.Style.Fill.BackgroundColor.SetColor(rowColor)
+                End If
+
+                ' Aplicar estilo de borde a cada celda
+                With cell.Style.Border
+                    .Top.Style = borderStyle
+                    .Bottom.Style = borderStyle
+                    .Left.Style = borderStyle
+                    .Right.Style = borderStyle
+                End With
+            Next
+        Next
+    End Sub
+
+    Function GetExcelColumnName(ByVal columnNumber As Integer) As String
+        Dim dividend As Integer = columnNumber
+        Dim columnName As String = String.Empty
+        Dim modulo As Integer
+
+        While dividend > 0
+            modulo = (dividend - 1) Mod 26
+            columnName = Convert.ToChar(65 + modulo) & columnName
+            dividend = CInt((dividend - modulo) / 26)
+        End While
+
+        Return columnName
+    End Function
 
     Private Sub ApplyBorder(ByVal range As ExcelRange)
         range.Style.Border.Top.Style = ExcelBorderStyle.Thin
