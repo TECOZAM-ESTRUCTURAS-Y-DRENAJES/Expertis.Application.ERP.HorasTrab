@@ -32,6 +32,7 @@ Public Class CargaHorasJPSTAFF
     Const DB_NO As String = "xTecozamNorge50R2"
     Const DB_SL As String = "xTecozamSlovensko50R2"
     Const DB_SU As String = "xTecozamSuecia4"
+    Const DB_OC As String = "xOcellum50R2"
 
     Dim obraTrabajo As New ObraTrabajo
     Dim auto As New OperarioCalendario
@@ -1123,6 +1124,9 @@ Public Class CargaHorasJPSTAFF
             '-----------SUECIA--------------
 
             '-----------NORUEGA------------
+
+            '-----------OCELLUM------------
+            setHorasOficinaOcellum(mes, anio, Fecha1, Fecha2)
         End If
 
         MessageBox.Show("Horas creadas correctamente", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information)
@@ -1142,6 +1146,22 @@ Public Class CargaHorasJPSTAFF
         "select IDOperario, Proyecto AS Obra_Predeterminada " & _
         "from " & DB_FERRALLAS & "..tbHistoricoPersonal " & _
         "where (Proyecto = '12677838' OR Proyecto = '12677615' OR Proyecto = '12678141') and " & _
+        "((Fecha >= '" & Fecha1 & "' AND Fecha <=GETDATE()))"
+
+        dt = aux.EjecutarSqlSelect(sql)
+        Return dt
+    End Function
+    Public Function getListadoPersonasOfiOcellum(ByVal Fecha1 As String, ByVal Fecha2 As String) As DataTable
+        Dim dt As New DataTable
+        Dim sql As String
+        '------COMO YO LO DE DEJARIA---------
+        sql = "select IDOperario, Obra_Predeterminada from " & DB_OC & "..tbMaestroOperarioSat " & _
+        "where (Obra_Predeterminada='11822417') and " & _
+        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<=GETDATE()))" & _
+        " Union " & _
+        "select IDOperario, Proyecto AS Obra_Predeterminada " & _
+        "from " & DB_OC & "..tbHistoricoPersonal " & _
+        "where (Proyecto = '11822417') and " & _
         "((Fecha >= '" & Fecha1 & "' AND Fecha <=GETDATE()))"
 
         dt = aux.EjecutarSqlSelect(sql)
@@ -1499,6 +1519,102 @@ Public Class CargaHorasJPSTAFF
                     End If
 
                     txtSQL = "Insert into " & DB_SECOZAM & "..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
+                            "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
+                             "ImpRealModA, HorasFactMod, ImpFactModA, DescParte, Facturable, FechaCreacionAudi, FechaModificacionAudi, Usuarioaudi,IDOficio, IdTipoTurno, HorasAdministrativas, IDCategoriaProfesionalSCCP) " & _
+                             "Values(" & IDAutonumerico & ", " & IDTrabajo & ", " & IDObra & ", '" & _
+                             CodTrabajo & "', '" & DescTrabajo & "', '" & IdTipoTrabajo & "', '" & _
+                             IdSubTipoTrabajo & "', '" & IDOperario & "', 'PREDET', '" & _
+                             "HA" & "', '" & fecha & "', 0 , " & 0 & ", " & 0 & _
+                             ", 0 , " & 0 & _
+                             ", '" & DescParte & "', " & 0 & ", '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & "','" & IDOficio & "', 4," & horas & " ," & Nz(IDCategoriaProfesionalSCCP, "") & ")"
+
+                    auto.Ejecutar(txtSQL)
+                End If
+
+            Next
+
+            filas = filas + 1
+            PvProgreso.Value = filas
+        Next
+        '3. Obtengo una tabla por persona de los días que no tengan que insertar horas
+        MsgBox("Las horas de la gente de oficina de Tecozam, Ferrallas y Secozam han sido insertadas correctamente.", vbInformation + vbOKOnly, "STAFF OFICINA")
+
+    End Sub
+    Public Sub setHorasOficinaOcellum(ByVal mes As String, ByVal año As String, ByVal Fecha1 As String, ByVal Fecha2 As String)
+        '1. Obtengo la tabla de personas que estén en oficina
+        Dim dtPersonasOfi As New DataTable
+        dtPersonasOfi = getListadoPersonasOfiOcellum(Fecha1, Fecha2)
+        '2. Recorro las personas 
+        Dim IDOperario As String
+        Dim IDOficio As String
+        Dim IDCategoriaProfesionalSCCP As String
+        Dim IDObra As String
+        Dim IDTrabajo As String
+        Dim IDAutonumerico As String
+        Dim CodTrabajo As String
+        Dim txtSQL As String
+
+        Dim dtOperarioCalendarioNoProductivo As New DataTable
+        Dim dtCalendario As New DataTable
+        dtCalendario = ObtieneCalendario(Fecha1, Fecha2)
+
+        'TABLA CON FECHAS DONDE SE INSERTAN HORAS
+        Dim dtDiasInsertar As New DataTable
+        dtDiasInsertar.Columns.Add("Fecha", GetType(Date))
+
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = dtPersonasOfi.Rows.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
+        For Each fila As DataRow In dtPersonasOfi.Rows
+            IDOperario = fila("IDOperario")
+            IDOficio = DevuelveIDOficio(DB_OC, IDOperario)
+            IDCategoriaProfesionalSCCP = DevuelveIDCategoriaProfesionalSCCP(DB_OC, IDOperario)
+            'IDObra = "11854231"
+            IDObra = fila("Obra_Predeterminada")
+            'Si es distinto que oficina y secozam
+            If IDObra <> "11822417" Then
+                IDObra = DevuelveUltimoCambioObra(IDOperario, DB_SECOZAM)
+            End If
+
+            IDTrabajo = ObtieneIDTrabajo(DB_OC, IDObra, "PT1")
+            'Este es DB_TECOZAM porque coje el calendario de España
+            dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivos(DB_TECOZAM, DB_OC, IDOperario, Fecha1, Fecha2, dtCalendario)
+            dtDiasInsertar = ObtieneFechasInsertar(DB_OC, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
+
+            ActualizarLProgreso("Importando : " & IDOperario & " - OCELLUM OFICINA")
+
+            For Each row As DataRow In dtDiasInsertar.Rows
+                Dim fecha As Date = row.Field(Of Date)("Fecha")
+                IDAutonumerico = auto.Autonumerico()
+
+                'Check de si hay un registro para esta fecha y este operario que pase al siguiente dia.
+                'ESTO SE DEBE PORQUE SI ESTA DE BAJA Y TIENE HORAS NO SE GENERAN ADMINISTRATIVAS
+                Dim checkSeguir As Boolean
+                checkSeguir = getSiInsertarONo(DB_OC, fecha, IDOperario)
+
+                If checkSeguir Then
+                    Dim rsTrabajo As New DataTable : Dim filtro2 As New Filter
+                    filtro2.Add("IDObra", FilterOperator.Equal, IDObra) : filtro2.Add("IdTrabajo", FilterOperator.Equal, IDTrabajo)
+                    rsTrabajo = New BE.DataEngine().Filter(DB_OC & "..tbObraTrabajo", filtro2)
+                    'rsTrabajo = obraTrabajo.Filter(filtro2, , "IdTrabajo, CodTrabajo, DescTrabajo, IdTipoTrabajo, IdSubtipoTrabajo")
+
+                    IDTrabajo = rsTrabajo.Rows(0)("IdTrabajo") : CodTrabajo = rsTrabajo.Rows(0)("CodTrabajo")
+                    Dim DescTrabajo As String = "" : Dim IdTipoTrabajo As String = "" : Dim IdSubTipoTrabajo As String = ""
+                    DescTrabajo = rsTrabajo.Rows(0)("DescTrabajo") : IdTipoTrabajo = rsTrabajo.Rows(0)("IdTipoTrabajo") : IdSubTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdSubtipotrabajo"), "")
+                    Dim DescParte As String : DescParte = "OFICINA" & " " & mes & "-" & año & "-OFI"
+
+                    Dim horas As Double = 8
+                    Dim porcentaje As Double
+                    Dim dtPorcentaje As DataTable
+                    Dim f As New Filter
+                    f.Add("IDOperario", FilterOperator.Equal, IDOperario)
+                    dtPorcentaje = New BE.DataEngine().Filter(DB_OC & "..frmMntoOperario", f)
+                    porcentaje = Nz(dtPorcentaje.Rows(0)("JornadaParcial"), 0)
+                    If porcentaje <> 0 Then
+                        horas = (horas * porcentaje) / 100
+                    End If
+
+                    txtSQL = "Insert into " & DB_OC & "..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
                             "IdSubTipoTrabajo, IdOperario, IdCategoria, IdHora, FechaInicio, HorasRealMod, TasaRealModA, " & _
                              "ImpRealModA, HorasFactMod, ImpFactModA, DescParte, Facturable, FechaCreacionAudi, FechaModificacionAudi, Usuarioaudi,IDOficio, IdTipoTurno, HorasAdministrativas, IDCategoriaProfesionalSCCP) " & _
                              "Values(" & IDAutonumerico & ", " & IDTrabajo & ", " & IDObra & ", '" & _
@@ -6830,13 +6946,30 @@ Public Class CargaHorasJPSTAFF
             Dim diccionario As String
             diccionario = devuelveDiccionarioNO(texto)
 
+            Dim textoCombinado As String = texto
+            Dim continuar As Boolean = False
             ' Añadir una nueva fila a la nueva tabla
             nuevaFila = dataTable.NewRow()
 
             ' Asignar los valores a las columnas correspondientes
+
             nuevaFila("Diccionario") = diccionario
             nuevaFila("Operario") = devuelveOperarioNO(texto)
-            tax = devuelveTAX(texto)
+
+            Try
+                tax = devuelveTAX(texto)
+            Catch ex As Exception
+                Dim textoSiguiente As String = PdfTextExtractor.GetTextFromPage(pdfReader, page + 1)
+                textoCombinado &= vbCrLf & textoSiguiente ' Combinar texto actual y siguiente
+                Try
+                    tax = devuelveTAX(textoCombinado)
+                    continuar = True ' Indica que se procesará con el texto combinado
+                    page += 1 ' Saltar a la siguiente página ya que se usó
+                Catch innerEx As Exception
+                    Continue For ' Si sigue fallando, ignorar y continuar con el siguiente ciclo
+                End Try
+            End Try
+
             'Si es 0 es que ha dado error y continua el for
             If tax = 0 Then
                 Continue For
