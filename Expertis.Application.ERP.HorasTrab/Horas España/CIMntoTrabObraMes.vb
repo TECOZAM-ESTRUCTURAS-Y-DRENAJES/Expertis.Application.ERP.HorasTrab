@@ -3,6 +3,8 @@ Imports Solmicro.Expertis.Engine.UI
 Imports Solmicro.Expertis.Engine.DAL
 Imports System.Windows.Forms
 Imports Solmicro.Expertis.Business.ClasesTecozam
+Imports OfficeOpenXml
+Imports System.IO
 
 Public Class CIMntoTrabObraMes
 
@@ -110,14 +112,15 @@ Public Class CIMntoTrabObraMes
         ' Agregue cualquier inicialización después de la llamada a InitializeComponent().
         cargarComboAnio()
         cargarComboMes()
-        'LoadToolbarActions()
+        LoadToolbarActions()
 
     End Sub
 
     Private Sub LoadToolbarActions()
         Try
             With Me.FormActions
-                .Add("Calcular dias por obra Entre fechas.", AddressOf calcular)
+                '.Add("Calcular dias por obra Entre fechas.", AddressOf calcular)
+                .Add("Exportar excel horas acumulado.", AddressOf exportarExcel)
                 '.Add("Leer un Fichero", AddressOf LeerFichero)
             End With
         Catch ex As Exception
@@ -125,6 +128,65 @@ Public Class CIMntoTrabObraMes
         End Try
     End Sub
 
+    Public Sub exportarExcel()
+        Dim fecha1 As String = clbFecha1.Value
+        Dim fecha2 As String = clbFecha.Value
+
+        If advNObra.Text.ToString.Length = 0 Or fecha1.Length = 0 Or fecha2.Length = 0 Then
+            MsgBox("La obra y las fechas son datos obligatorios")
+        Else
+            exportaExcel(fecha1, fecha2)
+        End If
+    End Sub
+    Public Sub exportaExcel(ByVal fecha1 As String, ByVal fecha2 As String)
+        Dim dtObras As New DataTable
+        Dim sql As String
+        sql = "SELECT IDOperario, DescOperario, SUM(Horas) AS TotalHoras FROM  vSistLabListadoTrabajadoresObraMes "
+        sql &= "WHERE FechaInicio >= '" & fecha2 & "' AND FechaInicio <= '" & fecha1 & "' AND NObra = '" & advNObra.Text.ToString & "'"
+        sql &= "GROUP BY IDOperario, DescOperario"
+
+        Dim s As New Solmicro.Expertis.Business.ClasesTecozam.ControlArticuloNSerie
+        dtObras = s.EjecutarSqlSelect(sql)
+        GeneraExcelHoras(dtObras)
+    End Sub
+    Public Sub GeneraExcelHoras(ByVal dtFinal As DataTable)
+
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial
+
+        Dim saveFileDialog As New SaveFileDialog()
+
+        ' Establecer el filtro para el cuadro de diálogo (solo archivos .xlsx)
+        saveFileDialog.Filter = "Archivos de Excel (*.xlsx)|*.xlsx"
+        saveFileDialog.FileName = " HORAS - " & advNObra.Text.ToString & ".xlsx" ' Establecer el nombre predeterminado del archivo
+
+        ' Mostrar el cuadro de diálogo para que el usuario elija dónde guardar el archivo
+        If saveFileDialog.ShowDialog() = DialogResult.OK Then
+            ' Obtener la ruta seleccionada por el usuario
+            Dim ruta As New FileInfo(saveFileDialog.FileName)
+            Dim rutaCadena As String = ruta.FullName
+
+            ' Ahora 'rutaCadena' tiene la ruta completa del archivo seleccionado
+            MessageBox.Show("El archivo se ha guardado en: " & rutaCadena)
+        End If
+
+
+        Using package As New ExcelPackage(saveFileDialog.FileName)
+            ' Crear una hoja de cálculo y obtener una referencia a ella.
+            Dim worksheet = package.Workbook.Worksheets.Add("TOTAL HORAS")
+
+            ' Copiar los datos de la DataTable a la hoja de cálculo.
+            worksheet.Cells("A1").LoadFromDataTable(dtFinal, True)
+
+            ' Aplicar formato negrita a la fila 1
+            Dim fila1 As ExcelRange = worksheet.Cells(1, 1, 1, worksheet.Dimension.End.Column)
+            fila1.Style.Font.Bold = True
+            ' Congelar la primera columna
+            worksheet.View.FreezePanes(2, 1)
+            ' Guardar el archivo de Excel.
+            package.Save()
+        End Using
+
+    End Sub
     Public Sub calcular()
         Dim fechadesde As Date
         Dim fechahasta As Date
@@ -253,7 +315,7 @@ Public Class CIMntoTrabObraMes
             rp.Formulas("desde").Text = Format(desde, "dd/MM/yyyy")
             rp.Formulas("hasta").Text = Format(hasta, "dd/MM/yyyy")
             ExpertisApp.OpenReport(rp)
-            
+
 
         Catch ex As SqlClient.SqlException
 
@@ -533,7 +595,7 @@ Public Class CIMntoTrabObraMes
 
     '    End Try
 
-    
+
     'End Function
     Private Function generarCuadranteIndividual(ByVal mes As Integer, ByVal anio As Integer, ByVal informe As String)
         Dim rp As New Report(informe)
