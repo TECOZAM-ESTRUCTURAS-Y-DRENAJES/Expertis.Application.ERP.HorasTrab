@@ -653,16 +653,28 @@ Public Class ExportacionNoruegaCuadrante
         ' Crear el DataTable auxiliar con todas las columnas de tipo String
         Dim dtAuxiliar As New DataTable()
 
-        ' Crear columnas en dtAuxiliar con el mismo nombre, pero todas de tipo String
+        ' Crear columnas en dtAuxiliar, ajustando el tipo según el caso
         For Each column As DataColumn In dtRegistros.Columns
-            dtAuxiliar.Columns.Add(column.ColumnName, GetType(String))
+            If column.ColumnName = "TotalShift" OrElse column.ColumnName = "TotalHours" Then
+                ' Mantener el tipo original para TotalShift y TotalHours
+                dtAuxiliar.Columns.Add(column.ColumnName, column.DataType)
+            Else
+                ' Convertir el resto a tipo String
+                dtAuxiliar.Columns.Add(column.ColumnName, GetType(String))
+            End If
         Next
 
-        ' Copiar filas de dtRegistros a dtAuxiliar, convirtiendo cada valor a String
+        ' Copiar filas de dtRegistros a dtAuxiliar, convirtiendo los valores excepto para TotalShift y TotalHours
         For Each row As DataRow In dtRegistros.Rows
             Dim newRow As DataRow = dtAuxiliar.NewRow()
             For Each column As DataColumn In dtRegistros.Columns
-                newRow(column.ColumnName) = row(column).ToString()
+                If column.ColumnName = "TotalShift" OrElse column.ColumnName = "TotalHours" Then
+                    ' Mantener el valor original
+                    newRow(column.ColumnName) = row(column)
+                Else
+                    ' Convertir a String
+                    newRow(column.ColumnName) = row(column).ToString()
+                End If
             Next
             dtAuxiliar.Rows.Add(newRow)
         Next

@@ -145,21 +145,13 @@ Public Class ExportacionUKCuadrante
 
                         ' Verificar si horasProductivas es un número y asignar
                         If Not String.IsNullOrEmpty(horasProductivas.ToString()) Then ' Si la longitud es distinta de 0
-                            Dim horasProd As Double
-                            If Double.TryParse(horasProductivas.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, horasProd) Then
-                                dr(colProd) = horasProd
-                            End If
+                            dr(colProd) = horasProductivas
                         End If
 
                         ' Verificar si horasNoProductivas es un número y asignar
                         If Not String.IsNullOrEmpty(horasNoProductivas.ToString()) Then ' Si la longitud es distinta de 0
-                            Dim horasNoProd As Double
-                            If Double.TryParse(horasNoProductivas.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, horasNoProd) Then
-                                dr(colNoProd) = horasNoProd
-                            Else
-                                ' Si no es numérico, puedes manejarlo como sea necesario (opcional)
-                                dr(colNoProd) = DBNull.Value ' O cualquier valor predeterminado
-                            End If
+                            dr(colNoProd) = horasNoProductivas
+
                         End If
                     End If
 
