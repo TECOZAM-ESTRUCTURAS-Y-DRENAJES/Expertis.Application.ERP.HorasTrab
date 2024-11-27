@@ -128,9 +128,16 @@ Public Class ExportacionPortugalCuadrante
                     ' Asignar los valores a las columnas correspondientes
                     If dt.Rows.Count > 0 Then
                         ' Obtener el valor de "HorasProductivas", "HorasNoProductivas" e "IDCausa" desde la fila
-                        Dim horasProductivas As Double = Nz(dt.Rows(0)("HorasProductivas"), 0)
-                        Dim horasNoProductivas As Double = Nz(dt.Rows(0)("HorasNoProductivas"), 0)
-                        Dim suma = horasProductivas + horasNoProductivas
+                        Dim totalHorasProductivas As Double = 0
+                        Dim totalHorasNoProductivas As Double = 0
+
+                        ' Recorrer todas las filas para acumular los valores
+                        For Each fila As DataRow In dt.Rows
+                            totalHorasProductivas += Nz(fila("HorasProductivas"), 0)
+                            totalHorasNoProductivas += Nz(fila("HorasNoProductivas"), 0)
+                        Next
+
+                        Dim suma As Double = totalHorasProductivas + totalHorasNoProductivas
 
                         Dim idCausa As String = dt.Rows(0)("IDCausa").ToString() ' Asegúrate de que estás obteniendo IDCausa
 
