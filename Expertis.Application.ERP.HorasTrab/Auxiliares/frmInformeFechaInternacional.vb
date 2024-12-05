@@ -36,8 +36,13 @@
         dtcombo.Rows.Add(dr)
 
         dr = dtcombo.NewRow()
-        dr("Base de datos") = "xDrenajePortugal50R2"
+        dr("Base de datos") = "xDrenajesPortugal50R2"
         dr("Pais") = "Portugal"
+        dtcombo.Rows.Add(dr)
+
+        dr = dtcombo.NewRow()
+        dr("Base de datos") = "xTecozamUnitedKingdom50R2"
+        dr("Pais") = "Reino Unido"
         dtcombo.Rows.Add(dr)
 
         'dr = dtcombo.NewRow()

@@ -16,7 +16,7 @@ Public Class CreacionHoras
         f.Add("Insertado", FilterOperator.Equal, False)
         dtLineasPersonas = New BE.DataEngine().Filter("tbHorasInternacional", f)
 
-        If dtLineasPersonas.Rows.Count < 0 Then
+        If dtLineasPersonas.Rows.Count = 0 Then
             MsgBox("No existen registros para insertar en este rango de fechas.", MsgBoxStyle.Information)
             Exit Sub
         End If
@@ -89,7 +89,7 @@ Public Class CreacionHoras
                                "IDOficio, IdTipoTurno, HorasAdministrativas, IDCategoriaProfesionalSCCP) " & _
                                "VALUES(" & aux.devuelveAutonumeri() & ", " & IDTrabajo & ", " & IDObra & ", '" & codTrabajo & "', '" & _
                                DescTrabajo & "', '" & IdTipoTrabajo & "', '" & IdSubTipoTrabajo & "', '" & dr("IDOperario") & _
-                               "', 'PREDET', 'HO', '" & dr("FechaParte") & "', '" & dr("HorasProductivas") & "', 0, 0, 0, 0, '" & _
+                               "', 'PREDET', 'HO', '" & dr("FechaParte") & "', " & dr("HorasProductivas").ToString.Replace(",", ".") & ", 0, 0, 0, 0, '" & _
                                DescParte & "', 0, '" & Date.Now.Date & "', '" & Date.Now.Date & "', '" & ExpertisApp.UserName & _
                                "', '" & dr("Oficio") & "', 4, 0, " & categoria & ")"
         aux.Ejecutar(txtSQL)
@@ -134,10 +134,6 @@ Public Class CreacionHoras
         sql = "UPDATE tbHorasInternacional set Insertado= 1 where IDLineaParte= '" & IDLineaParte & "'"
         aux.EjecutarSql(sql)
     End Sub
-#End Region
-
-#Region "TECOZAM ESPAÑA"
-
 #End Region
 
 #Region "GETTERS"
