@@ -354,6 +354,7 @@ Public Class ExportacionNoruegaCuadrante
             dtFinal.Columns.Add(i.ToString() & " S", GetType(String))
         Next
     End Sub
+
     Public Sub GestionarOvertime(ByVal worksheet As ExcelWorksheet, ByVal fecha1 As String)
         ' Define el rango origen y destino
         Dim startRow As Integer = 6
@@ -489,9 +490,16 @@ Public Class ExportacionNoruegaCuadrante
                             Else
                                 worksheet.Cells(row, col + 62).Value = horas
                             End If
-                            ' Acción para fines de semana comentada en el código original
-                            ' Else
-                            '    worksheet.Cells(row, col + 62).Value = CDbl(value) - 5
+                        End If
+                    ElseIf r = 192 AndAlso g = 80 AndAlso b = 77 Then
+                        If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
+                            ' Acción para días de lunes a viernes
+                            Dim horas = CDbl(worksheet.Cells(row, col).Value - 7.5)
+                            If horas < 0 Then
+                                worksheet.Cells(row, col + 62).Value = CDbl(0)
+                            Else
+                                worksheet.Cells(row, col + 62).Value = horas
+                            End If
                         End If
                     Else
                         If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
@@ -576,6 +584,7 @@ Public Class ExportacionNoruegaCuadrante
 
         Return columnLetter
     End Function
+
     Private Sub creaHojaParametros(ByVal worksheet As ExcelWorksheet)
         ' Crear un DataTable con dos columnas: IDMotivo y DescCausa
         Dim dtParametros As New DataTable()
@@ -603,7 +612,8 @@ Public Class ExportacionNoruegaCuadrante
         dtTurnos.Rows.Add(3, "14:00h to 21:00h")
         dtTurnos.Rows.Add(4, "10:30h to 19:00h")
         dtTurnos.Rows.Add(5, "10:00h to 19:00h")
-        dtTurnos.Rows.Add(6, "- OTRO HORARIO -")
+        dtTurnos.Rows.Add(6, "21:00h to 06:00h")
+        dtTurnos.Rows.Add(7, "- OTRO HORARIO -")
 
         Dim dtTurnosExplicacion As New DataTable()
         dtTurnosExplicacion.Columns.Add("Explicacion", GetType(String))
@@ -616,6 +626,7 @@ Public Class ExportacionNoruegaCuadrante
         dtTurnosExplicacion.Rows.Add("* (3) The schedule from 14:00h to 21:00h includes a 0,5 hour (17h-17:30h) break. This meal is taken in a canteen and therefore does not count as working time. MONDAY to SATURDAY")
         dtTurnosExplicacion.Rows.Add("* (4) The schedule from 10:30h to 19:00h includes a 1 hour (14h-15h) break. This meal is taken in a canteen and therefore does not count as working time. MONDAY to FRIDAY")
         dtTurnosExplicacion.Rows.Add("* (5) The schedule from 10:00h to 19:00h includes a 0,5 hour (13h-13:30h) break for rest and 1 hour (17h-18h) for lunch. This meal is taken in a canteen and therefore does not count as working time. MONDAY to FRIDAY")
+        dtTurnosExplicacion.Rows.Add("* (6) The schedule from 21:00h to 06:00h includes a 0,5 hour (00:00-00:30h) break for rest and 1 hour (03:30h-04:30h) for lunch. This meal is taken in a canteen and therefore does not count as working time. MONDAY to FRIDAY")
 
         ' Copiar los datos de la DataTable a la hoja de cálculo
         worksheet.Cells("A1").LoadFromDataTable(dtParametros, True)
@@ -624,13 +635,14 @@ Public Class ExportacionNoruegaCuadrante
 
         ' Aplicar formato de borde a las celdas
         ApplyBorder(worksheet.Cells("A1:B9"))
-        ApplyBorder(worksheet.Cells("A11:B17"))
+        ApplyBorder(worksheet.Cells("A11:B18"))
 
         ApplyCellBackgroundColor(worksheet.Cells("B13"), 244, 180, 132)
         ApplyCellBackgroundColor(worksheet.Cells("B14"), 120, 216, 112)
         ApplyCellBackgroundColor(worksheet.Cells("B15"), 156, 196, 228)
         ApplyCellBackgroundColor(worksheet.Cells("B16"), 168, 164, 164)
-        ApplyCellBackgroundColor(worksheet.Cells("B17"), 255, 192, 203)
+        ApplyCellBackgroundColor(worksheet.Cells("B17"), 192, 80, 77)
+        ApplyCellBackgroundColor(worksheet.Cells("B18"), 255, 192, 203)
 
         worksheet.Column(2).Width = 20
     End Sub
@@ -720,6 +732,8 @@ Public Class ExportacionNoruegaCuadrante
                 rowColor = System.Drawing.Color.FromArgb(156, 196, 228) ' Color RGB personalizado (156, 196, 228)
             ElseIf shiftValue = "5" Then
                 rowColor = System.Drawing.Color.FromArgb(168, 164, 164)  ' Color RGB personalizado (168, 164, 164)
+            ElseIf shiftValue = "6" Then
+                rowColor = System.Drawing.Color.FromArgb(192, 80, 77)  ' Color RGB personalizado (192,80,77)
             End If
 
             For col As Integer = 1 To dtAuxiliar.Columns.Count
@@ -1141,31 +1155,6 @@ Public Class ExportacionNoruegaCuadrante
 
         horas = dt.Rows(0)("Horas").ToString.Replace(".", ",")
 
-
-        'If tipoExportacion = "ORIGINAL" Then
-        '    If Not IsDBNull(dt.Rows(0)("Horas")) Then
-        '        Double.TryParse(dt.Rows(0)("Horas").ToString(), horas)
-        '        If EsFindeSemana(fechaComparar) Then
-        '            'SI EL COLOR DE ESTA CELDA ES NARANJA(FFF4B484) Y VERDE:6,5
-        '            'ROSA: FFFFC0CB
-        '            'SI NO. QUE PONGA 0 Y MEJOR NULL QUE NO APAREZCA
-        '            Dim colorHex As String = celda.Style.Fill.BackgroundColor.Rgb
-        '            If colorHex = "FFF4B484" Or colorHex = "FF78D870" Then
-        '                If horas > 6.5 Then
-        '                    horas = 6.5
-        '                End If
-        '            Else
-        '                celda.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow)
-        '                horas = ""
-        '            End If
-
-        '        End If
-        '    End If
-        'ElseIf tipoExportacion = "TECOZAM" Then
-        '    horas = dt.Rows(0)("Horas").ToString.Replace(".", ",")
-        'End If
-
-
         celda.Value = horas
 
         If Len(dt.Rows(0)("Comentarios").ToString) <> 0 Then
@@ -1191,6 +1180,7 @@ Public Class ExportacionNoruegaCuadrante
     Private Function EsDiaLaboral(ByVal fecha As Date) As Boolean
         Return fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday
     End Function
+
     Private Function EsFindeSemana(ByVal fecha As Date) As Boolean
         Return fecha.DayOfWeek = DayOfWeek.Saturday OrElse fecha.DayOfWeek = DayOfWeek.Sunday
     End Function
@@ -1216,6 +1206,9 @@ Public Class ExportacionNoruegaCuadrante
         Dim intervalo4Inicio As TimeSpan = TimeSpan.Parse("10:00")
         Dim intervalo4Fin As TimeSpan = TimeSpan.Parse("20:00")
 
+        Dim intervalo5Inicio As TimeSpan = TimeSpan.Parse("21:00")
+        Dim intervalo5Fin As TimeSpan = TimeSpan.Parse("06:00")
+
         ' Comprobar en qué intervalo se encuentra el turno
         If turnoEntrada = intervalo0Inicio AndAlso turnoSalida = intervalo0Fin Then
             'MsgBox("Turno de 07:00 a 16:00")
@@ -1232,6 +1225,9 @@ Public Class ExportacionNoruegaCuadrante
         ElseIf turnoEntrada = intervalo4Inicio AndAlso turnoSalida = intervalo4Fin Then
             'MsgBox("Turno de 10:00 a 20:00")
             Return System.Drawing.Color.FromArgb(168, 164, 164)
+        ElseIf turnoEntrada = intervalo5Inicio AndAlso turnoSalida = intervalo5Fin Then
+            'MsgBox("Turno de 10:00 a 20:00")
+            Return System.Drawing.Color.FromArgb(192, 80, 77)
         Else
             Return System.Drawing.Color.FromArgb(255, 192, 203)
         End If
