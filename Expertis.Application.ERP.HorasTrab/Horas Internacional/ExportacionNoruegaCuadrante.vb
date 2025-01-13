@@ -113,10 +113,10 @@ Public Class ExportacionNoruegaCuadrante
                 worksheet.Cells("A5").LoadFromDataTable(dtFinal, True)
 
                 ' Aplicar estilos personalizados
-                GestionarEstilos(worksheet, dtFinal, fecha1)
-                GestionDatosHoras(worksheet, dtFinal, fecha1)
-                GestionarFormulacion(worksheet)
-                GestionarOvertime(worksheet, fecha1)
+                'GestionarEstilos(worksheet, dtFinal, fecha1)
+                'GestionDatosHoras(worksheet, dtFinal, fecha1)
+                'GestionarFormulacion(worksheet)
+                'GestionarOvertime(worksheet, fecha1)
 
 
                 If tipoExportacion = "ORIGINAL" Then
@@ -135,6 +135,10 @@ Public Class ExportacionNoruegaCuadrante
                 ' Crear una nueva hoja llamada REGISTROS TURNOS
                 Dim worksheetRegistrosTurnos = package.Workbook.Worksheets.Add("REGISTROS TURNOS")
                 creaHojaRegistrosTurnos(worksheetRegistrosTurnos, fecha1, fecha2)
+
+                'Crear una nueva hoja llamada RESUMEN y llamar a método creaHojaResumen
+                Dim worksheetResumen = package.Workbook.Worksheets.Add("RESUMEN")
+                creaHojaResumen(worksheetResumen, fecha1, fecha2)
 
                 ' Guardar el paquete de Excel en la ruta seleccionada
                 Dim fileInfo As New IO.FileInfo(rutaArchivo)
@@ -755,6 +759,131 @@ Public Class ExportacionNoruegaCuadrante
             Next
         Next
     End Sub
+
+    Public Sub creaHojaResumen(ByVal worksheet As ExcelWorksheet, ByVal fecha1 As String, ByVal fecha2 As String)
+        'referencia a hoja de registro para obtencion de datos
+        Dim wsRegistro As ExcelWorksheet = worksheet.Workbook.Worksheets("REGISTROS TURNOS")
+
+        'ultima fila con datos en registro
+        Dim ultimaFila As Integer = wsRegistro.Dimension.End.Row
+
+        'limpiar hoja "RESUMEN"
+        worksheet.Cells.Clear()
+
+        'establecer encabezados
+        worksheet.Cells(1, 1).Value = "Por semana: Total de horas sin extras."
+        worksheet.Cells(2, 1).Value = "Semana"
+        worksheet.Cells(2, 2).Value = "Horas"
+
+        worksheet.Cells(1, 5).Value = "Por semana: Total de horas extras."
+        worksheet.Cells(2, 5).Value = "Semana"
+        worksheet.Cells(2, 6).Value = "Horas"
+
+        worksheet.Cells(10, 1).Value = "Por día: Total de horas extras."
+        worksheet.Cells(11, 1).Value = "Dia"
+        worksheet.Cells(11, 2).Value = "Horas"
+
+        Dim fecha1_format As DateTime = FormatearFecha(fecha1)
+        Dim fecha2_format As DateTime = FormatearFecha(fecha2)
+        Dim fechaExcel As DateTime
+
+        Dim diaMes As Integer
+        Dim horasTrabajo As Double
+        Dim horasExtras As Double
+        Dim semana As Integer
+
+        Dim semanas As New Dictionary(Of Integer, Double)()
+        Dim semanasExtras As New Dictionary(Of Integer, Double)()
+        Dim diasExtras As New Dictionary(Of Integer, Double)()
+
+        For i As Integer = 1 To 4
+            semanas.Add(i, 0)
+            semanasExtras.Add(i, 0)
+        Next
+
+        For i As Integer = 1 To 31
+            diasExtras.Add(i, 0)
+        Next
+
+        'recorrer las filas de registro analizando datos
+        For i As Integer = 2 To ultimaFila
+            fechaExcel = DateTime.Parse(wsRegistro.Cells(i, 1).Value.ToString)
+            diaMes = fechaExcel.Day
+            horasTrabajo = wsRegistro.Cells(i, 13).Value
+            horasExtras = wsRegistro.Cells(i, 21).Value
+
+            ' Verificar si el día está dentro del rango de fechas especificado
+            If diaMes >= fecha1_format.Day AndAlso diaMes <= fecha2_format.Day Then
+                ' Calcular el número de semana del mes
+                semana = SemanaDelMes(fechaExcel)
+
+                ' Sumar horas a la semana y dia que corresponda
+                If semanas.ContainsKey(semana) Then
+                    semanas(semana) += horasTrabajo
+                    semanasExtras(semana) += horasExtras
+                    diasExtras(diaMes) += horasExtras
+                Else
+                    semanas.Add(semana, 0)
+                    semanasExtras.Add(semana, 0)
+
+                    semanas(semana) += horasTrabajo
+                    semanasExtras(semana) += horasExtras
+                    diasExtras(diaMes) += horasExtras
+                End If
+            End If
+        Next
+
+        'Escribir resultados en Resumen
+        Dim primeraFilaTrabajo As Integer = 3
+        For Each semanaDiccionario As Integer In semanas.Keys
+            worksheet.Cells(primeraFilaTrabajo, 1).Value = semanaDiccionario
+            worksheet.Cells(primeraFilaTrabajo, 2).Value = semanas(semanaDiccionario)
+            primeraFilaTrabajo += 1
+        Next
+
+        Dim primeraFilaExtra As Integer = 3
+        For Each semanaDiccionario As Integer In semanasExtras.Keys
+            worksheet.Cells(primeraFilaExtra, 5).Value = semanaDiccionario
+            worksheet.Cells(primeraFilaExtra, 6).Value = semanasExtras(semanaDiccionario)
+            primeraFilaExtra += 1
+        Next
+
+        Dim primeraFilaDiaExtra As Integer = 12
+        For Each diaDiccionario As Integer In diasExtras.Keys
+            worksheet.Cells(primeraFilaDiaExtra, 1).Value = diaDiccionario
+            worksheet.Cells(primeraFilaDiaExtra, 2).Value = diasExtras(diaDiccionario)
+            primeraFilaDiaExtra += 1
+        Next
+
+    End Sub
+
+    Function SemanaDelMes(ByVal fecha As DateTime) As Integer
+        ' Obtener el primer día del mes
+        Dim primerDiaMes As New DateTime(fecha.Year, fecha.Month, 1)
+
+        ' Obtener el día de la semana del primer día del mes
+        Dim primerDiaSemana As Integer = CInt(primerDiaMes.DayOfWeek)
+
+        ' Si el primer día del mes es domingo, ajustar el valor
+        If primerDiaSemana = 0 Then
+            primerDiaSemana = 7
+        End If
+
+        ' Calcular el número de días desde el inicio del mes
+        Dim diasDesdeInicioMes As Integer = (fecha - primerDiaMes).Days
+
+        ' Calcular la semana del mes
+        Dim semana As Integer = (diasDesdeInicioMes + primerDiaSemana) \ 7 + 1
+
+        Return semana
+    End Function
+
+    Function FormatearFecha(ByVal fecha As String) As DateTime
+        Dim fechaFormateada As DateTime = DateTime.Parse(fecha)
+        ' Solo mostrar la fecha (día/mes/año)
+        fechaFormateada = fechaFormateada.Date
+        Return fechaFormateada
+    End Function
 
     Function GetExcelColumnName(ByVal columnNumber As Integer) As String
         Dim dividend As Integer = columnNumber
