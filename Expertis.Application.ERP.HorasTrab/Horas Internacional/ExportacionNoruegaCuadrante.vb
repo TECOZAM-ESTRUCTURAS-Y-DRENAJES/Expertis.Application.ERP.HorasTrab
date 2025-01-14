@@ -113,10 +113,10 @@ Public Class ExportacionNoruegaCuadrante
                 worksheet.Cells("A5").LoadFromDataTable(dtFinal, True)
 
                 ' Aplicar estilos personalizados
-                'GestionarEstilos(worksheet, dtFinal, fecha1)
-                'GestionDatosHoras(worksheet, dtFinal, fecha1)
-                'GestionarFormulacion(worksheet)
-                'GestionarOvertime(worksheet, fecha1)
+                GestionarEstilos(worksheet, dtFinal, fecha1)
+                GestionDatosHoras(worksheet, dtFinal, fecha1)
+                GestionarFormulacion(worksheet)
+                GestionarOvertime(worksheet, fecha1)
 
 
                 If tipoExportacion = "ORIGINAL" Then
@@ -809,8 +809,19 @@ Public Class ExportacionNoruegaCuadrante
         For i As Integer = 2 To ultimaFila
             fechaExcel = DateTime.Parse(wsRegistro.Cells(i, 1).Value.ToString)
             diaMes = fechaExcel.Day
-            horasTrabajo = wsRegistro.Cells(i, 13).Value
-            horasExtras = wsRegistro.Cells(i, 21).Value
+
+            If IsNumeric(wsRegistro.Cells(i, 13).Value) Then
+                horasTrabajo = CDbl(wsRegistro.Cells(i, 13).Value)
+            Else
+                horasTrabajo = 0
+            End If
+
+            If IsNumeric(wsRegistro.Cells(i, 21).Value) Then
+                horasExtras = CDbl(wsRegistro.Cells(i, 21).Value)
+            Else
+                horasExtras = 0
+            End If
+
 
             ' Verificar si el día está dentro del rango de fechas especificado
             If diaMes >= fecha1_format.Day AndAlso diaMes <= fecha2_format.Day Then
