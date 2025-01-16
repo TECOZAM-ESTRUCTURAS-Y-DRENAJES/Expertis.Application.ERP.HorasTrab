@@ -40,7 +40,7 @@ Public Class ExportacionUKCuadrante
     End Sub
 
     Public Function getTablaPersonas(ByVal fecha1 As String) As DataTable
-        Dim strWhere As String = "Fecha_Baja is null or Fecha_Baja>='" & fecha1 & "' order by FechaAlta asc"
+        Dim strWhere As String = "(Fecha_Baja is null or Fecha_Baja>='" & fecha1 & "') order by FechaAlta asc"
         Return New BE.DataEngine().Filter("frmMntoOperario", "IDOperario, Diccionario, DescOperario,IDDepartamento As Compañia, FechaAlta, Fecha_Baja ", strWhere)
     End Function
 
@@ -132,16 +132,19 @@ Public Class ExportacionUKCuadrante
                     ' Asignar los valores a las columnas correspondientes
                     If dt.Rows.Count > 0 Then
                         ' Obtener el valor de "HorasProductivas", "HorasNoProductivas" e "IDCausa" desde la fila
-                        Dim horasProductivas As Object = dt.Rows(0)("HorasProductivas")
-                        Dim horasNoProductivas As Object = dt.Rows(0)("HorasNoProductivas")
-                        Dim idCausa As String = dt.Rows(0)("IDCausa").ToString() ' Asegúrate de que estás obteniendo IDCausa
+                        Dim horasProductivas As Object = 0
+                        Dim horasNoProductivas As Object = 0
+                        Dim idCausa As String = dt.Rows(0)("IDCausa").ToString()
 
-                        ' Si no es numérico, verifica si IDCausa tiene longitud > 0
-                        If Not String.IsNullOrEmpty(idCausa) Then
-                            dr(colProd) = idCausa ' Asignar el valor de IDCausa
-                        Else
-                            dr(colProd) = DBNull.Value ' O puedes asignar 0 si prefieres
-                        End If
+                        For Each row As DataRow In dt.Rows
+                            If Not IsDBNull(row("HorasProductivas")) Then
+                                horasProductivas += Convert.ToDouble(row("HorasProductivas"))
+                            End If
+
+                            If Not IsDBNull(row("HorasNoProductivas")) Then
+                                horasNoProductivas += Convert.ToDouble(row("HorasNoProductivas"))
+                            End If
+                        Next
 
                         ' Verificar si horasProductivas es un número y asignar
                         If Not String.IsNullOrEmpty(horasProductivas.ToString()) Then ' Si la longitud es distinta de 0
@@ -152,6 +155,12 @@ Public Class ExportacionUKCuadrante
                         If Not String.IsNullOrEmpty(horasNoProductivas.ToString()) Then ' Si la longitud es distinta de 0
                             dr(colNoProd) = horasNoProductivas
 
+                        End If
+
+                        ' Si IDCausa no nulo, sobreescribir datos
+                        If Not String.IsNullOrEmpty(idCausa) Then
+                            dr(colProd) = idCausa ' Asignar el valor de IDCausa
+                            dr(colNoProd) = DBNull.Value
                         End If
                     End If
 
@@ -179,10 +188,11 @@ Public Class ExportacionUKCuadrante
                 CrearHojaEmpleados(package, dtFinal)
 
                 ' Obtener los ID de las obras
-                Dim dtIDObras As DataTable = ObtenerIDObras(dtFinal)
+                Dim dtNObras As DataTable = ObtenerIDObras(dtFinal, fecha1, fecha2)
 
                 ' Crear una hoja por cada obra
-                CrearHojasPorObra(package, dtFinal, dtIDObras)
+                'CrearHojasPorObra(package, dtFinal, dtIDObras, fecha1, fecha2)
+                CrearHojasPorObra(package, dtFinal, dtNObras, fecha1, fecha2)
 
                 ' Guardar el archivo
                 GuardarArchivoExcel(package, rutaArchivo)
@@ -201,72 +211,181 @@ Public Class ExportacionUKCuadrante
     End Sub
 
     ' Método para obtener los IDObra únicos
-    Private Function ObtenerIDObras(ByVal dtFinal As DataTable) As DataTable
+    Private Function ObtenerIDObras(ByVal dtFinal As DataTable, ByVal fecha1 As DateTime, ByVal fecha2 As DateTime) As DataTable
         Dim dtIDObras As New DataTable()
-        dtIDObras.Columns.Add("obra_predeterminada", GetType(String))
+        dtIDObras.Columns.Add("obra", GetType(String))
+
+        Dim obrasList As New List(Of String)()
 
         For Each filaOperario As DataRow In dtFinal.Rows
             Dim dt As DataTable
             Dim f As New Filter()
             f.Add("IDOperario", FilterOperator.Equal, filaOperario("IDOperario"))
+            f.Add("FechaParte", FilterOperator.GreaterThanOrEqual, fecha1)
+            f.Add("FechaParte", FilterOperator.LessThanOrEqual, fecha2)
 
             ' Filtrar la tabla y obtener los datos
-            dt = New BE.DataEngine().Filter("tbMaestroOperarioSat", f)
+            dt = New BE.DataEngine().Filter("frmMntoHorasInternacionalTecozam", f)
 
             ' Iterar sobre las filas del DataTable dt para obtener los IDObra
             For Each fila As DataRow In dt.Rows
-                If fila.Table.Columns.Contains("obra_predeterminada") Then
-                    Dim idObra As String = fila("obra_predeterminada").ToString()
-                    If Not dtIDObras.AsEnumerable().Any(Function(r) r.Field(Of String)("obra_predeterminada") = idObra) Then
-                        Dim nuevaFila As DataRow = dtIDObras.NewRow()
-                        nuevaFila("obra_predeterminada") = idObra
-                        dtIDObras.Rows.Add(nuevaFila)
+                If fila.Table.Columns.Contains("NObra") Then
+                    Dim idObra As String = fila("NObra").ToString()
+
+                    ' Si la lista no contiene la obra (evitar duplicados)
+                    If Not obrasList.Contains(idObra) Then
+                        obrasList.Add(idObra)
                     End If
                 End If
             Next
         Next
 
+        'convertir lista a datatable para devolver
+        For Each obra As String In obrasList
+            Dim nuevaFila As DataRow = dtIDObras.NewRow()
+            nuevaFila("obra") = obra
+            dtIDObras.Rows.Add(nuevaFila)
+        Next
+
         Return dtIDObras
     End Function
 
-    ' Método para crear una hoja de Excel por cada obra
-    Private Sub CrearHojasPorObra(ByVal package As ExcelPackage, ByVal dtFinal As DataTable, ByVal dtIDObras As DataTable)
-        For Each filaIDObra As DataRow In dtIDObras.Rows
-            Dim idObra As String = filaIDObra("obra_predeterminada").ToString()
+    Private Sub CrearHojasPorObra(ByVal package As ExcelPackage, ByVal dtFinal As DataTable, ByVal dtNObras As DataTable, ByVal fecha1 As DateTime, ByVal fecha2 As DateTime)
+        'evaluar la situacion de cada obra (NObra en dtIDObras
+        For Each obra As DataRow In dtNObras.Rows
+            Dim NObra As String = obra("obra")
 
-            ' Clonar la estructura de dtFinal para dtObra
+            'copiar estructura de dtFinal para la hoja
             Dim dtObra As DataTable = dtFinal.Clone()
 
-            ' Filtrar operarios por IDObra
-            For Each filaOperario As DataRow In dtFinal.Rows
-                Dim dt As DataTable
+            'evaluar situacion de cada operario en NObra
+            For Each operario As DataRow In dtFinal.Rows()
+                'obtner tabla con todas las horas para IDOperario en NObra
                 Dim f As New Filter()
-                f.Add("IDOperario", FilterOperator.Equal, filaOperario("IDOperario"))
+                f.Add("IDOperario", FilterOperator.Equal, operario("IDOperario"))
+                f.Add("NObra", FilterOperator.Equal, NObra)
+                f.Add("FechaParte", FilterOperator.GreaterThanOrEqual, fecha1)
+                f.Add("FechaParte", FilterOperator.LessThanOrEqual, fecha2)
 
-                ' Filtrar la tabla y obtener los datos
-                dt = New BE.DataEngine().Filter("tbMaestroOperarioSat", f)
+                Dim dtHorasOperario As DataTable
+                dtHorasOperario = New BE.DataEngine().Filter("frmMntoHorasInternacionalTecozam", f, "FechaParte, HorasProductivas, HorasNoProductivas, IDCausa")
 
-                ' Iterar sobre las filas del DataTable dt para llenar el DataTable dtObra
-                For Each fila As DataRow In dt.Rows
-                    If fila.Table.Columns.Contains("obra_predeterminada") AndAlso fila("obra_predeterminada").ToString() = idObra Then
-                        dtObra.ImportRow(filaOperario)
-                    End If
-                Next
+                If dtHorasOperario.Rows.Count > 0 Then
+
+                    'preparar fila nueva a insertar
+                    dtObra.ImportRow(operario)
+                    Dim nuevaFila As DataRow = dtObra.Rows(dtObra.Rows.Count - 1)
+                    LimpiarFila(nuevaFila)
+
+                    'volcar en nueva fila de dtObra la informacion obtenida en dtHorasTrabajador
+                    For Each horasOperario As DataRow In dtHorasOperario.Rows
+                        If (Not String.IsNullOrEmpty(horasOperario("HorasProductivas").ToString()) AndAlso Not String.IsNullOrEmpty(horasOperario("HorasNoProductivas").ToString())) Or Not IsDBNull(horasOperario("IDCausa")) Then
+
+                            'obtener la fecha a evaluar
+                            Dim fechaOperario As DateTime = Convert.ToDateTime(horasOperario("FechaParte")).Date
+                            Dim fechaProd As String = fechaOperario.ToString("dd/MM/yy") & "-PROD"
+                            Dim fechaNoProd As String = fechaOperario.ToString("dd/MM/yy") & "-NOPROD"
+
+                            'buscar en dtObra la columna que coincide con la fecha y volcar datos
+                            For Each col As DataColumn In nuevaFila.Table.Columns
+                                If col.ColumnName.Contains(fechaProd) Then
+                                    nuevaFila(col) = horasOperario("HorasProductivas")
+
+                                    'volcar IDcausa si corresponde
+                                    If Not IsDBNull(horasOperario("IDCausa")) Then
+                                        nuevaFila(col) = horasOperario("IDCausa")
+                                    End If
+                                End If
+                                If col.ColumnName.Contains(fechaNoProd) Then
+                                    nuevaFila(col) = horasOperario("HorasNoProductivas")
+                                End If
+                            Next
+                        End If
+                    Next
+                End If
             Next
 
-            ' Obtener la cabecera de la obra
-            Dim dtObraCab As New DataTable
-            Dim fObraCab As New Filter
-            fObraCab.Add("idobra", FilterOperator.Equal, idObra)
-            dtObraCab = New BE.DataEngine().Filter("tbObraCabecera", fObraCab)
-
-            ' Crear una hoja de cálculo y obtener una referencia a ella.
-            Dim worksheetObra = package.Workbook.Worksheets.Add(dtObraCab.Rows(0)("NObra"))
+            'crear hoja NObra y volcar dtObra
+            Dim worksheetObra = package.Workbook.Worksheets.Add(NObra)
             worksheetObra.Cells("A1").LoadFromDataTable(dtObra, True)
 
             ConvertirCeldasANumeros(worksheetObra)
             CalcularTotales(dtObra, worksheetObra)
             GestionarEstilos(worksheetObra)
+        Next
+    End Sub
+
+    ' Método para crear una hoja de Excel por cada obra
+    'Private Sub CrearHojasPorObra(ByVal package As ExcelPackage, ByVal dtFinal As DataTable, ByVal dtIDObras As DataTable, ByVal fecha1 As DateTime, ByVal fecha2 As DateTime)
+    '    For Each filaIDObra As DataRow In dtIDObras.Rows
+    '        Dim NObra As String = filaIDObra("obra").ToString()
+
+    '        ' Clonar la estructura de dtFinal para dtObra
+    '        Dim dtObra As DataTable = dtFinal.Clone()
+
+    '        ' Filtrar operarios por IDObra
+    '        For Each filaOperario As DataRow In dtFinal.Rows
+    '            Dim dt As DataTable
+    '            Dim f As New Filter()
+    '            f.Add("IDOperario", FilterOperator.Equal, filaOperario("IDOperario"))
+    '            f.Add("NObra", FilterOperator.Equal, NObra)
+    '            f.Add("FechaParte", FilterOperator.GreaterThanOrEqual, fecha1)
+    '            f.Add("FechaParte", FilterOperator.LessThanOrEqual, fecha2)
+
+    '            ' Filtrar la tabla y obtener los datos
+    '            dt = New BE.DataEngine().Filter("frmMntoHorasInternacionalTecozam", f, "NObra, FechaParte, HorasProductivas, HorasNoProductivas")
+
+    '            dtObra.ImportRow(filaOperario)
+    '            'LimpiarFila(dtObra) 'limpiar datos basura
+
+    '            ' Iterar sobre las filas del DataTable dt para llenar el DataTable dtObra
+    '            For Each fila As DataRow In dt.Rows
+    '                If fila.Table.Columns.Contains("NObra") AndAlso fila("NObra").ToString() = NObra Then
+    '                    If Not String.IsNullOrEmpty(fila("HorasProductivas").ToString()) AndAlso Not String.IsNullOrEmpty(fila("HorasNoProductivas").ToString()) Then
+    '                        Dim fecha As Date = Convert.ToDateTime(fila("FechaParte")).Date 'obtener fecha que se esta evaluando
+
+    '                        Dim prodCol As String = fecha.ToString("dd/MM/yy") & "-PROD"
+    '                        Dim noprodCol As String = fecha.ToString("dd/MM/yy") & "-NOPROD"
+
+    '                        'recorrer dtObra buscando coincidencias
+    '                        For Each row As DataRow In dtObra.Rows
+    '                            If dtObra.Columns.Contains(prodCol) Then
+    '                                row(prodCol) = fila("HorasProductivas")
+    '                            End If
+
+    '                            If dtObra.Columns.Contains(noprodCol) Then
+    '                                row(noprodCol) = fila("HorasNoProductivas")
+    '                            End If
+    '                        Next
+    '                    End If
+    '                End If
+    '            Next
+    '        Next
+
+    '        ' Obtener la cabecera de la obra
+    '        Dim dtObraCab As New DataTable
+    '        Dim fObraCab As New Filter
+    '        fObraCab.Add("NObra", FilterOperator.Equal, NObra)
+    '        dtObraCab = New BE.DataEngine().Filter("tbObraCabecera", fObraCab)
+
+    '        ' Crear una hoja de cálculo y obtener una referencia a ella.
+    '        Dim worksheetObra = package.Workbook.Worksheets.Add(dtObraCab.Rows(0)("NObra"))
+    '        worksheetObra.Cells("A1").LoadFromDataTable(dtObra, True)
+
+    '        ConvertirCeldasANumeros(worksheetObra)
+    '        CalcularTotales(dtObra, worksheetObra)
+    '        GestionarEstilos(worksheetObra)
+    '    Next
+    'End Sub
+
+    Private Sub LimpiarFila(ByRef row As DataRow)
+        Dim buscado1 As String = "PROD"
+        Dim buscado2 As String = "NOPROD"
+
+        For Each col As DataColumn In row.Table.Columns
+            If col.ColumnName.Contains(buscado1) Or col.ColumnName.Contains(buscado2) Then
+                row(col) = DBNull.Value
+            End If
         Next
     End Sub
 
