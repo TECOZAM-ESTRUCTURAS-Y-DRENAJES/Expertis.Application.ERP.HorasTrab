@@ -168,6 +168,11 @@ Partial Class CargaHorasJPSTAFF
         Me.bCreaHorasInternacional = New Solmicro.Expertis.Engine.UI.Button
         Me.Frame16 = New Solmicro.Expertis.Engine.UI.Frame
         Me.bExportarNoruega = New Solmicro.Expertis.Engine.UI.Button
+        Me.UiTabPage15 = New Janus.Windows.UI.Tab.UITabPage
+        Me.GroupBox1 = New System.Windows.Forms.GroupBox
+        Me.bSubirDocumentacion = New Solmicro.Expertis.Engine.UI.Button
+        Me.bBorrarDocumentacion = New Solmicro.Expertis.Engine.UI.Button
+        Me.GroupBox2 = New System.Windows.Forms.GroupBox
         Me.Frame1.SuspendLayout()
         Me.Frame2.SuspendLayout()
         Me.Frame3.SuspendLayout()
@@ -215,6 +220,9 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage14.SuspendLayout()
         Me.Frame17.SuspendLayout()
         Me.Frame16.SuspendLayout()
+        Me.UiTabPage15.SuspendLayout()
+        Me.GroupBox1.SuspendLayout()
+        Me.GroupBox2.SuspendLayout()
         Me.SuspendLayout()
         '
         'bBorrarExcel
@@ -1198,7 +1206,7 @@ Partial Class CargaHorasJPSTAFF
         Me.Tab1.Name = "Tab1"
         Me.Tab1.Size = New System.Drawing.Size(1145, 309)
         Me.Tab1.TabIndex = 35
-        Me.Tab1.TabPages.AddRange(New Janus.Windows.UI.Tab.UITabPage() {Me.UiTabPage1, Me.UiTabPage2, Me.UiTabPage3, Me.UiTabPage4, Me.UiTabPage5})
+        Me.Tab1.TabPages.AddRange(New Janus.Windows.UI.Tab.UITabPage() {Me.UiTabPage1, Me.UiTabPage2, Me.UiTabPage3, Me.UiTabPage4, Me.UiTabPage5, Me.UiTabPage15})
         Me.Tab1.UseThemes = True
         '
         'UiTabPage1
@@ -1595,6 +1603,62 @@ Partial Class CargaHorasJPSTAFF
         Me.bExportarNoruega.TabIndex = 6
         Me.bExportarNoruega.Text = "Exportar horas"
         '
+        'UiTabPage15
+        '
+        Me.UiTabPage15.Controls.Add(Me.GroupBox2)
+        Me.UiTabPage15.Controls.Add(Me.GroupBox1)
+        Me.UiTabPage15.Location = New System.Drawing.Point(1, 21)
+        Me.UiTabPage15.Name = "UiTabPage15"
+        Me.UiTabPage15.Size = New System.Drawing.Size(1143, 287)
+        Me.UiTabPage15.TabStop = True
+        Me.UiTabPage15.Text = "Carga Base de Datos"
+        '
+        'GroupBox1
+        '
+        Me.GroupBox1.Controls.Add(Me.bSubirDocumentacion)
+        Me.GroupBox1.Font = New System.Drawing.Font("Verdana", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.GroupBox1.Location = New System.Drawing.Point(152, 69)
+        Me.GroupBox1.Name = "GroupBox1"
+        Me.GroupBox1.Padding = New System.Windows.Forms.Padding(25)
+        Me.GroupBox1.Size = New System.Drawing.Size(278, 126)
+        Me.GroupBox1.TabIndex = 2
+        Me.GroupBox1.TabStop = False
+        Me.GroupBox1.Text = "Subir documentación"
+        '
+        'bSubirDocumentacion
+        '
+        Me.bSubirDocumentacion.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.bSubirDocumentacion.Font = New System.Drawing.Font("Verdana", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bSubirDocumentacion.Icon = CType(resources.GetObject("bSubirDocumentacion.Icon"), System.Drawing.Icon)
+        Me.bSubirDocumentacion.Location = New System.Drawing.Point(25, 39)
+        Me.bSubirDocumentacion.Name = "bSubirDocumentacion"
+        Me.bSubirDocumentacion.Size = New System.Drawing.Size(228, 62)
+        Me.bSubirDocumentacion.TabIndex = 7
+        Me.bSubirDocumentacion.Text = "Seleccionar fichero para subir"
+        '
+        'bBorrarDocumentacion
+        '
+        Me.bBorrarDocumentacion.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.bBorrarDocumentacion.Font = New System.Drawing.Font("Verdana", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bBorrarDocumentacion.Icon = CType(resources.GetObject("bBorrarDocumentacion.Icon"), System.Drawing.Icon)
+        Me.bBorrarDocumentacion.Location = New System.Drawing.Point(25, 39)
+        Me.bBorrarDocumentacion.Name = "bBorrarDocumentacion"
+        Me.bBorrarDocumentacion.Size = New System.Drawing.Size(228, 62)
+        Me.bBorrarDocumentacion.TabIndex = 8
+        Me.bBorrarDocumentacion.Text = "Seleccionar fichero para borrar"
+        '
+        'GroupBox2
+        '
+        Me.GroupBox2.Controls.Add(Me.bBorrarDocumentacion)
+        Me.GroupBox2.Font = New System.Drawing.Font("Verdana", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.GroupBox2.Location = New System.Drawing.Point(581, 69)
+        Me.GroupBox2.Name = "GroupBox2"
+        Me.GroupBox2.Padding = New System.Windows.Forms.Padding(25)
+        Me.GroupBox2.Size = New System.Drawing.Size(278, 126)
+        Me.GroupBox2.TabIndex = 3
+        Me.GroupBox2.TabStop = False
+        Me.GroupBox2.Text = "Borrar documentación"
+        '
         'CargaHorasJPSTAFF
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 13.0!)
@@ -1662,6 +1726,9 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage14.ResumeLayout(False)
         Me.Frame17.ResumeLayout(False)
         Me.Frame16.ResumeLayout(False)
+        Me.UiTabPage15.ResumeLayout(False)
+        Me.GroupBox1.ResumeLayout(False)
+        Me.GroupBox2.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -1806,4 +1873,9 @@ Partial Class CargaHorasJPSTAFF
     Friend WithEvents bExportarNoruega As Solmicro.Expertis.Engine.UI.Button
     Friend WithEvents Frame17 As Solmicro.Expertis.Engine.UI.Frame
     Friend WithEvents bCreaHorasInternacional As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents UiTabPage15 As Janus.Windows.UI.Tab.UITabPage
+    Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
+    Friend WithEvents GroupBox2 As System.Windows.Forms.GroupBox
+    Friend WithEvents bBorrarDocumentacion As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents bSubirDocumentacion As Solmicro.Expertis.Engine.UI.Button
 End Class
