@@ -135,3 +135,4 @@ C:\Users\mcabrero\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.H
 C:\Users\mcabrero\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Release\Expertis.Application.ERP.HorasTrab.dll
 C:\Users\mcabrero\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Release\Expertis.Application.ERP.HorasTrab.xml
 C:\Users\mcabrero\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Release\Expertis.Application.ERP.HorasTrab.pdb
+C:\Users\mcabrero\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Release\Expertis.Application.ERP.HorasTrab.frmBorrarFicheroBDD.resources

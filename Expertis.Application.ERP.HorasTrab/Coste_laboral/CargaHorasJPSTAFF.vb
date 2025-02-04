@@ -4710,7 +4710,7 @@ Public Class CargaHorasJPSTAFF
             worksheet3.Column(3).Width = 30
             worksheet3.Column(5).Width = 15
             worksheet3.View.FreezePanes(2, 1)
-            ' HOJA 5
+            ' HOJA 4
             Dim worksheet5 = package.Workbook.Worksheets.Add(mes & " RESUMEN POR CATEGORIA " & anio)
             worksheet5.Cells("A1").LoadFromDataTable(dtResumenCategoriaProfesional, True)
             Dim fila15 As ExcelRange = worksheet5.Cells(1, 1, 1, worksheet5.Dimension.End.Column)

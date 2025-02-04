@@ -113,10 +113,10 @@ Public Class ExportacionNoruegaCuadrante
                 worksheet.Cells("A5").LoadFromDataTable(dtFinal, True)
 
                 ' Aplicar estilos personalizados
-                GestionarEstilos(worksheet, dtFinal, fecha1)
+                'GestionarEstilos(worksheet, dtFinal, fecha1)
                 GestionDatosHoras(worksheet, dtFinal, fecha1)
                 GestionarFormulacion(worksheet)
-                GestionarOvertime(worksheet, fecha1)
+                'GestionarOvertime(worksheet, fecha1)
 
 
                 If tipoExportacion = "ORIGINAL" Then
@@ -139,6 +139,10 @@ Public Class ExportacionNoruegaCuadrante
                 'Crear una nueva hoja llamada RESUMEN y llamar a método creaHojaResumen
                 Dim worksheetResumen = package.Workbook.Worksheets.Add("RESUMEN")
                 creaHojaResumen(worksheetResumen, fecha1, fecha2)
+
+                'Crear una nueva hoja llamada RESUMEN y llamar a método creaHojaResumenSemana
+                Dim worksheetResumenSemana = package.Workbook.Worksheets.Add("TRABAJADOR POR SEMANA")
+                crearHojaResumenSemana(worksheetResumenSemana, dtFinal, fecha1, fecha2)
 
                 ' Guardar el paquete de Excel en la ruta seleccionada
                 Dim fileInfo As New IO.FileInfo(rutaArchivo)
@@ -868,9 +872,56 @@ Public Class ExportacionNoruegaCuadrante
 
     End Sub
 
+    Public Sub crearHojaResumenSemana(ByVal worksheet As ExcelWorksheet, ByVal dtFinal As DataTable, ByVal fecha1 As String, ByVal fecha2 As String)
+        'Referencia a hoja para obtener los datos
+        Dim wsDatos As ExcelWorksheet = worksheet.Workbook.Worksheets(0)
+
+        'ultima fila con datos
+        'ultima fila con datos en registro
+        Dim ultimaFila As Integer = wsDatos.Dimension.End.Row
+
+        'limpiar hoja "TRABAJADOR POR SEMANA"
+        worksheet.Cells.Clear()
+
+        'obtener numero de semanas del mes a tratar
+        Dim nSemanas As Integer = SemanaDelMes(fecha1)
+
+        'establecer encabezados
+        Dim nombreSemana As String
+        Dim colInicial As Integer = 3
+        For i As Integer = 1 To nSemanas
+            nombreSemana = "Semana " & i
+            worksheet.Cells(1, colInicial).Value = nombreSemana
+            Dim rangoMerge = worksheet.Cells(1, colInicial, 1, colInicial + 2) 'fusionar encabezado
+            rangoMerge.Merge = True
+
+            'establecer encabezados de cada columna dentro de cada semana
+            worksheet.Cells(2, colInicial).Value = "Normal " & i
+            worksheet.Cells(2, colInicial + 1).Value = "Overtime " & i
+            worksheet.Cells(2, colInicial + 2).Value = "Total " & i
+
+            colInicial += 3
+        Next
+
+        worksheet.Cells(2, 1).Value = "EXP."
+        worksheet.Cells(2, 2).Value = "Name:"
+
+        'volcar datos de dtFinal para encabezados que correspondan
+        For i As Integer = 0 To dtFinal.Rows.Count - 1
+            worksheet.Cells(i + 3, 1).Value = dtFinal.Rows(i)("EXP.").ToString()
+            worksheet.Cells(i + 3, 2).Value = dtFinal.Rows(i)("Name:").ToString()
+        Next
+
+        CalcularIntervaloSemanas(wsDatos, fecha1)
+
+    End Sub
+
     Function SemanaDelMes(ByVal fecha As DateTime) As Integer
         ' Obtener el primer día del mes
         Dim primerDiaMes As New DateTime(fecha.Year, fecha.Month, 1)
+
+        ' Obtener el último día del mes
+        Dim ultimoDiaMes As New DateTime(fecha.Year, fecha.Month, DateTime.DaysInMonth(fecha.Year, fecha.Month))
 
         ' Obtener el día de la semana del primer día del mes
         Dim primerDiaSemana As Integer = CInt(primerDiaMes.DayOfWeek)
@@ -880,13 +931,61 @@ Public Class ExportacionNoruegaCuadrante
             primerDiaSemana = 7
         End If
 
-        ' Calcular el número de días desde el inicio del mes
-        Dim diasDesdeInicioMes As Integer = (fecha - primerDiaMes).Days
+        ' Calcular el número de días del mes
+        Dim diasDelMes As Integer = ultimoDiaMes.Day
 
-        ' Calcular la semana del mes
-        Dim semana As Integer = (diasDesdeInicioMes + primerDiaSemana) \ 7 + 1
+        ' Calcular el número de semanas completas en el mes
+        Dim semanas As Integer = (diasDelMes + primerDiaSemana - 1) \ 7
 
-        Return semana
+        ' Verificar si hay una semana adicional (es decir, si hay días adicionales que forman parte de una semana incompleta)
+        If (diasDelMes + primerDiaSemana - 1) Mod 7 > 0 Then
+            semanas += 1
+        End If
+
+        Return semanas
+    End Function
+
+    Function CalcularIntervaloSemanas(ByVal wsDatos As ExcelWorksheet, ByVal fecha As DateTime) As DataTable
+        ' Obtener el primer día del mes
+        Dim primerDiaMes As New DateTime(fecha.Year, fecha.Month, 1)
+        Dim primerDiaNum As Integer = primerDiaMes.Day
+
+        ' Obtener el último día del mes
+        Dim ultimoDiaMes As New DateTime(fecha.Year, fecha.Month, DateTime.DaysInMonth(fecha.Year, fecha.Month))
+        Dim ultimoDiaNumero As Integer = ultimoDiaMes.Day
+
+        ' Obtener el día de la semana del primer día del mes
+        Dim primerDiaSemana As Integer = CInt(primerDiaMes.DayOfWeek)
+
+        ' Si el primer día del mes es domingo, ajustar el valor
+        If primerDiaSemana = 0 Then
+            primerDiaSemana = 7
+        End If
+
+        ' Calcular el número de días del mes
+        Dim diasDelMes As Integer = ultimoDiaMes.Day
+
+        'calcular numero de semanas del mes
+        Dim nSemanas As Integer = SemanaDelMes(fecha)
+
+        'fabricar dt para los limites de cada semana
+        Dim dtLimites As New DataTable()
+        For i As Integer = 1 To nSemanas
+            dtLimites.Columns.Add("Comienzo semana " & i.ToString())
+            dtLimites.Columns.Add("Fin semana " & i.ToString())
+        Next
+
+        Dim filaLimites As DataRow = dtLimites.NewRow()
+        dtLimites.Rows.Add(filaLimites)
+
+        dtLimites(1)("Comienzo semana 1") = primerDiaMes
+        dtLimites(1)("Fin semana 1") = primerDiaNum + (7 - primerDiaSemana)
+
+        'con el limte de la primera semana, rellenar el resto
+        For j As Integer = 2 To nSemanas
+
+        Next
+
     End Function
 
     Function FormatearFecha(ByVal fecha As String) As DateTime
