@@ -2740,6 +2740,8 @@ Public Class CargaHorasJPSTAFF
                 rango = "A2:Q10000"
             Case "T. NO."
                 rango = "A2:T10000"
+            Case "O. D."
+                rango = "B10:Z10000"
             Case Else
                 'MsgBox("El nombre identificado entre parentesis no se reconoce pero funciona. Coje las 3 primeras columnas.")
                 rango = "A2:C10000"
@@ -2834,6 +2836,9 @@ Public Class CargaHorasJPSTAFF
             newDataTable = FormaTablaEspaña(dt, newDataTable, bbdd, mes, anio, empresa)
         ElseIf empresa = "SEC." Then
             bbdd = DB_SECOZAM
+            newDataTable = FormaTablaEspaña(dt, newDataTable, bbdd, mes, anio, empresa)
+        ElseIf empresa = "O. D." Then
+            bbdd = DB_OC
             newDataTable = FormaTablaEspaña(dt, newDataTable, bbdd, mes, anio, empresa)
         ElseIf empresa = "D. P." Then
             bbdd = DB_DCZ
@@ -3672,6 +3677,8 @@ Public Class CargaHorasJPSTAFF
             bbdd = "xTecozamNorge50R2"
         ElseIf empresa = "T. SL." Then
             bbdd = DB_SL
+        ElseIf empresa = "O. D." Then
+            bbdd = DB_OC
         End If
         Return bbdd
     End Function
@@ -4552,8 +4559,17 @@ Public Class CargaHorasJPSTAFF
         ActualizarLProgreso("Generando tabla de Excel de ratios de las personas")
 
         '3. TABLA DE RATIOS DE LA GENTE
+
+        Dim ruta As String = "N:\10. AUXILIARES\00. EXPERTIS\01. HORAS\" & mes & " HORAS " & mes & anio.Substring(anio.Length - 2) & ".xlsx"
+        ' Nombre de la hoja
+        Dim hoja As String = "HORAS"
+        Dim rango As String
+        rango = "A2:N1000000"
+        Dim dtDesgloseHoras As DataTable
+        dtDesgloseHoras = ObtenerDatosExcel(ruta, hoja, rango)
+
         Dim dtRatiosGente As New DataTable
-        dtRatiosGente = getRatiosGente(dtHorasExpertis, dtA3)
+        dtRatiosGente = getRatiosGente(dtHorasExpertis, dtA3, dtDesgloseHoras)
 
 
         '4. TABLA DE PERSONAS CON DOBLE COTIZACION
@@ -4728,7 +4744,7 @@ Public Class CargaHorasJPSTAFF
         End Using
     End Sub
 
-    Public Function getRatiosGente(ByVal dtHorasExpertis As DataTable, ByVal dtA3 As DataTable) As DataTable
+    Public Function getRatiosGente(ByVal dtHorasExpertis As DataTable, ByVal dtA3 As DataTable, ByVal dtDesgloseHoras As DataTable) As DataTable
         ' Crear una nueva tabla para el resultado
         Dim dtResultado As New DataTable()
         dtResultado.Columns.Add("IDGET", GetType(String))
@@ -4744,6 +4760,7 @@ Public Class CargaHorasJPSTAFF
         dtResultado.Columns.Add("EurosTotales", GetType(Double))
         dtResultado.Columns.Add("Ratio", GetType(Double))
         dtResultado.Columns.Add("DOBLECOTIZACION", GetType(String))
+        dtResultado.Columns.Add("VARIOSCENTROSCOSTE", GetType(String))
 
         'DAVID VELASCO 21/12/2023
         'Este for lo que hace es unir las nominas de las personas que tengan mas de una linea
@@ -4901,9 +4918,40 @@ Public Class CargaHorasJPSTAFF
             End If
         Next
 
+        For Each rowResultado As DataRow In dtResultado.Rows
+            Dim idGet As String = rowResultado.Field(Of String)("IDGET")
+            Dim doblecoti As String = rowResultado.Field(Of String)("DOBLECOTIZACION")
+
+            If doblecoti = "SI" Then
+                rowResultado("VARIOSCENTROSCOSTE") = getCentrosCoste(idGet, dtDesgloseHoras)
+            End If
+        Next
         Return dtResultado
     End Function
+    Public Function getCentrosCoste(ByVal idGet As String, ByVal dtHorasExpertis As DataTable) As String
+        ' Filtrar las filas que coincidan con el IDGET proporcionado
+        Dim obrasDistintas = dtHorasExpertis.AsEnumerable() _
+            .Where(Function(row) row.Field(Of String)("F2") = idGet) _
+            .Select(Function(row) row.Field(Of String)("F7")) _
+            .Distinct() ' Obtener valores únicos de "Obra"
 
+        ' Si hay más de una obra distinta, devolverlas concatenadas, si no, devolver vacío
+        If obrasDistintas.Count() > 1 Then
+            Dim resultado As String = ""
+
+            ' Recorrer cada obra distinta y concatenarlas manualmente
+            For Each obra As String In obrasDistintas
+                If resultado <> "" Then
+                    resultado &= ", "
+                End If
+                resultado &= obra
+            Next
+
+            Return resultado
+        Else
+            Return String.Empty
+        End If
+    End Function
     Public Function getGenteSiEurosNoHoras(ByVal dtHorasExpertis As DataTable, ByVal dtA3 As DataTable) As DataTable
         ' Obtén una lista de los IDGet que están en dtHorasExpertis
         Dim idGetEnHorasExpertis = dtHorasExpertis.AsEnumerable().Select(Function(row) row.Field(Of String)("IDGet")).ToList()
@@ -7965,6 +8013,9 @@ Public Class CargaHorasJPSTAFF
             ' Congelar la primera columna
             worksheet.View.FreezePanes(2, 1)
 
+            ' Aplicar el formato personalizado
+            FormatearExcel(worksheet)
+
             ' Guardar el archivo de Excel.
             package.Save()
 
@@ -7972,6 +8023,59 @@ Public Class CargaHorasJPSTAFF
             PvProgreso.Value = 0
         End Using
     End Sub
+    Private Sub FormatearExcel(ByVal worksheet As ExcelWorksheet)
+        ' Ajustar el ancho de las columnas desde F (columna 6) hasta AJ (columna 36)
+        For col As Integer = 6 To 36
+            worksheet.Column(col).Width = 5
+        Next
+
+        ' Obtener el número total de filas usadas en la hoja
+        Dim totalFilas As Integer = worksheet.Dimension.End.Row
+
+        ' Definir colores
+        Dim rojoFuente As System.Drawing.Color = System.Drawing.Color.Red
+        Dim rojoFondo As System.Drawing.Color = System.Drawing.Color.FromArgb(255, 200, 200) ' Rojo clarito
+        Dim grisFuente As System.Drawing.Color = System.Drawing.Color.Gray
+        Dim grisFondo As System.Drawing.Color = System.Drawing.Color.FromArgb(220, 220, 220) ' Gris clarito
+
+        ' Recorrer las filas desde la segunda hasta la última
+        For fila As Integer = 2 To totalFilas
+            For col As Integer = 6 To 36 ' Desde columna F hasta AJ
+                Dim celda As ExcelRange = worksheet.Cells(fila, col)
+                Dim valor As Object = celda.Value
+
+                ' Aplicar formato numérico con un decimal si es numérico
+                If IsNumeric(valor) Then
+                    celda.Style.Numberformat.Format = "#,##0.0" ' Un decimal
+
+                    Dim numero As Double = Convert.ToDouble(valor)
+
+                    ' Si es mayor que 12, pintar la fuente de rojo y el fondo rojo clarito
+                    If numero > 12 Then
+                        celda.Style.Font.Color.SetColor(rojoFuente)
+                        celda.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                        celda.Style.Fill.BackgroundColor.SetColor(rojoFondo)
+                    End If
+
+                    ' Si es 0, pintar la fuente de gris y el fondo gris clarito
+                    If numero = 0 Then
+                        celda.Style.Font.Color.SetColor(grisFuente)
+                        celda.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                        celda.Style.Fill.BackgroundColor.SetColor(grisFondo)
+                    End If
+                Else
+                    ' Si la celda está vacía, también se pinta de gris (fuente y fondo)
+                    If valor Is Nothing OrElse String.IsNullOrEmpty(valor.ToString().Trim()) Then
+                        celda.Style.Font.Color.SetColor(grisFuente)
+                        celda.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                        celda.Style.Fill.BackgroundColor.SetColor(grisFondo)
+                    End If
+                End If
+            Next
+        Next
+    End Sub
+
+
 
 
     Private Sub bDobleCotizacion_Click_1(ByVal sender As System.Object, ByVal e As System.EventArgs)
