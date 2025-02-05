@@ -113,10 +113,10 @@ Public Class ExportacionNoruegaCuadrante
                 worksheet.Cells("A5").LoadFromDataTable(dtFinal, True)
 
                 ' Aplicar estilos personalizados
-                'GestionarEstilos(worksheet, dtFinal, fecha1)
+                GestionarEstilos(worksheet, dtFinal, fecha1)
                 GestionDatosHoras(worksheet, dtFinal, fecha1)
                 GestionarFormulacion(worksheet)
-                'GestionarOvertime(worksheet, fecha1)
+                GestionarOvertime(worksheet, fecha1)
 
 
                 If tipoExportacion = "ORIGINAL" Then
@@ -830,7 +830,7 @@ Public Class ExportacionNoruegaCuadrante
             ' Verificar si el día está dentro del rango de fechas especificado
             If diaMes >= fecha1_format.Day AndAlso diaMes <= fecha2_format.Day Then
                 ' Calcular el número de semana del mes
-                semana = SemanaDelMes(fechaExcel)
+                semana = SemanasDelMes(fechaExcel)
 
                 ' Sumar horas a la semana y dia que corresponda
                 If semanas.ContainsKey(semana) Then
@@ -876,26 +876,25 @@ Public Class ExportacionNoruegaCuadrante
         'Referencia a hoja para obtener los datos
         Dim wsDatos As ExcelWorksheet = worksheet.Workbook.Worksheets(0)
 
-        'ultima fila con datos
-        'ultima fila con datos en registro
+        ' Última fila con datos
         Dim ultimaFila As Integer = wsDatos.Dimension.End.Row
 
-        'limpiar hoja "TRABAJADOR POR SEMANA"
+        ' Limpiar hoja "TRABAJADOR POR SEMANA"
         worksheet.Cells.Clear()
 
-        'obtener numero de semanas del mes a tratar
-        Dim nSemanas As Integer = SemanaDelMes(fecha1)
+        ' Obtener número de semanas del mes a tratar
+        Dim nSemanas As Integer = SemanasDelMes(fecha1)
 
-        'establecer encabezados
+        ' Establecer encabezados
         Dim nombreSemana As String
         Dim colInicial As Integer = 3
         For i As Integer = 1 To nSemanas
-            nombreSemana = "Semana " & i
+            nombreSemana = "WEEK " & i
             worksheet.Cells(1, colInicial).Value = nombreSemana
-            Dim rangoMerge = worksheet.Cells(1, colInicial, 1, colInicial + 2) 'fusionar encabezado
+            Dim rangoMerge = worksheet.Cells(1, colInicial, 1, colInicial + 2) ' Fusionar encabezado
             rangoMerge.Merge = True
 
-            'establecer encabezados de cada columna dentro de cada semana
+            ' Establecer encabezados de cada columna dentro de cada semana
             worksheet.Cells(2, colInicial).Value = "Normal " & i
             worksheet.Cells(2, colInicial + 1).Value = "Overtime " & i
             worksheet.Cells(2, colInicial + 2).Value = "Total " & i
@@ -906,44 +905,119 @@ Public Class ExportacionNoruegaCuadrante
         worksheet.Cells(2, 1).Value = "EXP."
         worksheet.Cells(2, 2).Value = "Name:"
 
-        'volcar datos de dtFinal para encabezados que correspondan
+        ' Volcar datos de dtFinal para encabezados que correspondan
         For i As Integer = 0 To dtFinal.Rows.Count - 1
             worksheet.Cells(i + 3, 1).Value = dtFinal.Rows(i)("EXP.").ToString()
             worksheet.Cells(i + 3, 2).Value = dtFinal.Rows(i)("Name:").ToString()
         Next
 
-        CalcularIntervaloSemanas(wsDatos, fecha1)
+        ' --- Calcular los valores de "Normal", "Overtime" y "Total" por semana ---
+        worksheet.Calculate()
+        wsDatos.Calculate()
 
+        ' Columnas donde comienzan los valores de Normal y Overtime
+        Dim inicioColumnaNormal As Integer = 38 ' AL (día 1) hasta BP (día 31)
+        Dim inicioColumnaOvertime As Integer = 69 ' BQ (día 1) hasta CU (día 31)
+
+        ' Obtener el primer día del mes y su día de la semana (1=lunes, 7=domingo)
+        Dim fechaInicioMes As DateTime = DateTime.ParseExact(fecha1, "dd/MM/yyyy", Nothing)
+        Dim diaSemanaInicio As Integer = fechaInicioMes.DayOfWeek ' 0=domingo, 1=lunes, ..., 6=sábado
+
+        ' Ajustar para que 0=domingo pase a 7 (así la semana empieza correctamente en lunes)
+        If diaSemanaInicio = 0 Then diaSemanaInicio = 7
+
+        ' Recorrer cada trabajador en la hoja de datos original
+        For fila As Integer = 6 To ultimaFila
+            ' Arrays para almacenar la suma de horas por semana
+            Dim sumasNormales(nSemanas - 1) As Double
+            Dim sumasOvertime(nSemanas - 1) As Double
+            Dim sumasTotales(nSemanas - 1) As Double
+
+            ' Recorrer los días del mes
+            For dia As Integer = 1 To 31
+                ' Calcular la semana en la que cae este día correctamente
+                Dim diaDelMes As DateTime = fechaInicioMes.AddDays(dia - 1)
+                Dim semana As Integer = ((dia + diaSemanaInicio - 2) \ 7) ' Ajusta según el inicio del mes
+
+                ' Validar que no supere el número de semanas
+                If semana >= nSemanas Then Continue For
+
+                ' Obtener las columnas correspondientes
+                Dim colNormal As Integer = inicioColumnaNormal + (dia - 1)
+                Dim colOvertime As Integer = inicioColumnaOvertime + (dia - 1)
+
+                ' Leer y sumar los valores de Normal y Overtime
+                Dim valorNormal As Double = 0
+                Dim valorOvertime As Double = 0
+
+                If Double.TryParse(wsDatos.Cells(fila, colNormal).Text.ToString(), valorNormal) Then
+                    sumasNormales(semana) += valorNormal
+                End If
+
+                If Double.TryParse(wsDatos.Cells(fila, colOvertime).Text.ToString(), valorOvertime) Then
+                    sumasOvertime(semana) += valorOvertime
+                End If
+
+                ' Calcular total por semana
+                sumasTotales(semana) = sumasNormales(semana) + sumasOvertime(semana)
+            Next
+
+            ' Insertar los valores en la hoja de resumen
+            colInicial = 3 ' Reiniciar columna de inserción
+            For i As Integer = 0 To nSemanas - 1
+                worksheet.Cells(fila - 3, colInicial).Value = sumasNormales(i) ' "Normal X"
+                worksheet.Cells(fila - 3, colInicial + 1).Value = sumasOvertime(i) ' "Overtime X"
+                worksheet.Cells(fila - 3, colInicial + 2).Value = sumasTotales(i) ' "Total X"
+                colInicial += 3 ' Pasar a la siguiente semana
+            Next
+        Next
+
+        For fila As Integer = 6 To ultimaFila
+            Dim destinoFila As Integer = fila - 3 ' Ajustar fila destino
+
+            ' Copiar formato de la columna A (EXP.)
+            worksheet.Cells(destinoFila, 1).StyleID = wsDatos.Cells(fila, 1).StyleID
+            worksheet.Cells(destinoFila, 1).Style.Numberformat.Format = wsDatos.Cells(fila, 1).Style.Numberformat.Format
+
+            ' Copiar formato de la columna B (Name)
+            worksheet.Cells(destinoFila, 2).StyleID = wsDatos.Cells(fila, 2).StyleID
+            worksheet.Cells(destinoFila, 2).Style.Numberformat.Format = wsDatos.Cells(fila, 2).Style.Numberformat.Format
+        Next
+
+        ' Aplicar negrita a las filas de encabezado (1 y 2)
+        worksheet.Cells("1:2").Style.Font.Bold = True
+
+        ' --- Aplicar formato de celdas a toda la hoja ---
+        Dim rangoCompleto As ExcelRange = worksheet.Cells(1, 1, ultimaFila - 3, colInicial - 1)
+        With rangoCompleto.Style
+            .Border.Top.Style = ExcelBorderStyle.Thin
+            .Border.Bottom.Style = ExcelBorderStyle.Thin
+            .Border.Left.Style = ExcelBorderStyle.Thin
+            .Border.Right.Style = ExcelBorderStyle.Thin
+            .HorizontalAlignment = ExcelHorizontalAlignment.Center
+            .VerticalAlignment = ExcelVerticalAlignment.Center
+            .Font.Size = 11
+        End With
+
+        ' Ajustar el tamaño de las columnas automáticamente
+        'worksheet.Cells.AutoFitColumns()
     End Sub
 
-    Function SemanaDelMes(ByVal fecha As DateTime) As Integer
-        ' Obtener el primer día del mes
-        Dim primerDiaMes As New DateTime(fecha.Year, fecha.Month, 1)
 
-        ' Obtener el último día del mes
+    Function SemanasDelMes(ByVal fecha As DateTime) As Integer
+        Dim primerDiaMes As New DateTime(fecha.Year, fecha.Month, 1)
         Dim ultimoDiaMes As New DateTime(fecha.Year, fecha.Month, DateTime.DaysInMonth(fecha.Year, fecha.Month))
 
-        ' Obtener el día de la semana del primer día del mes
-        Dim primerDiaSemana As Integer = CInt(primerDiaMes.DayOfWeek)
+        ' Día de la semana del primer día (lunes = 1, domingo = 7)
+        Dim primerDiaSemana As Integer = If(primerDiaMes.DayOfWeek = DayOfWeek.Sunday, 7, CInt(primerDiaMes.DayOfWeek))
 
-        ' Si el primer día del mes es domingo, ajustar el valor
-        If primerDiaSemana = 0 Then
-            primerDiaSemana = 7
-        End If
-
-        ' Calcular el número de días del mes
+        ' Número total de días en el mes
         Dim diasDelMes As Integer = ultimoDiaMes.Day
 
-        ' Calcular el número de semanas completas en el mes
-        Dim semanas As Integer = (diasDelMes + primerDiaSemana - 1) \ 7
-
-        ' Verificar si hay una semana adicional (es decir, si hay días adicionales que forman parte de una semana incompleta)
-        If (diasDelMes + primerDiaSemana - 1) Mod 7 > 0 Then
-            semanas += 1
-        End If
-
-        Return semanas
+        ' Calcular número de semanas (redondeando hacia arriba)
+        Return Math.Ceiling((diasDelMes + primerDiaSemana - 1) / 7.0)
     End Function
+
 
     Function CalcularIntervaloSemanas(ByVal wsDatos As ExcelWorksheet, ByVal fecha As DateTime) As DataTable
         ' Obtener el primer día del mes
@@ -966,7 +1040,7 @@ Public Class ExportacionNoruegaCuadrante
         Dim diasDelMes As Integer = ultimoDiaMes.Day
 
         'calcular numero de semanas del mes
-        Dim nSemanas As Integer = SemanaDelMes(fecha)
+        Dim nSemanas As Integer = SemanasDelMes(fecha)
 
         'fabricar dt para los limites de cada semana
         Dim dtLimites As New DataTable()
@@ -1448,14 +1522,21 @@ Public Class ExportacionNoruegaCuadrante
         Dim intervalo5Inicio As TimeSpan = TimeSpan.Parse("21:00")
         Dim intervalo5Fin As TimeSpan = TimeSpan.Parse("06:00")
 
+        'TURNOS DE MAÑANA
+        Dim intervalo6Inicio As TimeSpan = TimeSpan.Parse("07:00")
+        Dim intervalo6Fin As TimeSpan = TimeSpan.Parse("12:30")
+
+        Dim intervalo7Inicio As TimeSpan = TimeSpan.Parse("14:00")
+        Dim intervalo7Fin As TimeSpan = TimeSpan.Parse("19:30")
+
         ' Comprobar en qué intervalo se encuentra el turno
         If turnoEntrada = intervalo0Inicio AndAlso turnoSalida = intervalo0Fin Then
             'MsgBox("Turno de 07:00 a 16:00")
             Return System.Drawing.Color.FromArgb(255, 255, 255)
-        ElseIf turnoEntrada = intervalo1Inicio AndAlso turnoSalida = intervalo1Fin Then
+        ElseIf (turnoEntrada = intervalo1Inicio AndAlso turnoSalida = intervalo1Fin) Or (turnoEntrada = intervalo6Inicio AndAlso turnoSalida = intervalo6Fin) Then
             'MsgBox("Turno de 07:00 a 14:00")
             Return System.Drawing.Color.FromArgb(244, 180, 132)
-        ElseIf turnoEntrada = intervalo2Inicio AndAlso turnoSalida = intervalo2Fin Then
+        ElseIf (turnoEntrada = intervalo2Inicio AndAlso turnoSalida = intervalo2Fin) Or (turnoEntrada = intervalo7Inicio AndAlso turnoSalida = intervalo7Fin) Then
             'MsgBox("Turno de 14:00 a 21:00")
             Return System.Drawing.Color.FromArgb(120, 216, 112)
         ElseIf turnoEntrada = intervalo3Inicio AndAlso turnoSalida = intervalo3Fin Then
