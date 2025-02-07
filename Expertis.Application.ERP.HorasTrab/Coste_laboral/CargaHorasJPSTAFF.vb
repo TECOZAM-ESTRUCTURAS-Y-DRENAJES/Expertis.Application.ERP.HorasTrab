@@ -10201,4 +10201,56 @@ Public Class CargaHorasJPSTAFF
         frmBorrarBDD.ShowDialog()
     End Sub
 #End Region
+
+    Private Sub bExtrasAgregado_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bExtrasAgregado.Click
+
+        MessageBox.Show("RECORDATORIO: SELECCIONE LOS FICHEROS DE EXTRA AGREGADO ANUAL.")
+        '------------------
+        Dim dtUnion As New DataTable
+        FormaTablaExtras(dtUnion)
+        Dim dtAuxiliar As New DataTable
+        Do
+            ' Aquí va el código que deseas ejecutar repetidamente
+            dtAuxiliar = CargaExtrasTabla(dtUnion)
+            If dtAuxiliar Is Nothing Then
+                ExpertisApp.GenerateMessage("Proceso cancelado correctamente.")
+                Exit Sub
+            End If
+            For Each row As DataRow In dtAuxiliar.Rows
+                dtUnion.ImportRow(row)
+            Next
+            ' Preguntar al usuario si desea continuar
+            Dim respuesta As DialogResult = MessageBox.Show("¿Deseas cargar algún Excel más?", "Continuar", MessageBoxButtons.YesNo)
+            ' Salir del bucle si el usuario responde "No"
+            If respuesta = DialogResult.No Then
+                Exit Do
+            End If
+        Loop
+
+        '---
+        Dim mes As String
+        Dim anio As String
+        'CHECK DE QUE EL FICHERO ACABA EN XLSX O XLS
+        Dim ruta As String = lblRuta.Text
+        Dim ultimoCaracter As String = ruta.Substring(ruta.Length - 1)
+        If ultimoCaracter = "x" Then
+            mes = ruta.Substring(ruta.Length - 9, 2)
+            anio = ruta.Substring(ruta.Length - 7, 2)
+        Else
+            mes = ruta.Substring(ruta.Length - 8, 2)
+            anio = ruta.Substring(ruta.Length - 6, 2)
+        End If
+
+        anio = "20" & anio
+        If mes = 13 Then
+            mes = 6
+        ElseIf mes = 14 Then
+            mes = 12
+        End If
+
+        Dim dtImprimirCategorias As DataTable = FormaTablaImprimirExtrasCategoriasAMJ(dtUnion)
+        GenerarExcelExtrasResumen(dtUnion, dtImprimirCategorias, mes, anio)
+        'GenerarExcelExtras(dtUnion, dtImprimirCategorias, mes, anio)
+        MsgBox("Excel creado correctamente en N:\10. AUXILIARES\00. EXPERTIS\03. PAGAS EXTRA\")
+    End Sub
 End Class

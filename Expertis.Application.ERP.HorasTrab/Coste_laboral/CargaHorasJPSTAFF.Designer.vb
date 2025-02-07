@@ -169,10 +169,13 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame16 = New Solmicro.Expertis.Engine.UI.Frame
         Me.bExportarNoruega = New Solmicro.Expertis.Engine.UI.Button
         Me.UiTabPage15 = New Janus.Windows.UI.Tab.UITabPage
+        Me.GroupBox2 = New System.Windows.Forms.GroupBox
+        Me.bBorrarDocumentacion = New Solmicro.Expertis.Engine.UI.Button
         Me.GroupBox1 = New System.Windows.Forms.GroupBox
         Me.bSubirDocumentacion = New Solmicro.Expertis.Engine.UI.Button
-        Me.bBorrarDocumentacion = New Solmicro.Expertis.Engine.UI.Button
-        Me.GroupBox2 = New System.Windows.Forms.GroupBox
+        Me.Frame20 = New Solmicro.Expertis.Engine.UI.Frame
+        Me.bExtrasAgregado = New Solmicro.Expertis.Engine.UI.Button
+        Me.Label29 = New Solmicro.Expertis.Engine.UI.Label
         Me.Frame1.SuspendLayout()
         Me.Frame2.SuspendLayout()
         Me.Frame3.SuspendLayout()
@@ -221,8 +224,9 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame17.SuspendLayout()
         Me.Frame16.SuspendLayout()
         Me.UiTabPage15.SuspendLayout()
-        Me.GroupBox1.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
+        Me.GroupBox1.SuspendLayout()
+        Me.Frame20.SuspendLayout()
         Me.SuspendLayout()
         '
         'bBorrarExcel
@@ -1412,6 +1416,8 @@ Partial Class CargaHorasJPSTAFF
         '
         'UiTabPage3
         '
+        Me.UiTabPage3.Controls.Add(Me.Label29)
+        Me.UiTabPage3.Controls.Add(Me.Frame20)
         Me.UiTabPage3.Controls.Add(Me.Label28)
         Me.UiTabPage3.Controls.Add(Me.bPisarFicheroExtra)
         Me.UiTabPage3.Controls.Add(Me.Label27)
@@ -1427,7 +1433,7 @@ Partial Class CargaHorasJPSTAFF
         '
         'Label28
         '
-        Me.Label28.Location = New System.Drawing.Point(716, 147)
+        Me.Label28.Location = New System.Drawing.Point(718, 184)
         Me.Label28.Name = "Label28"
         Me.Label28.Size = New System.Drawing.Size(412, 13)
         Me.Label28.TabIndex = 38
@@ -1437,7 +1443,7 @@ Partial Class CargaHorasJPSTAFF
         '
         Me.bPisarFicheroExtra.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.bPisarFicheroExtra.Icon = CType(resources.GetObject("bPisarFicheroExtra.Icon"), System.Drawing.Icon)
-        Me.bPisarFicheroExtra.Location = New System.Drawing.Point(943, 212)
+        Me.bPisarFicheroExtra.Location = New System.Drawing.Point(984, 3)
         Me.bPisarFicheroExtra.Name = "bPisarFicheroExtra"
         Me.bPisarFicheroExtra.Size = New System.Drawing.Size(144, 38)
         Me.bPisarFicheroExtra.TabIndex = 19
@@ -1446,7 +1452,7 @@ Partial Class CargaHorasJPSTAFF
         '
         'Label27
         '
-        Me.Label27.Location = New System.Drawing.Point(716, 117)
+        Me.Label27.Location = New System.Drawing.Point(719, 154)
         Me.Label27.Name = "Label27"
         Me.Label27.Size = New System.Drawing.Size(404, 13)
         Me.Label27.TabIndex = 37
@@ -1454,29 +1460,29 @@ Partial Class CargaHorasJPSTAFF
         '
         'Label26
         '
-        Me.Label26.Location = New System.Drawing.Point(686, 89)
+        Me.Label26.Location = New System.Drawing.Point(688, 124)
         Me.Label26.Name = "Label26"
-        Me.Label26.Size = New System.Drawing.Size(216, 13)
+        Me.Label26.Size = New System.Drawing.Size(289, 13)
         Me.Label26.TabIndex = 36
-        Me.Label26.Text = "PASO 2. GENERO REGULARIZACION"
+        Me.Label26.Text = "PASO 3. GENERO REGULARIZACION (JUN Y DIC)"
         '
         'Label25
         '
         Me.Label25.Location = New System.Drawing.Point(686, 55)
         Me.Label25.Name = "Label25"
-        Me.Label25.Size = New System.Drawing.Size(301, 13)
+        Me.Label25.Size = New System.Drawing.Size(370, 13)
         Me.Label25.TabIndex = 35
-        Me.Label25.Text = "PASO 1. GENERO PREVISION Y FICHERO RESUMEN"
+        Me.Label25.Text = "PASO 1. GENERO PREVISION Y FICHERO RESUMEN(JUN Y DIC)"
         '
         'Frame13
         '
         Me.Frame13.Controls.Add(Me.bGenerarMes6_12)
-        Me.Frame13.Location = New System.Drawing.Point(267, 41)
+        Me.Frame13.Location = New System.Drawing.Point(254, 150)
         Me.Frame13.Name = "Frame13"
         Me.Frame13.Size = New System.Drawing.Size(398, 100)
         Me.Frame13.TabIndex = 34
         Me.Frame13.TabStop = False
-        Me.Frame13.Text = "2. Pisar fichero extra (6 o 12) con A3 original (semestral, anual)"
+        Me.Frame13.Text = "3. Pisar fichero extra (6 o 12) con A3 original (semestral, anual)"
         '
         'bGenerarMes6_12
         '
@@ -1613,6 +1619,29 @@ Partial Class CargaHorasJPSTAFF
         Me.UiTabPage15.TabStop = True
         Me.UiTabPage15.Text = "Carga Base de Datos"
         '
+        'GroupBox2
+        '
+        Me.GroupBox2.Controls.Add(Me.bBorrarDocumentacion)
+        Me.GroupBox2.Font = New System.Drawing.Font("Verdana", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.GroupBox2.Location = New System.Drawing.Point(581, 69)
+        Me.GroupBox2.Name = "GroupBox2"
+        Me.GroupBox2.Padding = New System.Windows.Forms.Padding(25)
+        Me.GroupBox2.Size = New System.Drawing.Size(278, 126)
+        Me.GroupBox2.TabIndex = 3
+        Me.GroupBox2.TabStop = False
+        Me.GroupBox2.Text = "Borrar documentación"
+        '
+        'bBorrarDocumentacion
+        '
+        Me.bBorrarDocumentacion.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.bBorrarDocumentacion.Font = New System.Drawing.Font("Verdana", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bBorrarDocumentacion.Icon = CType(resources.GetObject("bBorrarDocumentacion.Icon"), System.Drawing.Icon)
+        Me.bBorrarDocumentacion.Location = New System.Drawing.Point(25, 39)
+        Me.bBorrarDocumentacion.Name = "bBorrarDocumentacion"
+        Me.bBorrarDocumentacion.Size = New System.Drawing.Size(228, 62)
+        Me.bBorrarDocumentacion.TabIndex = 8
+        Me.bBorrarDocumentacion.Text = "Seleccionar fichero para borrar"
+        '
         'GroupBox1
         '
         Me.GroupBox1.Controls.Add(Me.bSubirDocumentacion)
@@ -1636,28 +1665,33 @@ Partial Class CargaHorasJPSTAFF
         Me.bSubirDocumentacion.TabIndex = 7
         Me.bSubirDocumentacion.Text = "Seleccionar fichero para subir"
         '
-        'bBorrarDocumentacion
+        'Frame20
         '
-        Me.bBorrarDocumentacion.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.bBorrarDocumentacion.Font = New System.Drawing.Font("Verdana", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.bBorrarDocumentacion.Icon = CType(resources.GetObject("bBorrarDocumentacion.Icon"), System.Drawing.Icon)
-        Me.bBorrarDocumentacion.Location = New System.Drawing.Point(25, 39)
-        Me.bBorrarDocumentacion.Name = "bBorrarDocumentacion"
-        Me.bBorrarDocumentacion.Size = New System.Drawing.Size(228, 62)
-        Me.bBorrarDocumentacion.TabIndex = 8
-        Me.bBorrarDocumentacion.Text = "Seleccionar fichero para borrar"
+        Me.Frame20.Controls.Add(Me.bExtrasAgregado)
+        Me.Frame20.Location = New System.Drawing.Point(254, 41)
+        Me.Frame20.Name = "Frame20"
+        Me.Frame20.Size = New System.Drawing.Size(398, 100)
+        Me.Frame20.TabIndex = 39
+        Me.Frame20.TabStop = False
+        Me.Frame20.Text = "2. Generacion fichero extra real( agregado anual)"
         '
-        'GroupBox2
+        'bExtrasAgregado
         '
-        Me.GroupBox2.Controls.Add(Me.bBorrarDocumentacion)
-        Me.GroupBox2.Font = New System.Drawing.Font("Verdana", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.GroupBox2.Location = New System.Drawing.Point(581, 69)
-        Me.GroupBox2.Name = "GroupBox2"
-        Me.GroupBox2.Padding = New System.Windows.Forms.Padding(25)
-        Me.GroupBox2.Size = New System.Drawing.Size(278, 126)
-        Me.GroupBox2.TabIndex = 3
-        Me.GroupBox2.TabStop = False
-        Me.GroupBox2.Text = "Borrar documentación"
+        Me.bExtrasAgregado.Font = New System.Drawing.Font("Times New Roman", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.bExtrasAgregado.Icon = CType(resources.GetObject("bExtrasAgregado.Icon"), System.Drawing.Icon)
+        Me.bExtrasAgregado.Location = New System.Drawing.Point(24, 37)
+        Me.bExtrasAgregado.Name = "bExtrasAgregado"
+        Me.bExtrasAgregado.Size = New System.Drawing.Size(347, 38)
+        Me.bExtrasAgregado.TabIndex = 19
+        Me.bExtrasAgregado.Text = "Generar extra real anual agregado"
+        '
+        'Label29
+        '
+        Me.Label29.Location = New System.Drawing.Point(686, 89)
+        Me.Label29.Name = "Label29"
+        Me.Label29.Size = New System.Drawing.Size(334, 13)
+        Me.Label29.TabIndex = 40
+        Me.Label29.Text = "PASO 2. GENERO PREVISION Y FICHERO RESUMEN(DIC)"
         '
         'CargaHorasJPSTAFF
         '
@@ -1727,8 +1761,9 @@ Partial Class CargaHorasJPSTAFF
         Me.Frame17.ResumeLayout(False)
         Me.Frame16.ResumeLayout(False)
         Me.UiTabPage15.ResumeLayout(False)
-        Me.GroupBox1.ResumeLayout(False)
         Me.GroupBox2.ResumeLayout(False)
+        Me.GroupBox1.ResumeLayout(False)
+        Me.Frame20.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -1878,4 +1913,7 @@ Partial Class CargaHorasJPSTAFF
     Friend WithEvents GroupBox2 As System.Windows.Forms.GroupBox
     Friend WithEvents bBorrarDocumentacion As Solmicro.Expertis.Engine.UI.Button
     Friend WithEvents bSubirDocumentacion As Solmicro.Expertis.Engine.UI.Button
+    Friend WithEvents Label29 As Solmicro.Expertis.Engine.UI.Label
+    Friend WithEvents Frame20 As Solmicro.Expertis.Engine.UI.Frame
+    Friend WithEvents bExtrasAgregado As Solmicro.Expertis.Engine.UI.Button
 End Class
