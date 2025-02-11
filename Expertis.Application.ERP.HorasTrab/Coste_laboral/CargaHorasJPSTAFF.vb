@@ -5707,8 +5707,8 @@ Public Class CargaHorasJPSTAFF
             End If
         Loop
 
-        Dim dtSemestral As DataTable
-        dtSemestral = getTablaSemestral(dtFinalA3)
+        Dim dtAnual As DataTable
+        dtAnual = getTablaAnual(dtFinalA3)
 
 
         '2º. ESTA ES LA 2ª HOJA DEL EXCEL QUE SUMA LOS A3 QUE SE HAN GENERADO ENTRE DOS FECHAS
@@ -5719,12 +5719,12 @@ Public Class CargaHorasJPSTAFF
         '3º. ESTA ES LA 1ª HOJA QUE ES LA DIFERENCIA ENTRE LOS FICHEROS QUE SE HAN SUMADO ENTRE DOS FECHAS Y UNO QUE AGRUPE AL RESTO
         'PRINCIPALMENTE SE HACE LA HERRAMIENTA PARA NORMALIZAR A CARACTER SEMESTRAL O ANUAL
         Dim dtRegularizar As DataTable
-        dtRegularizar = generarTablaRegularizar(dtA3EntreFechasPowerBi, dtSemestral)
+        dtRegularizar = generarTablaRegularizar(dtA3EntreFechasPowerBi, dtAnual)
 
         '4º. ESTA ES LA 4ª HOJA QUE ES EL FICHERO QUE HAY QUE SUMAR PARA REGULARIZAR
         'SOLO HAY QUE ADJUNTARLO EN CASO DE QUE SEA DICIEMBRE(AUNQUE VAYA POR FECHAS)
 
-        Dim result As DialogResult = MessageBox.Show("¿Quieres añadir un fichero de regularizaciones?", "Confirmar", MessageBoxButtons.YesNo)
+        Dim result As DialogResult = MessageBox.Show("¿Quieres seleccionar regularizaciones de meses anteriores?", "Confirmar", MessageBoxButtons.YesNo)
 
         'David Velasco 08/08/24
         '5º. Hoja IDGET con un registro para evitar error al cargar power bi
@@ -5738,9 +5738,9 @@ Public Class CargaHorasJPSTAFF
             'dtRegularizar+dtRegularizaciones
             Dim dtTotalAnual As DataTable
             dtTotalAnual = sumaTablas(dtRegularizar, dtRegularizaciones)
-            GeneraExcelRegularizarA3(dtTotalAnual, dtA3EntreFechasPowerBi, dtSemestral, mes2, anio, getTablaEvitarError)
+            GeneraExcelRegularizarA3(dtTotalAnual, dtA3EntreFechasPowerBi, dtAnual, mes2, anio, getTablaEvitarError, dtRegularizaciones)
         Else
-            GeneraExcelRegularizarA3(dtRegularizar, dtA3EntreFechasPowerBi, dtSemestral, mes2, anio, getTablaEvitarError)
+            GeneraExcelRegularizarA3(dtRegularizar, dtA3EntreFechasPowerBi, dtAnual, mes2, anio, getTablaEvitarError)
         End If
 
     End Sub
@@ -5789,7 +5789,7 @@ Public Class CargaHorasJPSTAFF
                 ' Comprobar si la empresa y categoría coinciden en ambas tablas
                 If empresaPowerBi = empresaSemestral And categoriaPowerBi = categoriaSemestral Then
                     ' Sumo el valor de la segunda tabla al valor de la primera tabla
-                    totalPowerBi += totalSemestral
+                    totalPowerBi = totalPowerBi - totalSemestral
                 End If
             Next
 
@@ -5797,7 +5797,7 @@ Public Class CargaHorasJPSTAFF
             Dim nuevaFila As DataRow = dtFinal.NewRow()
             nuevaFila("Empresa") = empresaPowerBi
             nuevaFila("IDCategoriaProfesionalSCCP") = categoriaPowerBi
-            nuevaFila("Total") = +totalPowerBi 'EN NEGATIVO PARA CAMBIAR EL VALOR PORQUE REALMENTE SE RESTA LA TABLA DE LA PESTAÑA 3 - LA 2
+            nuevaFila("Total") = totalPowerBi 'EN NEGATIVO PARA CAMBIAR EL VALOR PORQUE REALMENTE SE RESTA LA TABLA DE LA PESTAÑA 3 - LA 2
 
             ' Agregar la fila al DataTable final
             dtFinal.Rows.Add(nuevaFila)
@@ -5820,7 +5820,7 @@ Public Class CargaHorasJPSTAFF
         Return ObtenerDatosExcelCabecera(ruta, hoja, rango)
     End Function
     Public Sub GeneraExcelRegularizarA3(ByVal dtRegularizar As DataTable, ByVal dtA3EntreFechasPowerBi As DataTable, ByVal dtSemestral As DataTable, _
-                                        ByVal mes As String, ByVal anio As String, ByVal dtIDGetEvitarError As DataTable)
+                                        ByVal mes As String, ByVal anio As String, ByVal dtIDGetEvitarError As DataTable, Optional ByVal dtRegularizacionesAnteriores As DataTable = Nothing)
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial
 
         Dim ruta As New FileInfo("N:\10. AUXILIARES\00. EXPERTIS\04. REGULARIZACIONES\" & mes & " REGULARIZACIONES " & mes & anio.Substring(anio.Length - 2) & ".xlsx")
@@ -5836,6 +5836,10 @@ Public Class CargaHorasJPSTAFF
         Using package As New ExcelPackage(ruta)
             ' Crear una hoja de cálculo y obtener una referencia a ella.
             Dim worksheet = package.Workbook.Worksheets.Add("IDCATEGORIAPROFESIONALSCCP")
+            Dim dvRegularizar As New DataView(dtRegularizar)
+            dvRegularizar.Sort = "Empresa ASC, IDCategoriaProfesionalSCCP ASC"
+            dtRegularizar = dvRegularizar.ToTable()
+
             ' Copiar los datos de la DataTable a la hoja de cálculo.
             worksheet.Cells("A1").LoadFromDataTable(dtRegularizar, True)
 
@@ -5851,6 +5855,9 @@ Public Class CargaHorasJPSTAFF
 
             'SEGUNDA HOJA DEL EXCEL= SUMA DE LOS FICHEROS DE POWER BI
             Dim resumenWorksheet = package.Workbook.Worksheets.Add("RESUMEN FICHEROS MENSUALES")
+            Dim dvA3EntreFechasPowerBi As New DataView(dtA3EntreFechasPowerBi)
+            dvA3EntreFechasPowerBi.Sort = "Empresa ASC, IDCategoriaProfesionalSCCP ASC"
+            dtA3EntreFechasPowerBi = dvA3EntreFechasPowerBi.ToTable()
             resumenWorksheet.Cells("A1").LoadFromDataTable(dtA3EntreFechasPowerBi, True)
 
             Dim columnaBResumen As ExcelRange = resumenWorksheet.Cells("C2:C" & resumenWorksheet.Dimension.End.Row)
@@ -5863,6 +5870,12 @@ Public Class CargaHorasJPSTAFF
             resumenWorksheet.Column(1).Width = 14
             resumenWorksheet.Column(2).Width = 14
             resumenWorksheet.Column(3).Width = 14
+
+            'HOJA PARA SACAR REGULARIZACIONES PASADAS
+            Dim regularizacionWorksheet = package.Workbook.Worksheets.Add("REGULARIZACIONES PASADAS")
+            regularizacionWorksheet.Cells("A1").LoadFromDataTable(dtRegularizacionesAnteriores, True)
+            Dim columnacc As ExcelRange = regularizacionWorksheet.Cells("C2:C" & regularizacionWorksheet.Dimension.End.Row)
+            columnacc.Style.Numberformat.Format = "#,##0.00€"
 
             'TERCERA HOJA DEL EXCEL QUE SON LOS A3 INSERTADOS CON CARACTER SEMESTRAL
             Dim resumenCategoria = package.Workbook.Worksheets.Add("RESUMEN FICHEROS ACUMULADOS")
@@ -5932,7 +5945,7 @@ Public Class CargaHorasJPSTAFF
         Next
         Return dtFinal
     End Function
-    Public Function getTablaSemestral(ByVal dtFinalA3 As DataTable) As DataTable
+    Public Function getTablaAnual(ByVal dtFinalA3 As DataTable) As DataTable
         Dim tablaResultado As New DataTable
         tablaResultado.Columns.Add("Empresa", GetType(String))
         tablaResultado.Columns.Add("IDCategoriaProfesionalSCCP", GetType(Integer))

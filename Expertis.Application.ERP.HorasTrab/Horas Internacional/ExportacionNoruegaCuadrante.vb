@@ -5,6 +5,7 @@ Imports OfficeOpenXml.Style
 Imports System.Drawing
 Imports System.IO
 Imports System.Collections.Generic
+Imports System.Globalization
 
 Public Class ExportacionNoruegaCuadrante
 
@@ -126,7 +127,7 @@ Public Class ExportacionNoruegaCuadrante
                     Dim worksheetTurnos = package.Workbook.Worksheets.Add("TURNOS OPERARIOS")
                     creaHojaTurnos(worksheetTurnos, dtFinal, fecha1)
                 End If
-                
+
 
                 ' Crear una nueva hoja llamada PARAMETROS y llamar al método creaHojaParametros
                 Dim worksheetParametros = package.Workbook.Worksheets.Add("PARAMETROS")
@@ -919,8 +920,18 @@ Public Class ExportacionNoruegaCuadrante
         Dim inicioColumnaNormal As Integer = 38 ' AL (día 1) hasta BP (día 31)
         Dim inicioColumnaOvertime As Integer = 69 ' BQ (día 1) hasta CU (día 31)
 
+
+
+        Dim fechaInicioMes As DateTime
+
+        Try
+            fechaInicioMes = DateTime.ParseExact(fecha1, "dd/MM/yyyy", CultureInfo.InvariantCulture)
+        Catch ex As Exception
+            fechaInicioMes = DateTime.ParseExact(fecha1, "d. M. yyyy", CultureInfo.InvariantCulture)
+        End Try
+
+
         ' Obtener el primer día del mes y su día de la semana (1=lunes, 7=domingo)
-        Dim fechaInicioMes As DateTime = DateTime.ParseExact(fecha1, "dd/MM/yyyy", Nothing)
         Dim diaSemanaInicio As Integer = fechaInicioMes.DayOfWeek ' 0=domingo, 1=lunes, ..., 6=sábado
 
         ' Ajustar para que 0=domingo pase a 7 (así la semana empieza correctamente en lunes)
