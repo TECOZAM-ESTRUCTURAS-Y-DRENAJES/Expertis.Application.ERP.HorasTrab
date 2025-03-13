@@ -18,6 +18,7 @@ Imports System.Globalization
 Imports OfficeOpenXml.Style
 Imports System.Drawing
 Imports OfficeOpenXml.Table
+Imports System.Threading
 
 Public Class CargaHorasJPSTAFF
     'CONSTANTES
@@ -955,6 +956,17 @@ Public Class CargaHorasJPSTAFF
         filtro.Add("Fecha", FilterOperator.LessThanOrEqual, Fecha2)
         dtFestivos = New BE.DataEngine().Filter(basededatosteco & "..tbCalendarioCentro", filtro, "Fecha, TipoDia")
 
+        ' Crear una copia con solo las fechas que sean sábado o domingo
+        Dim dtFinal As New DataTable
+
+        dtFinal.Columns.Add("Fecha", GetType(Date))
+
+        For Each row As DataRow In dtFestivos.Rows
+            Dim fecha As Date = CDate(row("Fecha"))
+            If fecha.DayOfWeek = DayOfWeek.Saturday Or fecha.DayOfWeek = DayOfWeek.Sunday Then
+                dtFinal.Rows.Add(fecha)
+            End If
+        Next
 
         'FILTRO LOS DIAS TRABAJADOS
         filtro.Clear()
@@ -990,7 +1002,7 @@ Public Class CargaHorasJPSTAFF
         'dtCalendario.Columns.Add("TipoDia", GetType(Integer))
         ' Unir los DataTables dtVacaciones y dtFestivos, trabajador y con cambio de obra en el DataTable dtCalendario
         'dtCalendario.Merge(dtVacaciones)
-        dtCalendario.Merge(dtFestivos)
+        dtCalendario.Merge(dtFinal)
         dtCalendario.Merge(dtTrabajados)
         dtCalendario.Merge(dtDiasCambioDeObra)
 
@@ -1018,6 +1030,17 @@ Public Class CargaHorasJPSTAFF
         filtro.Add("Fecha", FilterOperator.LessThanOrEqual, Fecha2)
         dtFestivos = New BE.DataEngine().Filter(basededatosteco & "..tbCalendarioCentro", filtro, "Fecha, TipoDia")
 
+        Dim dtFinal As New DataTable
+
+        dtFinal.Columns.Add("Fecha", GetType(Date))
+
+        For Each row As DataRow In dtFestivos.Rows
+            Dim fecha As Date = CDate(row("Fecha"))
+            If fecha.DayOfWeek = DayOfWeek.Saturday Or fecha.DayOfWeek = DayOfWeek.Sunday Then
+                dtFinal.Rows.Add(fecha)
+            End If
+        Next
+
         ' Crear un nuevo DataTable llamado dtCalendario
         Dim dtCalendario As New DataTable()
 
@@ -1027,7 +1050,7 @@ Public Class CargaHorasJPSTAFF
 
         ' Unir los DataTables dtVacaciones y dtFestivos en el DataTable dtCalendario
         'dtCalendario.Merge(dtVacaciones)
-        dtCalendario.Merge(dtFestivos)
+        dtCalendario.Merge(dtFinal)
 
         Return dtCalendario
     End Function
@@ -4231,6 +4254,18 @@ Public Class CargaHorasJPSTAFF
         f.Add("Fecha", FilterOperator.LessThanOrEqual, Fecha2)
         dtFestivos = New BE.DataEngine().Filter(DB_TECOZAM & "..tbCalendarioCentro", f, "Fecha, TipoDia")
 
+        ' Crear una copia con solo las fechas que sean sábado o domingo
+        Dim dtFinal As New DataTable
+
+        dtFinal.Columns.Add("Fecha", GetType(Date))
+
+        For Each row As DataRow In dtFestivos.Rows
+            Dim fecha As Date = CDate(row("Fecha"))
+            If fecha.DayOfWeek = DayOfWeek.Saturday Or fecha.DayOfWeek = DayOfWeek.Sunday Then
+                dtFinal.Rows.Add(fecha)
+            End If
+        Next
+
         For Each dr As DataRow In dtPersonasDeBaja.Rows
             bbdd = dr("Empresa") : idoperario = dr("idoperario") : fechabaja = dr("Fecha_Baja") : fechaalta = Nz(dr("Fecha_Alta"), Fecha2)
             fechaCalculos = Fecha1 : idobra = Nz(dr("IDObra").ToString, getObraBaja(bbdd, idoperario, fechabaja))
@@ -4262,7 +4297,7 @@ Public Class CargaHorasJPSTAFF
                     End If
                 End If
                 'Si es festivo pasa al siguiente
-                For Each fila As DataRow In dtFestivos.Rows
+                For Each fila As DataRow In dtFinal.Rows
                     If fila("Fecha") = fechaCalculos Then
                         fechaCalculos = fechaCalculos.AddDays(1)
                         Continue While
@@ -10265,5 +10300,75 @@ Public Class CargaHorasJPSTAFF
         GenerarExcelExtrasResumen(dtUnion, dtImprimirCategorias, mes, anio)
         'GenerarExcelExtras(dtUnion, dtImprimirCategorias, mes, anio)
         MsgBox("Excel creado correctamente en N:\10. AUXILIARES\00. EXPERTIS\03. PAGAS EXTRA\")
+    End Sub
+
+
+    Private Sub bEjecutarJob_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bEjecutarJob.Click
+        Try
+            Dim connectionString As String = "Server=STECODESARR;Database=msdb;User Id=sa;Password=180M296;"
+            Dim jobName As String = "PowerBI_CostesLaborales"
+
+            ' Verificar si el Job ya está en ejecución
+            If JobEnEjecucion(connectionString, jobName) Then
+                MessageBox.Show("El Job ya se está ejecutando.", "Información", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Exit Sub
+            End If
+
+            Using connection As New SqlConnection(connectionString)
+                connection.Open()
+
+                ' Ejecutar el Job
+                Using command As New SqlCommand("EXEC msdb.dbo.sp_start_job @JobName", connection)
+                    command.Parameters.AddWithValue("@JobName", jobName)
+                    command.ExecuteNonQuery()
+                End Using
+            End Using
+
+            ' Esperar hasta que el Job termine
+            EsperarJobFinalizar(connectionString, jobName)
+
+            ' Mostrar mensaje cuando el Job termine
+            MessageBox.Show("El Job ha finalizado correctamente.", "Completado", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        Catch ex As Exception
+            MessageBox.Show("Error al ejecutar el Job: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    ' Función para verificar si el Job ya está en ejecución
+    Private Function JobEnEjecucion(ByVal connectionString As String, ByVal jobName As String) As Boolean
+        Using connection As New SqlConnection(connectionString)
+            connection.Open()
+            Dim query As String = "SELECT COUNT(*) FROM msdb.dbo.sysjobactivity " & _
+                                  "WHERE job_id = (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = @JobName) " & _
+                                  "AND stop_execution_date IS NULL"
+
+            Using command As New SqlCommand(query, connection)
+                command.Parameters.AddWithValue("@JobName", jobName)
+                Dim count As Integer = Convert.ToInt32(command.ExecuteScalar())
+                Return count > 0 ' Si hay registros sin stop_execution_date, el Job está en ejecución
+            End Using
+        End Using
+    End Function
+
+    ' Función para esperar hasta que el Job termine
+    Private Sub EsperarJobFinalizar(ByVal connectionString As String, ByVal jobName As String)
+        Using connection As New SqlConnection(connectionString)
+            connection.Open()
+            Dim query As String = "SELECT COUNT(*) FROM msdb.dbo.sysjobactivity " & _
+                                  "WHERE job_id = (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = @JobName) " & _
+                                  "AND stop_execution_date IS NULL"
+
+            Using command As New SqlCommand(query, connection)
+                command.Parameters.AddWithValue("@JobName", jobName)
+
+                ' Bucle para esperar hasta que el Job termine
+                Do
+                    Thread.Sleep(3000) ' Esperar 3 segundos antes de volver a verificar
+                    Dim count As Integer = Convert.ToInt32(command.ExecuteScalar())
+                    If count = 0 Then Exit Do ' Si no hay registros en ejecución, el Job terminó
+                Loop
+            End Using
+        End Using
     End Sub
 End Class

@@ -40,7 +40,12 @@ Public Class frmsubirDocumentosBaseDatos
                     Dim worksheet As ExcelWorksheet = package.Workbook.Worksheets(0)
 
                     Dim ncolumnas As Integer = worksheet.Dimension.End.Column
-                    Dim nfilas As Integer = worksheet.Dimension.End.Row
+                    Dim nfilas As Integer = 1
+
+                    While Not String.IsNullOrEmpty(worksheet.Cells(nfilas, 1).Text)
+                        nfilas += 1
+                    End While
+                    nfilas -= 1
 
                     'crear estructura columnas datatable
                     For col As Integer = 1 To ncolumnas
@@ -339,7 +344,6 @@ Public Class frmsubirDocumentosBaseDatos
         'añadir columnas mes y anio a nueva dt
         dtIDGET.Columns.Add("Mes")
         dtIDGET.Columns.Add("Anio")
-        dtIDGET.Columns.Add("Observaciones")
 
         For Each row As DataRow In dtIDGET.Rows
             For Each col As DataColumn In dtIDGET.Columns
