@@ -317,7 +317,7 @@ Public Class CargaHorasJPSTAFF
             horas = 8 * fila("Porcentaje")
 
             dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivosJP(DB_TECOZAM, DB_UK, IDOperario, Fecha1, Fecha2)
-            dtDiasInsertar = ObtieneFechasInsertarUK(DB_UK, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
+            dtDiasInsertar = ObtieneFechasInsertar(DB_UK, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
             ActualizarLProgreso("Importando : " & IDOperario & " - UK JP")
 
@@ -392,7 +392,7 @@ Public Class CargaHorasJPSTAFF
             horas = 8 * fila("Porcentaje")
 
             dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivosJP(DB_TECOZAM, DB_NO, IDOperario, Fecha1, Fecha2)
-            dtDiasInsertar = ObtieneFechasInsertarUK(DB_NO, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
+            dtDiasInsertar = ObtieneFechasInsertar(DB_NO, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
             ActualizarLProgreso("Importando : " & IDOperario & " - NO JP")
 
@@ -466,7 +466,7 @@ Public Class CargaHorasJPSTAFF
             horas = 8 * fila("Porcentaje")
 
             dtOperarioCalendarioNoProductivo = ObtieneDiasVacacionesYFestivosJP(DB_TECOZAM, DB_SL, IDOperario, Fecha1, Fecha2)
-            dtDiasInsertar = ObtieneFechasInsertarUK(DB_SL, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
+            dtDiasInsertar = ObtieneFechasInsertar(DB_SL, IDOperario, dtCalendario, dtOperarioCalendarioNoProductivo)
 
             ActualizarLProgreso("Importando : " & IDOperario & " - SL")
 
@@ -4037,6 +4037,8 @@ Public Class CargaHorasJPSTAFF
             Dim worksheet3 = package.Workbook.Worksheets.Add("DUPLICIDAD MISMO DÍA")
             ' Copiar los datos de la DataTable a la hoja de cálculo.
             worksheet3.Cells("A1").LoadFromDataTable(dtPersonasMismoDia, True)
+            Dim columnaB As ExcelRange = worksheet3.Cells("B2:B" & worksheet3.Dimension.End.Row)
+            columnab.Style.Numberformat.Format = "dd/mm/yyyy"
             ' Congelar la primera columna
             worksheet3.View.FreezePanes(2, 1)
 
