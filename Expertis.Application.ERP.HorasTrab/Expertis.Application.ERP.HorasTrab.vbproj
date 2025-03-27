@@ -160,6 +160,12 @@
     <Compile Include="Auxiliares\frmInformeFechaInternacional.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Coste_laboral\frmRegularizacionEnero.Designer.vb">
+      <DependentUpon>frmRegularizacionEnero.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Coste_laboral\frmRegularizacionEnero.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Coste_laboral\frmsubirDocumentosBaseDatos.vb">
     </Compile>
     <Compile Include="Horas España\CIMntoBusqHorasAPP.Designer.vb">
@@ -292,6 +298,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Auxiliares\frmInformeFechaInternacional.resx">
       <DependentUpon>frmInformeFechaInternacional.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Coste_laboral\frmRegularizacionEnero.resx">
+      <DependentUpon>frmRegularizacionEnero.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Horas España\CIMntoBusqHorasAPP.resx">

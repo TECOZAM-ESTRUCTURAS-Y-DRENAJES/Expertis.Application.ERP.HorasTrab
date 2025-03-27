@@ -129,3 +129,4 @@ C:\Users\mcabrero\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.H
 C:\Users\mcabrero\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.pdb
 C:\Users\mcabrero\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmBorrarFicheroBDD.resources
 C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmBorrarFicheroBDD.resources
+C:\Users\dvelasco\Desktop\FuentesExpertis\Application\Expertis.Application.ERP.HorasTrab\Expertis.Application.ERP.HorasTrab\obj\Debug\Expertis.Application.ERP.HorasTrab.frmRegularizacionEnero.resources

@@ -10373,4 +10373,9 @@ Public Class CargaHorasJPSTAFF
             End Using
         End Using
     End Sub
+
+    Private Sub bRegularAdmin_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bRegularAdmin.Click
+        Dim frmCrea As New frmRegularizacionEnero
+        frmCrea.ShowDialog()
+    End Sub
 End Class
