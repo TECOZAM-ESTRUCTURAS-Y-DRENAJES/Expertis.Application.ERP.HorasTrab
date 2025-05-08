@@ -183,7 +183,7 @@ Public Class CargaHorasJPSTAFF
 
                 IDTrabajo = rsTrabajo.Rows(0)("IdTrabajo") : CodTrabajo = rsTrabajo.Rows(0)("CodTrabajo")
                 Dim DescTrabajo As String = "" : Dim IdTipoTrabajo As String = "" : Dim IdSubTipoTrabajo As String = ""
-                DescTrabajo = rsTrabajo.Rows(0)("DescTrabajo") : IdTipoTrabajo = rsTrabajo.Rows(0)("IdTipoTrabajo") : IdSubTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdSubtipotrabajo"), "")
+                DescTrabajo = rsTrabajo.Rows(0)("DescTrabajo") : IdTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdTipoTrabajo"), "") : IdSubTipoTrabajo = Nz(rsTrabajo.Rows(0)("IdSubtipotrabajo"), "")
                 Dim DescParte As String : DescParte = "JP STAFF " & mes & "-" & año & "-JP"
 
                 txtSQL = "Insert into " & DB_TECOZAM & "..tbObraMODControl(IdLineaModControl, IdTrabajo, IdObra, CodTrabajo, DescTrabajo, IdTipoTrabajo, " & _
@@ -4037,7 +4037,7 @@ Public Class CargaHorasJPSTAFF
             Dim worksheet3 = package.Workbook.Worksheets.Add("DUPLICIDAD MISMO DÍA")
             ' Copiar los datos de la DataTable a la hoja de cálculo.
             worksheet3.Cells("A1").LoadFromDataTable(dtPersonasMismoDia, True)
-            Dim columnaB As ExcelRange = worksheet3.Cells("B2:B" & worksheet3.Dimension.End.Row)
+            Dim columnaB As ExcelRange = worksheet3.Cells("B2:B" & (2 + worksheet3.Dimension.End.Row))
             columnab.Style.Numberformat.Format = "dd/mm/yyyy"
             ' Congelar la primera columna
             worksheet3.View.FreezePanes(2, 1)
@@ -4292,8 +4292,10 @@ Public Class CargaHorasJPSTAFF
                 If fechaalta < fechaCalculos Then
                     Exit While
                 End If
-
                 If Len(fechaFinalEmpresa) <> 0 Then
+                    If fechaFinalEmpresa < Fecha1 Then
+                        Exit While
+                    End If
                     If fechaFinalEmpresa = fechaCalculos Then
                         Exit While
                     End If
@@ -4989,12 +4991,18 @@ Public Class CargaHorasJPSTAFF
             Return String.Empty
         End If
     End Function
-    Public Function getGenteSiEurosNoHoras(ByVal dtHorasExpertis As DataTable, ByVal dtA3 As DataTable) As DataTable
+    Public Function getGenteSiEurosNoHoras2(ByVal dtHorasExpertis As DataTable, ByVal dtA3 As DataTable) As DataTable
         ' Obtén una lista de los IDGet que están en dtHorasExpertis
         Dim idGetEnHorasExpertis = dtHorasExpertis.AsEnumerable().Select(Function(row) row.Field(Of String)("IDGet")).ToList()
 
         ' Usa LINQ para encontrar las filas en dtA3 que no están en dtHorasExpertis
+        'Comentado 08/05 por la de abajo
         Dim filasFaltantes = dtA3.AsEnumerable().Where(Function(row) Not idGetEnHorasExpertis.Contains(row.Field(Of String)("IDGet")))
+
+        'Dim filasFaltantes = dtA3.AsEnumerable().Where(Function(row) Not idGetEnHorasExpertis.Contains(row.Field(Of String)("IDGet")) AndAlso _
+        '(row.Field(Of Decimal)("Horas") + _
+        'row.Field(Of Decimal)("HorasAdministrativas") + _
+        'row.Field(Of Decimal)("HorasBaja") = 0))
 
         ' Crea una nueva tabla con los resultados
         Dim dtFaltantes As New DataTable()
@@ -5019,6 +5027,44 @@ Public Class CargaHorasJPSTAFF
             newRow("IDCategoriaProfesionalSCCP") = DevuelveIDCategoriaProfesionalSCCPTodasBasesDeDatos(fila.Field(Of String)("IDOperario"))
             dtFaltantes.Rows.Add(newRow)
         Next
+        Return dtFaltantes
+    End Function
+    Public Function getGenteSiEurosNoHoras3(ByVal dtHorasExpertis As DataTable, ByVal dtA3 As DataTable) As DataTable
+        ' Crea un diccionario para acceso rápido por IDGet
+        Dim horasPorId = dtHorasExpertis.AsEnumerable().GroupBy(Function(r) r.Field(Of String)("IDGet")).ToDictionary(Function(g) g.Key, Function(g) g.Sum(Function(r) _
+            If(IsDBNull(r("Horas")), 0D, Convert.ToDecimal(r("Horas"))) + _
+            If(IsDBNull(r("HorasAdministrativas")), 0D, Convert.ToDecimal(r("HorasAdministrativas"))) + _
+            If(IsDBNull(r("HorasBaja")), 0D, Convert.ToDecimal(r("HorasBaja")))))
+
+
+        Dim filasFaltantes = dtA3.AsEnumerable().Where(Function(row) horasPorId.ContainsKey(row.Field(Of String)("IDGet")) AndAlso horasPorId(row.Field(Of String)("IDGet")) = 0)
+
+
+
+        ' Crear una nueva tabla con los resultados
+        Dim dtFaltantes As New DataTable()
+        dtFaltantes.Columns.Add("IDGet", GetType(String))
+        dtFaltantes.Columns.Add("DescOperario", GetType(String))
+        dtFaltantes.Columns.Add("IDOperario", GetType(String))
+        dtFaltantes.Columns.Add("IDCategoriaProfesionalSCCP", GetType(String))
+
+        ' dfernandez 30/04/2024 : Progress Bar
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = filasFaltantes.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
+        ' Agrega las filas faltantes a la nueva tabla
+        For Each fila In filasFaltantes
+            filas += 1
+            PvProgreso.Value = filas
+
+            Dim newRow As DataRow = dtFaltantes.NewRow()
+            newRow("IDGet") = fila.Field(Of String)("IDGet")
+            newRow("DescOperario") = fila.Field(Of String)("DescOperario")
+            newRow("IDOperario") = fila.Field(Of String)("IDOperario")
+            newRow("IDCategoriaProfesionalSCCP") = DevuelveIDCategoriaProfesionalSCCPTodasBasesDeDatos(fila.Field(Of String)("IDOperario"))
+            dtFaltantes.Rows.Add(newRow)
+        Next
+
         Return dtFaltantes
     End Function
 
@@ -5050,6 +5096,46 @@ Public Class CargaHorasJPSTAFF
 
         Return dtFaltantes
     End Function
+
+    Public Function getGenteSiEurosNoHoras(ByVal dtHorasExpertis As DataTable, ByVal dtA3 As DataTable) As DataTable
+        ' Crear diccionario con suma de horas por IDGet
+        Dim horasPorId = dtHorasExpertis.AsEnumerable().GroupBy(Function(r) r.Field(Of String)("IDGet")).ToDictionary(Function(g) g.Key, Function(g) g.Sum(Function(r) _
+                  If(IsDBNull(r("Horas")), 0D, Convert.ToDecimal(r("Horas"))) + _
+                  If(IsDBNull(r("HorasAdministrativas")), 0D, Convert.ToDecimal(r("HorasAdministrativas"))) + _
+                  If(IsDBNull(r("HorasBaja")), 0D, Convert.ToDecimal(r("HorasBaja")))))
+
+        ' Filtrar filas de A3 que no están en Expertis o están pero con suma de horas = 0
+        Dim filasFaltantes = dtA3.AsEnumerable().Where(Function(row) Not horasPorId.ContainsKey(row.Field(Of String)("IDGet")) OrElse horasPorId(row.Field(Of String)("IDGet")) = 0).ToList()
+
+
+
+        ' Crear DataTable de resultado
+        Dim dtFaltantes As New DataTable()
+        dtFaltantes.Columns.Add("IDGet", GetType(String))
+        dtFaltantes.Columns.Add("DescOperario", GetType(String))
+        dtFaltantes.Columns.Add("IDOperario", GetType(String))
+        dtFaltantes.Columns.Add("IDCategoriaProfesionalSCCP", GetType(String))
+
+        ' Progress Bar
+        Dim filas As Integer = 0
+        PvProgreso.Value = 0 : PvProgreso.Maximum = filasFaltantes.Count : PvProgreso.Step = 1 : PvProgreso.Visible = True
+
+        ' Rellenar la nueva tabla
+        For Each fila In filasFaltantes
+            filas += 1
+            PvProgreso.Value = filas
+
+            Dim newRow As DataRow = dtFaltantes.NewRow()
+            newRow("IDGet") = fila.Field(Of String)("IDGet")
+            newRow("DescOperario") = fila.Field(Of String)("DescOperario")
+            newRow("IDOperario") = fila.Field(Of String)("IDOperario")
+            newRow("IDCategoriaProfesionalSCCP") = DevuelveIDCategoriaProfesionalSCCPTodasBasesDeDatos(fila.Field(Of String)("IDOperario"))
+            dtFaltantes.Rows.Add(newRow)
+        Next
+
+        Return dtFaltantes
+    End Function
+
 
     Public Function getHorasPersonas(ByVal mes As String, ByVal anio As String) As DataTable
         Dim dtHorasExpertis As New DataTable
@@ -8939,12 +9025,12 @@ Public Class CargaHorasJPSTAFF
         Dim fechaInicio As Date = New DateTime(DateTime.Now.Year, DateTime.Now.Month, 1) ' Primer día del mes actual
 
         For columna As Integer = columnaInicial To columnaFinal
-            Dim  celda As ExcelRange = worksheet.Cells(1, columna) ' Fila 1
+            Dim celda As ExcelRange = worksheet.Cells(1, columna) ' Fila 1
             Dim parts() As String = celda.Text.ToString.Split(" "c)
 
             Dim fechaActual As Date
             Try
-                 fechaActual = New DateTime(Year(fecha1), Month(fecha1), parts(0))
+                fechaActual = New DateTime(Year(fecha1), Month(fecha1), parts(0))
                 ' Verificar el día de la semana
                 Dim diaSemana As DayOfWeek = fechaActual.DayOfWeek
 
@@ -8989,7 +9075,7 @@ Public Class CargaHorasJPSTAFF
 
         For Each row As DataRow In dtRegistro.Rows
             Dim idOperario As String = row("IDOperario").ToString()
-            Dim fechaParte As DateTime = CType(row("FechaParte"), DateTime) 
+            Dim fechaParte As DateTime = CType(row("FechaParte"), DateTime)
             Dim horaEntrada As String = If(row.IsNull("HoraEntrada"), String.Empty, row("HoraEntrada").ToString())
             Dim horaSalida As String = If(row.IsNull("HoraSalida"), String.Empty, row("HoraSalida").ToString())
 
@@ -9131,7 +9217,7 @@ Public Class CargaHorasJPSTAFF
             g = Convert.ToInt32(origenBgColor.Substring(2, 2), 16)
             b = Convert.ToInt32(origenBgColor.Substring(4, 2), 16)
         End If
-        
+
 
         Dim IDOficio As String
         IDOficio = worksheet.Cells(row, 6).Value
@@ -10311,7 +10397,7 @@ Public Class CargaHorasJPSTAFF
             Dim jobName As String = "PowerBI_CostesLaborales"
 
             ' Verificar si el Job ya está en ejecución
-            If JobEnEjecucion(connectionString, jobName) Then
+            If JobEnEjecucion2(connectionString, jobName) Then
                 MessageBox.Show("El Job ya se está ejecutando.", "Información", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 Exit Sub
             End If
@@ -10351,6 +10437,32 @@ Public Class CargaHorasJPSTAFF
                 Return count > 0 ' Si hay registros sin stop_execution_date, el Job está en ejecución
             End Using
         End Using
+    End Function
+
+    Private Function JobEnEjecucion2(ByVal connectionString As String, ByVal jobName As String) As Boolean
+        Using connection As New SqlConnection(connectionString)
+            connection.Open()
+
+            Dim query As String = "SELECT TOP 1 ja.start_execution_date, ja.stop_execution_date FROM msdb.dbo.sysjobactivity ja INNER JOIN msdb.dbo.sysjobs j ON ja.job_id = j.job_id " & _
+            "WHERE j.name = @JobName ORDER BY ja.start_execution_date DESC"
+
+            Using command As New SqlCommand(query, connection)
+                command.Parameters.AddWithValue("@JobName", jobName)
+
+                Using reader As SqlDataReader = command.ExecuteReader()
+                    If reader.Read() Then
+                        Dim startDate As Object = reader("start_execution_date")
+                        Dim stopDate As Object = reader("stop_execution_date")
+
+                        If Not IsDBNull(startDate) AndAlso IsDBNull(stopDate) Then
+                            Return True ' El Job está en ejecución
+                        End If
+                    End If
+                End Using
+            End Using
+        End Using
+
+        Return False ' El Job no está en ejecución
     End Function
 
     ' Función para esperar hasta que el Job termine
