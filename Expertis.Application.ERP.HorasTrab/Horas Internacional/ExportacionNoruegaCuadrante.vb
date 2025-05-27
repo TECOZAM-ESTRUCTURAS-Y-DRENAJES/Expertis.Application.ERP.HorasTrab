@@ -664,7 +664,7 @@ Public Class ExportacionNoruegaCuadrante
         f.Add("FechaParte", FilterOperator.LessThanOrEqual, fecha2)
         dtRegistros = New BE.DataEngine().Filter("frmMntoHorasInternacionalTecozam", f, _
                                          "FechaParte As DateReport, Turno As Shift, IDOperario As WorkerID, " & _
-                                         "DescOperario As WorkerDescription, Oficio As Job, Estructura As Structure, HoraEntrada As StartTime, HoraSalida As EndTime, " & _
+                                         "DescOperario2 As WorkerDescription, Oficio As Job, Estructura As Structure, HoraEntrada As StartTime, HoraSalida As EndTime, " & _
                                          "DescansoEnt As StartBreak, DescansoSal As EndBreak, Descanso2Ent As StartBreak2, Descanso2Sal As EndBreak2, " & _
                                          "TotalTurno As TotalShift, IDCausa, HoraEntradaOvertime As OvertimeStartTime, HoraSalidaOvertime As OvertimeEndTime, " & _
                                          "HoraEntradaDescansoOvertime As OvertimeStartBreak, HoraSalidaDescansoOvertime As OvertimeEndBreak, " & _
