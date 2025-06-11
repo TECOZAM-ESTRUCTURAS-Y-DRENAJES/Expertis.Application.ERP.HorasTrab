@@ -4215,6 +4215,7 @@ Public Class CargaHorasJPSTAFF
         FormaTablaGenteBaja(dtPersonasDeBaja)
 
         UnirTablas(dtPersonasDeBaja, dtPersonasBajaPorAccidente, dtPersonasBajaPorEnfermedad)
+
         Dim result As DialogResult = MessageBox.Show("¿Desea introducir horas de bajas?", "¿Desea Continuar?", MessageBoxButtons.YesNo)
         If result = DialogResult.No Then
             Exit Sub
@@ -4269,8 +4270,16 @@ Public Class CargaHorasJPSTAFF
         Next
 
         For Each dr As DataRow In dtPersonasDeBaja.Rows
+           
+
             bbdd = dr("Empresa") : idoperario = dr("idoperario") : fechabaja = dr("Fecha_Baja") : fechaalta = Nz(dr("Fecha_Alta"), Fecha2)
             fechaCalculos = Fecha1 : idobra = Nz(dr("IDObra").ToString, getObraBaja(bbdd, idoperario, fechabaja))
+
+            If idoperario = "T2897" Then
+                MsgBox("T2897")
+            Else
+                Continue For
+            End If
 
             ActualizarLProgreso("Importando : " & idoperario & " - HORAS DE BAJA")
 
@@ -4308,6 +4317,11 @@ Public Class CargaHorasJPSTAFF
                     End If
                 Next
                 dias = (fechaCalculos - fechabaja).Days
+
+                If dias < 60 And (idobra = "17152171" Or idobra = "12712406" Or idobra = "11863745") Then
+                    'HAGO CONSULTA DESDE EL DÍA PARA ATRÁS PARA SABER EN QUE OBRA FUE LA ULTIMA QUE SE REGISTRARON HORAS
+                    idobra = getObraCC(idobra, idoperario, fechaCalculos)
+                End If
                 'Se insertan las horas en la ultima obra donde tuvo horas antes de la fecha1
                 'Si ya han pasado 60 dias desde la baja pasa a un centro de coste que se llama BAJAS
                 insertarOActualizar(bbdd, idoperario, idobra, dias, fechaCalculos)
@@ -4317,6 +4331,21 @@ Public Class CargaHorasJPSTAFF
             PvProgreso.Value = filas
         Next
     End Sub
+    Public Function getObraCC(ByVal idobra As String, ByVal idoperario As String, ByVal fechaCalculos As String) As String
+        Dim dt As New DataTable
+        Dim f As New Filter
+        f.Add("IDOperario", FilterOperator.Equal, idoperario)
+        f.Add("HorasRealMod", FilterOperator.NotEqual, 0)
+        f.Add("FechaInicio", FilterOperator.LessThan, fechaCalculos)
+        dt = New BE.DataEngine().Filter("vUniontbObraModControl", f, "IDObra", "FechaInicio desc")
+
+        If dt.Rows.Count = 0 Then
+            Return idobra
+        Else
+            Return Nz(dt.Rows(0)("IDObra"), "")
+        End If
+
+    End Function
     Public Function getFechaFinalEmpresa(ByVal bbdd As String, ByVal idoperario As String) As String
         'Asigno bases de datos
         If bbdd = "T. ES." Then

@@ -39,6 +39,7 @@ Public Class ExportacionNoruegaCuadrante
 
     Public Function getTablaPersonas() As DataTable
         Dim strWhere As String = "IDOperario !='00'"
+        'Dim strWhere As String = "(IDOperario ='N200' or IDOperario ='N201')"
         Return New BE.DataEngine().Filter("frmMntoOperario", "IDOperario, Nombre, Apellidos, FechaAlta, Fecha_Baja, IDOficio", strWhere)
     End Function
 
