@@ -208,7 +208,57 @@ Public Class ExportacionUKCuadrante
         ConvertirCeldasANumeros(worksheet)
         CalcularTotales(dtFinal, worksheet)
         GestionarEstilos(worksheet)
+        AgregarComentarios(worksheet)
     End Sub
+    Private Sub AgregarComentarios(ByVal hoja As ExcelWorksheet)
+        Dim filaActual As Integer = 2 ' Comienza en fila 2 (fila 1 son encabezados)
+        Dim columnaInicio As Integer = 7 ' Columna G = 7
+
+        While hoja.Cells(filaActual, 1).Value IsNot Nothing
+            Dim idOperario As String = hoja.Cells(filaActual, 1).Text
+
+            Dim columnaActual As Integer = columnaInicio
+            While hoja.Cells(1, columnaActual).Value IsNot Nothing
+                Dim cabecera As String = hoja.Cells(1, columnaActual).Text
+
+                If cabecera.Length >= 8 Then
+                    Dim fechaTexto As String = cabecera.Substring(0, 8) ' Ej: "01/06/25"
+                    Dim fechaParsed As Date
+
+                    If Date.TryParseExact(fechaTexto, "dd/MM/yy", Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.None, fechaParsed) Then
+                        Dim resultadoBD As String = BuscarInfoEnBD(idOperario, fechaParsed)
+
+                        If Not String.IsNullOrEmpty(resultadoBD) Then
+                            hoja.Cells(filaActual, columnaActual).AddComment(resultadoBD)
+                            columnaActual += 1
+                        End If
+                    End If
+                End If
+
+                columnaActual += 1
+            End While
+
+            filaActual += 1
+        End While
+    End Sub
+    Public Function BuscarInfoEnBD(ByVal IDOperario As String, ByVal fechaParsed As String) As String
+        Dim dt As New DataTable
+        Dim f As New Filter
+        f.Add("IDOperario", FilterOperator.Equal, IDOperario)
+        f.Add("FechaParte", FilterOperator.Equal, fechaParsed)
+
+        dt = New BE.DataEngine().Filter("frmMntoHorasInternacionalTecozam", f)
+        If dt.Rows.Count > 0 Then
+            If dt.Rows(0)("Comentarios").ToString.Length > 0 Then
+                Return dt.Rows(0)("Comentarios").ToString
+            Else
+                Return ""
+            End If
+        Else
+            Return ""
+        End If
+
+    End Function
 
     ' Método para obtener los IDObra únicos
     Private Function ObtenerIDObras(ByVal dtFinal As DataTable, ByVal fecha1 As DateTime, ByVal fecha2 As DateTime) As DataTable
@@ -413,6 +463,7 @@ Public Class ExportacionUKCuadrante
             Next
         Next
     End Sub
+
     Public Sub CalcularTotales(ByVal dtFinal As DataTable, ByVal worksheet As ExcelWorksheet)
         Dim lastRow As Integer = dtFinal.Rows.Count + 1 ' Contamos desde 1 y sumamos el encabezado
         Dim lastCol As Integer = dtFinal.Columns.Count ' Última columna del DataTable
