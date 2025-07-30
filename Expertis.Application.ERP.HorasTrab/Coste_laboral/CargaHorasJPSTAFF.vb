@@ -719,8 +719,8 @@ Public Class CargaHorasJPSTAFF
         End If
 
         Dim result As DialogResult = MessageBox.Show("Hay " & dtTecozam.Rows.Count & " registros de T. ES." & vbCrLf & _
-        "Hay " & dtFerrallas.Rows.Count & " registros de FERR." & vbCrLf & _
         "Hay " & dtSecozam.Rows.Count & " registros de SEC." & vbCrLf & _
+        "Hay " & dtFerrallas.Rows.Count & " registros de FERR." & vbCrLf & _
         "Hay " & dtPortugal.Rows.Count & " registros de D. P." & vbCrLf & _
         "Hay " & dtUK.Rows.Count & " registros de T. UK." & vbCrLf & _
         "Hay " & dtNO.Rows.Count & " registros de T. NO." & vbCrLf & _
