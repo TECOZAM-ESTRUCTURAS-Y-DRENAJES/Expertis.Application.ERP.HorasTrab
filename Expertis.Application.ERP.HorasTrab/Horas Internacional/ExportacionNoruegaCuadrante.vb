@@ -39,7 +39,7 @@ Public Class ExportacionNoruegaCuadrante
 
     Public Function getTablaPersonas() As DataTable
         Dim strWhere As String = "IDOperario !='00'"
-        'Dim strWhere As String = "(IDOperario ='N200' or IDOperario ='N201')"
+        'Dim strWhere As String = "(IDOperario ='N077')"
         Return New BE.DataEngine().Filter("frmMntoOperario", "IDOperario, Nombre, Apellidos, FechaAlta, Fecha_Baja, IDOficio", strWhere)
     End Function
 
@@ -120,9 +120,7 @@ Public Class ExportacionNoruegaCuadrante
                 GestionarFormulacion(worksheet)
                 GestionarOvertime(worksheet, fecha1)
 
-
                 If tipoExportacion = "ORIGINAL" Then
-
                 Else
                     ' Crear una nueva hoja llamada TURNOS y llamar al método creaHojaTurnos
                     Dim worksheetTurnos = package.Workbook.Worksheets.Add("TURNOS OPERARIOS")
@@ -510,6 +508,36 @@ Public Class ExportacionNoruegaCuadrante
                             Else
                                 worksheet.Cells(row, col + 62).Value = horas
                             End If
+                        End If
+
+                    ElseIf r = 255 AndAlso g = 157 AndAlso b = 183 Then
+                        'TURNOS DE HORMIGONADO
+                        If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
+                            ' Acción para días de lunes a viernes
+                            Dim horas = CDbl(worksheet.Cells(row, col).Value - 6.5)
+                            If horas < 0 Then
+                                worksheet.Cells(row, col + 62).Value = CDbl(0)
+                            Else
+                                worksheet.Cells(row, col + 62).Value = horas
+                            End If
+                        Else
+                            ' Acción para fines de semana
+                            worksheet.Cells(row, col + 62).Value = CDbl(value) - 5
+                        End If
+                    ElseIf r = 255 AndAlso g = 219 AndAlso b = 196 Then
+                        'TURNOS DE HORMIGONADO - NARANJA SOLO MATUTITNO
+                        If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
+                            ' Acción para días de lunes a viernes
+                            Dim horas = CDbl(worksheet.Cells(row, col).Value - 6.5)
+                            If horas < 0 Then
+                                worksheet.Cells(row, col + 62).Value = CDbl(0)
+                            Else
+                                worksheet.Cells(row, col + 62).Value = horas
+                            End If
+                        Else
+                            Dim valor As Double = CDbl(worksheet.Cells(row, col).Value)
+                            ' Acción para fines de semana
+                            worksheet.Cells(row, col + 62).Value = 0
                         End If
                     Else
                         If fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday Then
@@ -1015,7 +1043,6 @@ Public Class ExportacionNoruegaCuadrante
         'worksheet.Cells.AutoFitColumns()
     End Sub
 
-
     Function SemanasDelMes(ByVal fecha As DateTime) As Integer
         Dim primerDiaMes As New DateTime(fecha.Year, fecha.Month, 1)
         Dim ultimoDiaMes As New DateTime(fecha.Year, fecha.Month, DateTime.DaysInMonth(fecha.Year, fecha.Month))
@@ -1029,7 +1056,6 @@ Public Class ExportacionNoruegaCuadrante
         ' Calcular número de semanas (redondeando hacia arriba)
         Return Math.Ceiling((diasDelMes + primerDiaSemana - 1) / 7.0)
     End Function
-
 
     Function CalcularIntervaloSemanas(ByVal wsDatos As ExcelWorksheet, ByVal fecha As DateTime) As DataTable
         ' Obtener el primer día del mes
@@ -1412,18 +1438,19 @@ Public Class ExportacionNoruegaCuadrante
     End Sub
 
     Private Sub EscribirHorasTrabajo(ByVal worksheet As ExcelWorksheet, ByVal dr As DataRow, ByVal fila As Integer, ByVal dia As Integer, ByVal fechaComparar As Date)
-        If dr("Skill") = "STAFF" Then
-            If EsDiaLaboral(fechaComparar) Then
-                Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
-                Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
-                If String.IsNullOrEmpty(celda.Text) Then
-                    celda.Value = CDbl("7,5")
-                    celda.Style.Font.Color.SetColor(System.Drawing.Color.Black)
-                End If
-            End If
-        Else
-            EscribirHorasNoStaff(worksheet, dr, fila, dia, fechaComparar)
-        End If
+        EscribirHorasNoStaff(worksheet, dr, fila, dia, fechaComparar)
+        'If dr("Skill") = "STAFF" Then
+        '    If EsDiaLaboral(fechaComparar) Then
+        '        Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
+        '        Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
+        '        If String.IsNullOrEmpty(celda.Text) Then
+        '            celda.Value = CDbl("7,5")
+        '            celda.Style.Font.Color.SetColor(System.Drawing.Color.Black)
+        '        End If
+        '    End If
+        'Else
+        '    EscribirHorasNoStaff(worksheet, dr, fila, dia, fechaComparar)
+        'End If
     End Sub
 
     Private Sub EscribirHorasNoStaff(ByVal worksheet As ExcelWorksheet, ByVal dr As DataRow, ByVal fila As Integer, ByVal dia As Integer, ByVal fechaComparar As Date)
@@ -1541,6 +1568,17 @@ Public Class ExportacionNoruegaCuadrante
         Dim intervalo7Inicio As TimeSpan = TimeSpan.Parse("14:00")
         Dim intervalo7Fin As TimeSpan = TimeSpan.Parse("19:30")
 
+        'TURNOS DE HORMIGONADO
+        Dim intervalo44Inicio As TimeSpan = TimeSpan.Parse("07:00")
+        Dim intervalo44Fin As TimeSpan = TimeSpan.Parse("19:00")
+
+        Dim intervalo45Inicio As TimeSpan = TimeSpan.Parse("19:00")
+        Dim intervalo45Fin As TimeSpan = TimeSpan.Parse("00:30")
+
+        'TURNO NARANJA-A MEDIA
+        Dim intervalo37Inicio As TimeSpan = TimeSpan.Parse("07:00")
+        Dim intervalo37Fin As TimeSpan = TimeSpan.Parse("10:00")
+
         ' Comprobar en qué intervalo se encuentra el turno
         If turnoEntrada = intervalo0Inicio AndAlso turnoSalida = intervalo0Fin Then
             'MsgBox("Turno de 07:00 a 16:00")
@@ -1560,6 +1598,12 @@ Public Class ExportacionNoruegaCuadrante
         ElseIf turnoEntrada = intervalo5Inicio AndAlso turnoSalida = intervalo5Fin Then
             'MsgBox("Turno de 10:00 a 20:00")
             Return System.Drawing.Color.FromArgb(192, 80, 77)
+        ElseIf turnoEntrada = intervalo44Inicio AndAlso turnoSalida = intervalo44Fin Then
+            Return System.Drawing.Color.FromArgb(157, 183, 224)
+        ElseIf turnoEntrada = intervalo45Inicio AndAlso turnoSalida = intervalo45Fin Then
+            Return System.Drawing.Color.FromArgb(157, 183, 224)
+        ElseIf turnoEntrada = intervalo37Inicio AndAlso turnoSalida = intervalo37Fin Then
+            Return System.Drawing.Color.FromArgb(219, 196, 94)
         Else
             Return System.Drawing.Color.FromArgb(255, 192, 203)
         End If
