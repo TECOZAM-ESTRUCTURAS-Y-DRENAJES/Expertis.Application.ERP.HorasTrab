@@ -2884,7 +2884,7 @@ Public Class CargaHorasJPSTAFF
         Dim empresa As String = DevuelveValorEntreParentesis(ruta)
         Dim rango As String = ""
         Select Case empresa
-            Case "T. ES.", "FERR.", "SEC."
+            Case "T. ES.", "FERR.", "SEC.", "O. D."
                 rango = "B10:Z10000"
         End Select
 
@@ -3005,6 +3005,9 @@ Public Class CargaHorasJPSTAFF
             newDataTable = FormaTablaExtraEspaña(dt, newDataTable, bbdd, mes, anio, empresa)
         ElseIf empresa = "SEC." Then
             bbdd = DB_SECOZAM
+            newDataTable = FormaTablaExtraEspaña(dt, newDataTable, bbdd, mes, anio, empresa)
+        ElseIf empresa = "O. D." Then
+            bbdd = DB_OC
             newDataTable = FormaTablaExtraEspaña(dt, newDataTable, bbdd, mes, anio, empresa)
         End If
 
@@ -5762,7 +5765,7 @@ Public Class CargaHorasJPSTAFF
         Dim jprod As Double = 0 : Dim encar As Double = 0 : Dim operar As Double = 0 : Dim tecobra As Double = 0 : Dim staff As Double = 0 : Dim otros As Double = 0
         Dim jprodf As Double = 0 : Dim encarf As Double = 0 : Dim operarf As Double = 0 : Dim tecobraf As Double = 0 : Dim stafff As Double = 0 : Dim otrosf As Double = 0
         Dim jprods As Double = 0 : Dim encars As Double = 0 : Dim operars As Double = 0 : Dim tecobras As Double = 0 : Dim staffs As Double = 0 : Dim otross As Double = 0
-
+        Dim jprodo As Double = 0 : Dim encaro As Double = 0 : Dim operaro As Double = 0 : Dim tecobrao As Double = 0 : Dim staffo As Double = 0 : Dim otroso As Double = 0
         For Each dr As DataRow In dtUnion.Rows
             Dim empresa As String = dr("Empresa").ToString
             Dim categoria As Integer = Convert.ToInt64(dr("IDCategoriaProfesionalSCCP"))
@@ -5813,6 +5816,21 @@ Public Class CargaHorasJPSTAFF
                     Case Else
                         otross = otross + coste + incentivos
                 End Select
+            ElseIf empresa = "O. D." Then
+                Select Case categoria
+                    Case 1
+                        jprodo = jprodo + coste + incentivos
+                    Case 2
+                        encaro = encaro + coste + incentivos
+                    Case 3
+                        operaro = operaro + coste + incentivos
+                    Case 4
+                        tecobrao = tecobrao + coste + incentivos
+                    Case 5
+                        staffo = staffo + coste + incentivos
+                    Case Else
+                        otroso = otroso + coste + incentivos
+                End Select
             End If
 
         Next
@@ -5854,6 +5872,19 @@ Public Class CargaHorasJPSTAFF
         newRow = dtResultado.NewRow() : newRow("Empresa") = "SEC." : newRow("IDCategoriaProfesionalSCCP") = 5 : newRow("Total") = staffs
         dtResultado.Rows.Add(newRow)
         newRow = dtResultado.NewRow() : newRow("Empresa") = "SEC." : newRow("IDCategoriaProfesionalSCCP") = 0 : newRow("Total") = otross
+        dtResultado.Rows.Add(newRow)
+        '-3. OCELLUM
+        newRow = dtResultado.NewRow()
+        newRow("Empresa") = "O. D." : newRow("IDCategoriaProfesionalSCCP") = 1 : newRow("Total") = jprodo : dtResultado.Rows.Add(newRow)
+        newRow = dtResultado.NewRow() : newRow("Empresa") = "O. D." : newRow("IDCategoriaProfesionalSCCP") = 2 : newRow("Total") = encaro
+        dtResultado.Rows.Add(newRow)
+        newRow = dtResultado.NewRow() : newRow("Empresa") = "O. D." : newRow("IDCategoriaProfesionalSCCP") = 3 : newRow("Total") = operaro
+        dtResultado.Rows.Add(newRow)
+        newRow = dtResultado.NewRow() : newRow("Empresa") = "O. D." : newRow("IDCategoriaProfesionalSCCP") = 4 : newRow("Total") = tecobrao
+        dtResultado.Rows.Add(newRow)
+        newRow = dtResultado.NewRow() : newRow("Empresa") = "O. D." : newRow("IDCategoriaProfesionalSCCP") = 5 : newRow("Total") = staffo
+        dtResultado.Rows.Add(newRow)
+        newRow = dtResultado.NewRow() : newRow("Empresa") = "O. D." : newRow("IDCategoriaProfesionalSCCP") = 0 : newRow("Total") = otroso
         dtResultado.Rows.Add(newRow)
 
         Return dtResultado
@@ -6027,7 +6058,6 @@ Public Class CargaHorasJPSTAFF
         Dim dtAnual As DataTable
         dtAnual = getTablaAnual(dtFinalA3)
 
-
         '2º. ESTA ES LA 2ª HOJA DEL EXCEL QUE SUMA LOS A3 QUE SE HAN GENERADO ENTRE DOS FECHAS
         'David V 03/09/2024
         dtA3EntreFechasPowerBi = getA3EntreFechasPowerBi_PorEmpresaPersona(mes1, mes2, anio)
@@ -6189,10 +6219,13 @@ Public Class CargaHorasJPSTAFF
             resumenWorksheet.Column(3).Width = 14
 
             'HOJA PARA SACAR REGULARIZACIONES PASADAS
-            Dim regularizacionWorksheet = package.Workbook.Worksheets.Add("REGULARIZACIONES PASADAS")
-            regularizacionWorksheet.Cells("A1").LoadFromDataTable(dtRegularizacionesAnteriores, True)
-            Dim columnacc As ExcelRange = regularizacionWorksheet.Cells("C2:C" & regularizacionWorksheet.Dimension.End.Row)
-            columnacc.Style.Numberformat.Format = "#,##0.00€"
+            If dtRegularizacionesAnteriores IsNot Nothing Then
+                Dim regularizacionWorksheet = package.Workbook.Worksheets.Add("REGULARIZACIONES PASADAS")
+                regularizacionWorksheet.Cells("A1").LoadFromDataTable(dtRegularizacionesAnteriores, True)
+                Dim columnacc As ExcelRange = regularizacionWorksheet.Cells("C2:C" & regularizacionWorksheet.Dimension.End.Row)
+                columnacc.Style.Numberformat.Format = "#,##0.00€"
+            End If
+            
 
             'TERCERA HOJA DEL EXCEL QUE SON LOS A3 INSERTADOS CON CARACTER SEMESTRAL
             Dim resumenCategoria = package.Workbook.Worksheets.Add("RESUMEN FICHEROS ACUMULADOS")
@@ -6316,7 +6349,7 @@ Public Class CargaHorasJPSTAFF
         Dim empresa As String = DevuelveValorEntreParentesis(ruta)
         Dim rango As String = ""
         Select Case empresa
-            Case "T. ES.", "FERR.", "SEC."
+            Case "T. ES.", "FERR.", "SEC.", "O. D."
                 rango = "B10:Z10000"
             Case "D. P."
                 rango = "A2:F500"
@@ -6368,6 +6401,8 @@ Public Class CargaHorasJPSTAFF
             bbdd = DB_FERRALLAS
         ElseIf empresa = "SEC." Then
             bbdd = DB_SECOZAM
+        ElseIf empresa = "O. D." Then
+            bbdd = DB_OC
         End If
 
         Dim f As New Filter
@@ -8749,10 +8784,24 @@ Public Class CargaHorasJPSTAFF
         MsgBox("Fichero creado correctamente en N:\10. AUXILIARES\00. EXPERTIS\03. PAGAS EXTRA\")
     End Sub
     Public Function calculaDiferencia(ByVal dtSumaFicheros As DataTable, ByVal dtFicheroResumidoPorExtras As DataTable) As DataTable
-        ' Realizar la resta de las tablas
         For i As Integer = 0 To dtFicheroResumidoPorExtras.Rows.Count - 1
-            dtSumaFicheros.Rows(i)("Total") = CDbl(dtFicheroResumidoPorExtras.Rows(i)("Total")) - CDbl(dtSumaFicheros.Rows(i)("Total"))
+            ' Si la fila no existe en dtSumaFicheros, la creamos copiando los campos clave
+            If i >= dtSumaFicheros.Rows.Count Then
+                Dim nuevaFila As DataRow = dtSumaFicheros.NewRow()
+                nuevaFila("Empresa") = dtFicheroResumidoPorExtras.Rows(i)("Empresa")
+                nuevaFila("IDCategoriaProfesionalSCCP") = dtFicheroResumidoPorExtras.Rows(i)("IDCategoriaProfesionalSCCP")
+                nuevaFila("Total") = 0.0
+                dtSumaFicheros.Rows.Add(nuevaFila)
+            End If
+
+            ' Obtener valores seguros
+            Dim totalFichero As Double = If(IsDBNull(dtFicheroResumidoPorExtras.Rows(i)("Total")) OrElse Not IsNumeric(dtFicheroResumidoPorExtras.Rows(i)("Total")), 0.0, CDbl(dtFicheroResumidoPorExtras.Rows(i)("Total")))
+            Dim totalSuma As Double = If(IsDBNull(dtSumaFicheros.Rows(i)("Total")) OrElse Not IsNumeric(dtSumaFicheros.Rows(i)("Total")), 0.0, CDbl(dtSumaFicheros.Rows(i)("Total")))
+
+            ' Realizar la resta
+            dtSumaFicheros.Rows(i)("Total") = totalFichero - totalSuma
         Next
+
 
         Return dtSumaFicheros
     End Function
@@ -8772,7 +8821,7 @@ Public Class CargaHorasJPSTAFF
         Dim ruta As String = lblRuta.Text
 
         Dim rango As String = ""
-        rango = "A1:C19"
+        rango = "A1:C25"
         dtFicheroExtra = ObtenerDatosExcelCabecera(ruta, hoja, rango)
 
         Return dtFicheroExtra

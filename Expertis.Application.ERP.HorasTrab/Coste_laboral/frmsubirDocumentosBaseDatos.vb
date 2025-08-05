@@ -294,8 +294,16 @@ Public Class frmsubirDocumentosBaseDatos
 
     Public Sub FormatearDtRegularizaciones(ByRef dt As DataTable, ByRef dtIDGET As DataTable, ByVal worksheet As ExcelWorksheet, ByVal worksheet2 As ExcelWorksheet, ByVal mes As Integer, ByVal anio As Integer)
         'renombrar columna de observaciones
-        Dim colObservaciones As DataColumn = dt.Columns(3)
-        colObservaciones.ColumnName = "Observaciones"
+
+        If dt.Columns.Count > 3 Then
+            ' Si ya existe una columna en la posición 3, le cambiamos el nombre
+            dt.Columns(3).ColumnName = "Observaciones"
+        ElseIf Not dt.Columns.Contains("Observaciones") Then
+            ' Si no hay suficiente columnas, agregamos la columna "Observaciones"
+            Dim colObservaciones As New DataColumn("Observaciones", GetType(String))
+            dt.Columns.Add(colObservaciones)
+        End If
+
 
         'agregar columnas
         dt.Columns.Add("Mes")
