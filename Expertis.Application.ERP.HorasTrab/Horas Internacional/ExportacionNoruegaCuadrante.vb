@@ -39,7 +39,7 @@ Public Class ExportacionNoruegaCuadrante
 
     Public Function getTablaPersonas() As DataTable
         Dim strWhere As String = "IDOperario !='00'"
-        'Dim strWhere As String = "(IDOperario ='N077')"
+        'Dim strWhere As String = "(IDOperario ='N421')"
         Return New BE.DataEngine().Filter("frmMntoOperario", "IDOperario, Nombre, Apellidos, FechaAlta, Fecha_Baja, IDOficio", strWhere)
     End Function
 
@@ -1414,7 +1414,8 @@ Public Class ExportacionNoruegaCuadrante
 
     Private Sub ProcesarDia(ByVal worksheet As ExcelWorksheet, ByVal dr As DataRow, ByVal fila As Integer, ByVal dia As Integer, ByVal fechaComparar As Date, ByVal fechaBaja As String, ByVal fechaAlta As String)
         If Len(fechaBaja) <> 0 Then
-            If fechaBaja <= fechaComparar Or fechaAlta > fechaComparar Then
+            If fechaBaja < fechaComparar Or fechaAlta > fechaComparar Then
+                'If fechaBaja <= fechaComparar Or fechaAlta > fechaComparar Then
                 EscribirAusencia(worksheet, fila, dia, fechaComparar)
             Else
                 EscribirHorasTrabajo(worksheet, dr, fila, dia, fechaComparar)
