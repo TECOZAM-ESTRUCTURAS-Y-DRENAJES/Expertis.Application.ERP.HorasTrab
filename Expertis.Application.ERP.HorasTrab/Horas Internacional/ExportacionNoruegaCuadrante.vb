@@ -11,6 +11,7 @@ Public Class ExportacionNoruegaCuadrante
 
     Public tablaDatos As String
     Public tipoExportacion As String
+    Private registrosMes As Dictionary(Of String, Dictionary(Of Date, DataRow)) 'dmartinez 07/08/2025
 
     Public Sub generaExcelNoruega()
         Dim frm As New frmInformeFecha
@@ -34,6 +35,7 @@ Public Class ExportacionNoruegaCuadrante
         FormaTablaSalidaNoruega(dtFinal)
         setPrimerCambioForma(dtFinal, dtPersonas)
 
+        PreCargarRegistrosMes(Fecha1) 'dmartinez para precargar la tabla y optimizar
         ExportarFichero(dtFinal, Fecha1, Fecha2)
     End Sub
 
@@ -89,6 +91,52 @@ Public Class ExportacionNoruegaCuadrante
             dtFinal.Rows.Add(newRow)
         Next
     End Sub
+
+
+    Private Sub PreCargarRegistrosMes(ByVal fecha1 As String)
+        Dim mes As Integer = Month(fecha1)
+        Dim anio As Integer = Year(fecha1)
+        Dim f As New Filter
+        f.Add("FechaParte", FilterOperator.GreaterThanOrEqual, _
+              New Date(anio, mes, 1))
+        f.Add("FechaParte", FilterOperator.LessThanOrEqual, _
+              New Date(anio, mes, DateTime.DaysInMonth(anio, mes)))
+
+        Dim dt As DataTable = New BE.DataEngine().Filter(tablaDatos, f)
+
+        ' ---- construir el índice ----
+        registrosMes = New Dictionary(Of String, Dictionary(Of Date, DataRow))()
+
+        For Each r As DataRow In dt.Rows
+            Dim op As String = r("IDOperario").ToString()
+            Dim dia As Date = CType(r("FechaParte"), Date).Date
+
+            If Not registrosMes.ContainsKey(op) Then
+                registrosMes(op) = New Dictionary(Of Date, DataRow)()
+            End If
+
+            If Not registrosMes(op).ContainsKey(dia) Then
+                ' Primera fila de ese día → guardar sin más
+                registrosMes(op)(dia) = r
+            Else
+                ' Ya había algo: decidir cuál conservar
+                Dim existente As DataRow = registrosMes(op)(dia)
+
+                Dim causaNueva As String = r("IDCausa").ToString()
+                Dim causaExistente As String = existente("IDCausa").ToString()
+
+                ' 1️⃣ Si la nueva fila trae IDCausa y la existente no, reemplazamos  
+                ' 2️⃣ Si ambas tienen IDCausa, preferir la que NO sea vacío ("")
+                ' 3️⃣ En cualquier otro caso mantenemos la que ya estaba
+                If causaNueva <> "" AndAlso causaExistente = "" Then
+                    registrosMes(op)(dia) = r
+                End If
+            End If
+        Next
+    End Sub
+
+
+
 
     Public Sub ExportarFichero(ByVal dtFinal As DataTable, ByVal fecha1 As String, ByVal fecha2 As String)
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial
@@ -319,41 +367,6 @@ Public Class ExportacionNoruegaCuadrante
         Next
     End Sub
 
-    Function ProcesarTurnoEntrada(ByVal dia As Integer, ByVal fecha1 As String, ByVal IDOperario As String) As String
-        Dim mes As String = Month(fecha1)
-        Dim año As String = Year(fecha1)
-
-        Dim fechaParte As New DateTime(CInt(año), CInt(mes), dia)
-
-        Dim dtRegistro As New DataTable
-        Dim filtro As New Filter
-        filtro.Add("FechaParte", FilterOperator.Equal, fechaParte)
-        filtro.Add("IDOperario", FilterOperator.Equal, IDOperario)
-        dtRegistro = New BE.DataEngine().Filter(tablaDatos, filtro)
-
-        If dtRegistro.Rows.Count > 0 Then
-            Return dtRegistro.Rows(0)("HoraEntrada").ToString
-        End If
-
-    End Function
-
-    Function ProcesarTurnoSalida(ByVal dia As Integer, ByVal fecha1 As String, ByVal IDOperario As String) As String
-        Dim mes As String = Month(fecha1)
-        Dim año As String = Year(fecha1)
-
-        Dim fechaParte As New DateTime(CInt(año), CInt(mes), dia)
-
-        Dim dtRegistro As New DataTable
-        Dim filtro As New Filter
-        filtro.Add("FechaParte", FilterOperator.Equal, fechaParte)
-        filtro.Add("IDOperario", FilterOperator.Equal, IDOperario)
-        dtRegistro = New BE.DataEngine().Filter(tablaDatos, filtro)
-
-        If dtRegistro.Rows.Count > 0 Then
-            Return dtRegistro.Rows(0)("HoraSalida").ToString
-        End If
-
-    End Function
 
     Public Sub FormaTablaTurnos(ByVal dtFinal As DataTable)
         ' Agregar nuevas columnas al DataTable dtFinal
@@ -1454,27 +1467,27 @@ Public Class ExportacionNoruegaCuadrante
         'End If
     End Sub
 
-    Private Sub EscribirHorasNoStaff(ByVal worksheet As ExcelWorksheet, ByVal dr As DataRow, ByVal fila As Integer, ByVal dia As Integer, ByVal fechaComparar As Date)
-        Dim dt As New DataTable
-        Dim f As New Filter
-        f.Add("FechaParte", FilterOperator.Equal, fechaComparar)
-        f.Add("IDOperario", FilterOperator.Equal, dr("EXP."))
-        dt = New BE.DataEngine().Filter(tablaDatos, f)
+    Private Sub EscribirHorasNoStaff(ByVal ws As ExcelWorksheet, ByVal dr As DataRow, ByVal fila As Integer, ByVal dia As Integer, ByVal fechaComparar As Date)
+        Dim op As String = dr("EXP.").ToString()
+        Dim row As DataRow = Nothing
 
-        If dt.Rows.Count > 0 Then
-            Dim IDCausa As String = Nz(dt.Rows(0)("IDCausa").ToString, "")
-            If Len(IDCausa) <> 0 Then
-                EscribirIDCausa(worksheet, fila, dia, IDCausa)
+        If registrosMes IsNot Nothing AndAlso _
+           registrosMes.ContainsKey(op) AndAlso _
+           registrosMes(op).TryGetValue(fechaComparar.Date, row) Then
+
+            Dim IDCausa As String = Nz(row("IDCausa").ToString, "")
+            If IDCausa.Length > 0 Then
+                EscribirIDCausa(ws, fila, dia, IDCausa)
             Else
-                EscribirHorasProductivas(worksheet, dt, fila, dia, fechaComparar)
+                EscribirHorasProductivas(ws, row, fila, dia, fechaComparar)  ' ← ahora pasa DataRow
             End If
-
         Else
+            ' no hay parte ese día
             If EsDiaLaboral(fechaComparar) Then
-                Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
-                Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
-                celda.Value = CDbl("0.0")
-                celda.Style.Font.Color.SetColor(System.Drawing.Color.Black)
+                Dim col As Integer = dia + 6
+                Dim celda As ExcelRange = ws.Cells(fila + 5, col)
+                celda.Value = 0
+                celda.Style.Font.Color.SetColor(Color.Black)
             End If
         End If
     End Sub
@@ -1496,39 +1509,39 @@ Public Class ExportacionNoruegaCuadrante
         End Select
     End Sub
 
-    Private Sub EscribirHorasProductivas(ByVal worksheet As ExcelWorksheet, ByVal dt As DataTable, ByVal fila As Integer, ByVal dia As Integer, ByVal fechaComparar As Date)
-        Dim columna As Integer = dia + 6 ' Columna G es la columna 7, por lo que agregamos 6
-        Dim celda As ExcelRange = worksheet.Cells(fila + 5, columna)
 
-        Dim horas As Double = 0
+    Private Sub EscribirHorasProductivas(ByVal ws As ExcelWorksheet, _
+                                     ByVal row As DataRow, _
+                                     ByVal fila As Integer, _
+                                     ByVal dia As Integer, _
+                                     ByVal fechaComparar As Date)
 
-        Dim color As System.Drawing.Color = getColorTurnoTrabajador(dt)
-        celda.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+        Dim col As Integer = dia + 6                ' G = 7
+        Dim celda As ExcelRange = ws.Cells(fila + 5, col)
+
+        '-- Color de fondo según el turno
+        Dim color As Color = getColorTurnoTrabajador(row)
+        celda.Style.Fill.PatternType = ExcelFillStyle.Solid
         celda.Style.Fill.BackgroundColor.SetColor(color)
 
-        horas = dt.Rows(0)("Horas").ToString.Replace(".", ",")
-
+        '-- Horas
+        Dim horas As Double = CDbl(row("Horas").ToString().Replace("."c, ","c))
         celda.Value = horas
 
-        If Len(dt.Rows(0)("Comentarios").ToString) <> 0 Then
-            celda.AddComment(dt.Rows(0)("Comentarios").ToString)
+        '-- Comentario (si existe la columna)
+        If row.Table.Columns.Contains("Comentarios") _
+           AndAlso row("Comentarios").ToString().Length > 0 Then
+            celda.AddComment(row("Comentarios").ToString, "")
         End If
 
-        'AQUI TAMBIEN METO EL COLOR A LA SEGUNDA Y TERCERA PARTE DEL EXCEL
-        ' Obtener la celda que está 31 posiciones a la derecha
-        Dim celdaDerecha As ExcelRange = worksheet.Cells(fila + 5, columna + 31)
-
-        ' Aplicar el color a la celda a la derecha
-        celdaDerecha.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
-        celdaDerecha.Style.Fill.BackgroundColor.SetColor(color)
-
-        ' Obtener la celda que está 31 posiciones a la derecha
-        Dim celdaDerechaDerecha As ExcelRange = worksheet.Cells(fila + 5, columna + 62)
-
-        ' Aplicar el color a la celda a la derecha
-        celdaDerechaDerecha.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
-        celdaDerechaDerecha.Style.Fill.BackgroundColor.SetColor(color)
+        '-- Copiamos el color a los dos bloques de la derecha
+        For offset As Integer = 31 To 62 Step 31
+            Dim celdaDestino As ExcelRange = ws.Cells(fila + 5, col + offset)
+            celdaDestino.Style.Fill.PatternType = ExcelFillStyle.Solid
+            celdaDestino.Style.Fill.BackgroundColor.SetColor(color)
+        Next
     End Sub
+
 
     Private Function EsDiaLaboral(ByVal fecha As Date) As Boolean
         Return fecha.DayOfWeek >= DayOfWeek.Monday AndAlso fecha.DayOfWeek <= DayOfWeek.Friday
@@ -1538,10 +1551,10 @@ Public Class ExportacionNoruegaCuadrante
         Return fecha.DayOfWeek = DayOfWeek.Saturday OrElse fecha.DayOfWeek = DayOfWeek.Sunday
     End Function
 
-    Public Function getColorTurnoTrabajador(ByVal dt As DataTable) As System.Drawing.Color
+    Public Function getColorTurnoTrabajador(ByVal row As DataRow) As System.Drawing.Color
         ' Supongamos que HoraEntrada y HoraSalida están en formato TimeSpan
-        Dim turnoEntrada As TimeSpan = CType(dt.Rows(0)("HoraEntrada"), TimeSpan)
-        Dim turnoSalida As TimeSpan = CType(dt.Rows(0)("HoraSalida"), TimeSpan)
+        Dim turnoEntrada As TimeSpan = CType(row("HoraEntrada"), TimeSpan)
+        Dim turnoSalida As TimeSpan = CType(row("HoraSalida"), TimeSpan)
 
         ' Convertir las cadenas de hora a TimeSpan para comparación
         Dim intervalo0Inicio As TimeSpan = TimeSpan.Parse("07:00")
