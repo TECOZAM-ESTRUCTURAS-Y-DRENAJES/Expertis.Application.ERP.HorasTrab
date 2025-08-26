@@ -7183,23 +7183,30 @@ Public Class CargaHorasJPSTAFF
                     End If
                 Next
 
-                nuevaFila("Operario") = nombreOperario
-                nuevaFila("Pre tax") = campos(indicePrimerNumero)
-                nuevaFila("Gu Costs") = campos(indicePrimerNumero + 1)
-                nuevaFila("Abstence Pay") = campos(indicePrimerNumero + 2)
-                nuevaFila("Holiday Pay") = campos(indicePrimerNumero + 3)
-                nuevaFila("Pre Tax Pension") = campos(indicePrimerNumero + 4)
-                nuevaFila("Taxable Pay") = campos(indicePrimerNumero + 5)
-                nuevaFila("Tax") = campos(indicePrimerNumero + 6)
-                nuevaFila("Net NI") = campos(indicePrimerNumero + 7)
-                nuevaFila("Post Tax Add") = campos(indicePrimerNumero + 8)
-                nuevaFila("Post Tax Pension") = campos(indicePrimerNumero + 9)
-                nuevaFila("AEO") = campos(indicePrimerNumero + 10)
-                nuevaFila("Students Loans") = campos(indicePrimerNumero + 11)
-                nuevaFila("Net Pay") = campos(indicePrimerNumero + 12)
-                nuevaFila("Net Er NI") = campos(indicePrimerNumero + 13)
-                nuevaFila("Er Pension") = campos(indicePrimerNumero + 14)
+                Dim salir As Boolean = False
 
+                If nombreOperario.Length = 0 Then
+                    salir = True
+                End If
+
+                If Not salir Then
+                    nuevaFila("Operario") = nombreOperario
+                    nuevaFila("Pre tax") = campos(indicePrimerNumero)
+                    nuevaFila("Gu Costs") = campos(indicePrimerNumero + 1)
+                    nuevaFila("Abstence Pay") = campos(indicePrimerNumero + 2)
+                    nuevaFila("Holiday Pay") = campos(indicePrimerNumero + 3)
+                    nuevaFila("Pre Tax Pension") = campos(indicePrimerNumero + 4)
+                    nuevaFila("Taxable Pay") = campos(indicePrimerNumero + 5)
+                    nuevaFila("Tax") = campos(indicePrimerNumero + 6)
+                    nuevaFila("Net NI") = campos(indicePrimerNumero + 7)
+                    nuevaFila("Post Tax Add") = campos(indicePrimerNumero + 8)
+                    nuevaFila("Post Tax Pension") = campos(indicePrimerNumero + 9)
+                    nuevaFila("AEO") = campos(indicePrimerNumero + 10)
+                    nuevaFila("Students Loans") = campos(indicePrimerNumero + 11)
+                    nuevaFila("Net Pay") = campos(indicePrimerNumero + 12)
+                    nuevaFila("Net Er NI") = campos(indicePrimerNumero + 13)
+                    nuevaFila("Er Pension") = campos(indicePrimerNumero + 14)
+                End If
             End If
 
             ' Agregar la nueva fila a la nueva tabla
