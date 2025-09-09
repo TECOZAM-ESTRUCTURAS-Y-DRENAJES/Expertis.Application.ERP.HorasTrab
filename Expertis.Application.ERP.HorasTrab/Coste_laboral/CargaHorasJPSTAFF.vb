@@ -1336,7 +1336,7 @@ Public Class CargaHorasJPSTAFF
         '------COMO YO LO DE DEJARIA---------
         sql = "select IDOperario, Obra_Predeterminada from " & DB_FERRALLAS & "..tbMaestroOperarioSat " & _
         "where (Obra_Predeterminada='12677838' Or Obra_Predeterminada='12677615' Or Obra_Predeterminada='12678141') and " & _
-        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<=GETDATE()))" & _
+        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' or Fecha_Baja is null))" & _
         " Union " & _
         "select IDOperario, Proyecto AS Obra_Predeterminada " & _
         "from " & DB_FERRALLAS & "..tbHistoricoPersonal " & _
@@ -1352,7 +1352,7 @@ Public Class CargaHorasJPSTAFF
         '------COMO YO LO DE DEJARIA---------
         sql = "select IDOperario, Obra_Predeterminada from " & DB_OC & "..tbMaestroOperarioSat " & _
         "where (Obra_Predeterminada='11822417') and " & _
-        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<=GETDATE()))" & _
+        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' or Fecha_Baja is null))" & _
         " Union " & _
         "select IDOperario, Proyecto AS Obra_Predeterminada " & _
         "from " & DB_OC & "..tbHistoricoPersonal " & _
@@ -1386,7 +1386,7 @@ Public Class CargaHorasJPSTAFF
         '------COMO YO LO DE DEJARIA---------
         sql = "select IDOperario, Obra_Predeterminada from " & DB_TECOZAM & "..tbMaestroOperarioSat " & _
         "where (Obra_Predeterminada='16895681' Or Obra_Predeterminada='11984995' Or Obra_Predeterminada='16901645' Or Obra_Predeterminada='17734421') and " & _
-        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<=GETDATE()))" & _
+        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' or Fecha_Baja is null))" & _
         " Union " & _
         "select IDOperario, Proyecto AS Obra_Predeterminada " & _
         "from " & DB_TECOZAM & "..tbHistoricoPersonal " & _
@@ -1405,7 +1405,7 @@ Public Class CargaHorasJPSTAFF
         '------COMO YO LO DE DEJARIA---------
         sql = "select IDOperario, Obra_Predeterminada from " & DB_SECOZAM & "..tbMaestroOperarioSat " & _
         "where (Obra_Predeterminada='11854299' Or Obra_Predeterminada='11854231') and " & _
-        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' and Fecha_Baja<=GETDATE()))" & _
+        "(Fecha_Baja is null or (Fecha_Baja>='" & Fecha1 & "' or Fecha_Baja is null))" & _
         " Union " & _
         "select IDOperario, Proyecto AS Obra_Predeterminada " & _
         "from " & DB_SECOZAM & "..tbHistoricoPersonal " & _
